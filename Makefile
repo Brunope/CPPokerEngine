@@ -16,11 +16,14 @@
 # Remember to tweak this if you move this file.
 GTEST_DIR = ./gtest
 
-# Where to find user code.
+# Where to find my code.
 USER_DIR = ./src
 
-# Where to find user tests
+# Where to find my tests
 TEST_DIR = ./tests
+
+# Hide all the .o and .a files here
+OBJ_DIR = ./obj
 
 # Flags passed to the preprocessor.
 # Set Google Test's header directory as a system directory, such that
@@ -30,23 +33,28 @@ CPPFLAGS += -isystem $(GTEST_DIR)/include
 # Flags passed to the C++ compiler.
 CXXFLAGS += -g -Wall -Wextra -pthread
 
+# Object files
+OBJS = Card.o Deck.o
+TEST_OBJS = card_unittest.o deck_unittest.o
+
+# Header files
+HEADERS = $(USER_DIR)/Card.h \
+	  $(USER_DIR)/Deck.h
+
 # All tests produced by this Makefile.  Remember to add new tests you
 # created to the list.
-TESTS = card_unittest
+TESTS = card_unittest deck_unittest
 
 # All Google Test headers.  Usually you shouldn't change this
 # definition.
 GTEST_HEADERS = $(GTEST_DIR)/include/gtest/*.h \
                 $(GTEST_DIR)/include/gtest/internal/*.h
 
-OBJS = Card.o
-TEST_OBJS = card_unittest.o
-
 # House-keeping build targets.
 
 all : test
 
-test : $(TESTS) test_suite
+test : test_suite
 
 clean :
 	rm -f $(TESTS) gtest.a gtest_main.a *.o test_suite
@@ -76,15 +84,15 @@ gtest_main.a : gtest-all.o gtest_main.o
 	$(AR) $(ARFLAGS) $@ $^
 
 # Build the test suite
-test_suite : gtest_main.o gtest_main.a
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lpthread $^ -o test_suite $(OBJS) \
-	$(TEST_OBJS)
+test_suite : gtest_main.o gtest_main.a $(TESTS)
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lpthread gtest_main.o gtest_main.a \
+	-o test_suite $(OBJS) $(TEST_OBJS)
 
-# Build Card tests
+# Build Card and tests
 Card.o : $(USER_DIR)/Card.cc $(USER_DIR)/Card.h $(GTEST_HEADERS)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(USER_DIR)/Card.cc
 
-card_unittest.o : $(TEST_DIR)/card_unittest.cc \
+card_unittest.o : Card.o $(TEST_DIR)/card_unittest.cc \
 		  $(USER_DIR)/Card.h $(GTEST_HEADERS)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -I $(USER_DIR) \
 	-c $(TEST_DIR)/card_unittest.cc
@@ -92,17 +100,14 @@ card_unittest.o : $(TEST_DIR)/card_unittest.cc \
 card_unittest : Card.o card_unittest.o gtest_main.a
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lpthread $^ -o $@
 
-# Builds a sample test.  A test should link with either gtest.a or
-# gtest_main.a, depending on whether it defines its own main()
-# function.
+# Build Deck and tests
+Deck.o : Card.o $(USER_DIR)/Deck.cc $(USER_DIR)/Deck.h $(GTEST_HEADERS)
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(USER_DIR)/Deck.cc
 
-sample1.o : $(USER_DIR)/sample1.cc $(USER_DIR)/sample1.h $(GTEST_HEADERS)
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(USER_DIR)/sample1.cc
+deck_unittest.o : Deck.o $(TEST_DIR)/deck_unittest.cc \
+		  $(USER_DIR)/Deck.h $(GTEST_HEADERS)
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -I $(USER_DIR) \
+	-c $(TEST_DIR)/deck_unittest.cc
 
-sample1_unittest.o : $(TEST_DIR)/sample1_unittest.cc \
-                     $(USER_DIR)/sample1.h $(GTEST_HEADERS)
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -I$(USER_DIR) \
-	-c $(TEST_DIR)/sample1_unittest.cc
-
-sample1_unittest : sample1.o sample1_unittest.o gtest_main.a
+deck_unittest : Deck.o Card.o deck_unittest.o gtest_main.a
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lpthread $^ -o $@

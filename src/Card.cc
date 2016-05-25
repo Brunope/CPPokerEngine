@@ -1,22 +1,33 @@
 #include <cstdint>
 #include <string>
 #include <cassert>
+#include <iostream>
 
 #include "Debug.h"
 #include "Card.h"
 
-Card::Card(uint8_t rk, uint8_t st) : rank(rk), suit(st) {
-  if (DEBUG) {
+Card::Card(uint8_t rk, uint8_t st) : rank_(rk), suit_(st) {
+  if (DEBUG)
     checkRep();
-  }
 }
+
+Card::Card(const Card& rhs) : rank_(rhs.rank()), suit_(rhs.suit()) {
+  if (DEBUG)
+    checkRep();
+}
+
+uint8_t Card::rank() const {
+  return rank_;
+}
+
+uint8_t Card::suit() const {
+  return suit_;
+}
+
+  
 
 bool operator==(const Card& lhs, const Card& rhs) {
-  return lhs.rank == rhs.rank;
-}
-
-bool operator<(const Card& lhs, const Card& rhs) {
-  return lhs.rank < rhs.rank;
+  return (lhs.rank() == rhs.rank()) && (lhs.suit() == rhs.suit());
 }
 
 std::ostream& operator<<(std::ostream& os, const Card& c) {
@@ -25,15 +36,16 @@ std::ostream& operator<<(std::ostream& os, const Card& c) {
 }
 
 void Card::checkRep() {
-  assert((rank <= ACE && rank >= TWO) && (suit == HEARTS || suit == CLUBS ||
-                                          suit == SPADES || suit == DIAMONDS));
+  assert((rank_ <= ACE && rank_ >= TWO) &&
+         (suit_ == HEARTS || suit_ == CLUBS ||
+          suit_ == SPADES || suit_ == DIAMONDS));
 }
 
 
 // Nasty str() function, needs a ton of cases
 const std::string Card::str() const {
   std::string rk, st;
-  switch(rank) {
+  switch(rank_) {
   case TWO:
     rk = "2";
     break;
@@ -78,7 +90,7 @@ const std::string Card::str() const {
     break;
   }
   
-  switch (suit) {
+  switch (suit_) {
   case CLUBS:
     st = "c";
     break;
