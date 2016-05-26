@@ -32,6 +32,10 @@ const std::pair<Card, Card> Deck::dealHoleCards() {
   return std::pair<Card, Card>(dealNextCard(), dealNextCard());
 }
 
+uint8_t Deck::cardsLeft() const {
+  return deck_.size();
+}
+
 void Deck::constructDeck() {
   deck_.clear();
   for (uint8_t rank = TWO; rank <= ACE; rank++) {

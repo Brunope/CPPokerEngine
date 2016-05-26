@@ -21,7 +21,10 @@ public:
   // Deck must contain at least 2 Cards
   const std::pair<Card, Card> dealHoleCards();
 
-  friend class DeckTest;  // for unit tests
+  // Return the number of Cards left in Deck. After construction,
+  // there are 52 Cards.
+  uint8_t cardsLeft() const;
+
 private:
   std::vector<Card> deck_;
 
