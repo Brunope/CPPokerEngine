@@ -31,7 +31,7 @@ OBJ_DIR = ./obj
 CPPFLAGS += -isystem $(GTEST_DIR)/include
 
 # Flags passed to the C++ compiler.
-CXXFLAGS += -g -Wall -Wextra -pthread
+CXXFLAGS += -g -std=c++11 -Wall -Wextra -pthread
 
 # Object files
 OBJS = Card.o Deck.o
