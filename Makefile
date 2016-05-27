@@ -34,7 +34,7 @@ CPPFLAGS += -isystem $(GTEST_DIR)/include
 CXXFLAGS += -g -std=c++11 -Wall -Wextra -pthread
 
 # Object files
-OBJS = Card.o Deck.o
+OBJS = Card.o Deck.o Hand.o HandEvaluator.o
 TEST_OBJS = card_unittest.o deck_unittest.o
 
 # Header files
@@ -52,7 +52,7 @@ GTEST_HEADERS = $(GTEST_DIR)/include/gtest/*.h \
 
 # House-keeping build targets.
 
-all : test
+all : $(OBJS) $(TEST_OBJS) test_suite
 
 test : test_suite
 
@@ -84,7 +84,7 @@ gtest_main.a : gtest-all.o gtest_main.o
 	$(AR) $(ARFLAGS) $@ $^
 
 # Build the test suite
-test_suite : gtest_main.o gtest_main.a $(TESTS)
+test_suite : gtest_main.o gtest_main.a $(TESTS) $(OBJS)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lpthread gtest_main.o gtest_main.a \
 	-o test_suite $(OBJS) $(TEST_OBJS)
 
@@ -111,3 +111,14 @@ deck_unittest.o : Deck.o $(TEST_DIR)/deck_unittest.cc \
 
 deck_unittest : Deck.o Card.o deck_unittest.o gtest_main.a
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lpthread $^ -o $@
+
+# Hand
+Hand.o : Card.o HandEvaluator.o $(USER_DIR)/Hand.cc $(USER_DIR)/Hand.h \
+	$(GTEST_HEADERS)
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(USER_DIR)/Hand.cc
+
+# HandEvaluator
+HandEvaluator.o : $(USER_DIR)/HandEvaluator.cc $(USER_DIR)/HandEvaluator.h \
+	$(GTEST_HEADERS)
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(USER_DIR)/HandEvaluator.cc
+
