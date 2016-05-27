@@ -10,6 +10,26 @@ TEST(CardTest, Constructor) {
   EXPECT_EQ(c2.suit(), HEARTS);
 }
 
+TEST(CardTest, StringConstructor) {
+  Card c1("As");
+  Card c2("Th");
+  Card c3("Qd");
+  Card c4("9c");
+  Card c5("5s");
+
+  Card c1_cp(ACE, SPADES);
+  Card c2_cp(TEN, HEARTS);
+  Card c3_cp(QUEEN, DIAMONDS);
+  Card c4_cp(NINE, CLUBS);
+  Card c5_cp(FIVE, SPADES);
+
+  EXPECT_EQ(c1, c1_cp);
+  EXPECT_EQ(c2, c2_cp);
+  EXPECT_EQ(c3, c3_cp);
+  EXPECT_EQ(c4, c4_cp);
+  EXPECT_EQ(c5, c5_cp);
+}
+             
 TEST(CardTest, CopyConstructor) {
   Card c1(TEN, HEARTS);
   Card c2(c1);

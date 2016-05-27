@@ -5,6 +5,7 @@
 #include <cinttypes>
 #include <string>
 #include <iostream>
+#include <boost/bimap.hpp>
 
 // SUITS have arbitrary ordering - no suit has more value than the other -
 // so the order of this enum doesn't matter.
@@ -21,6 +22,14 @@ public:
   // Construct a Card with suit st and rank rk.
   Card(uint8_t rk, uint8_t st);
 
+  // Construct a Card matching the string ranksuit, which should contain 2
+  // characters. The first specifies the rank, and should be a number for
+  // cards 2 - 9, or the first letter of the rank (ie 'j' for "jack")
+  // for ten - ace. The second specifies the suit - (c)lubs, (d)iamonds,
+  // (h)earts, or (s)pades. For example, nine of hearts = "9h", and
+  // queen of diamonds = "Qd".
+  Card(const std::string ranksuit);
+  
   // Copy constructor - set rank and suit equal to that of rhs
   Card(const Card &rhs);
 
@@ -30,9 +39,8 @@ public:
   // Return a value from SUITS that is the suit of the Card.
   uint8_t suit() const;
   
-  // Return a string representation of the Card in the form RANKsuit.
-  // For example, a Card representating the two of hearts would
-  // return '2h', and the ace of spades would return 'As'.
+  // Return a string in the format specified by the string constructor of
+  // Card.
   const std::string str() const;
 
   /* Operator overloads */
@@ -48,6 +56,9 @@ private:
   uint8_t rank_;
   uint8_t suit_;
 
+  static boost::bimap<uint8_t, char> rank_chars;
+  static boost::bimap<uint8_t, char> suit_chars;
+  
   void checkRep();
 };
 

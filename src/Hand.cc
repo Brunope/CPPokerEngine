@@ -6,6 +6,8 @@
 #include "HandEvaluator.h"
 #include "Hand.h"
 
+const HandEvaluator Hand::evaluator_;
+
 Hand::Hand(const std::vector<Card> &cards) {
   if (cards.size() == 5) {
     hand_ = cards;
@@ -20,6 +22,23 @@ Hand::Hand(const std::vector<Card> &cards) {
     *this = best5cards;
   }
   if (DEBUG) checkRep();
+}
+
+Hand::Hand(const std::string &cards) {
+  if (DEBUG) assert(cards.size() == 10 || cards.size() == 14);
+  std::vector<Card> new_cards;
+  for (size_t i = 0; i < cards.size(); i += 2) {
+    new_cards.push_back(Card(cards.substr(i, 2)));
+  }
+  *this = Hand(new_cards);
+}
+
+int Hand::eval() const {
+  return strength_;
+}
+
+const std::vector<Card> &Hand::getCards() const {
+  return hand_;
 }
 
 const std::string Hand::str() const {

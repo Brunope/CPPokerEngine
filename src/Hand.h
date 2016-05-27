@@ -28,16 +28,25 @@
 class Hand {
 public:
   // Construct a Hand of the given Cards. If 7 Cards are provided, the 5
-  // Cards forming the best Hand will be selected. cards should contain
+  // Cards forming the best Hand will be selected. cards must contain
   // either 5 or 7 Cards.
   Hand(const std::vector<Card> &cards);
 
+  // Construct a Hand from the string cards, which should contain
+  // subsequent pairs of characters, each pair specifying a Card
+  // in the format described by the Card string constructor - see Card.h
+  // cards should be either 10 characters, for a 5 card hand, or 14
+  // characters, for a 7 card hand. For example, Hand("AsAhAd9c9d") would
+  // construct a 5 card hand containing the ace of spades, ace of hearts,
+  // ace of diamonds, nine of clubs, and nine of diamonds.
+  Hand(const std::string &cards);
+  
   // Return an integer score of the Hand representing its total evaluated
   // strength. A higher score is better.
   int eval() const;
 
   // Return the 5 Cards that make up the Hand.
-  const std::vector<Card> getCards() const;
+  const std::vector<Card> &getCards() const;
 
   // Return the type of Hand followed by kickers
   const std::string str() const;
@@ -53,7 +62,8 @@ public:
 private:
   std::vector<Card> hand_;
   int strength_;
-  HandEvaluator evaluator_;  // what actually evals hands
+
+  static const HandEvaluator evaluator_;  // what actually crunches numbers
 
   static const Hand findBest5CardHand(const std::vector<Card> &cards);
   
