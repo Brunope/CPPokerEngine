@@ -7,8 +7,10 @@
 #include <iostream>
 #include <boost/bimap.hpp>
 
-// SUITS have arbitrary ordering - no suit has more value than the other -
-// so the order of this enum doesn't matter.
+// SUITS have arbitrary ordering - no suit has more value than the other.
+// However, the order of this enum is still significant, Hand relies on
+// clubs = 0, diamonds = 1, etc. for converting Cards to an integer format
+// before evaluation.
 enum SUITS { CLUBS, DIAMONDS, HEARTS, SPADES };
 
 // RANKS, on the other hand, do have intrinsic value, ie ACE is greater
@@ -19,8 +21,8 @@ enum RANKS { TWO, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, NINE, TEN, JACK,
 
 class Card {
 public:
-  // Construct a Card with suit st and rank rk.
-  Card(uint8_t rk, uint8_t st);
+  // Construct a Card of rank and suit
+  Card(uint8_t rank, uint8_t suit);
 
   // Construct a Card matching the string ranksuit, which should contain 2
   // characters. The first specifies the rank, and should be a number for
@@ -30,9 +32,6 @@ public:
   // queen of diamonds = "Qd".
   Card(const std::string ranksuit);
   
-  // Copy constructor - set rank and suit equal to that of rhs
-  Card(const Card &rhs);
-
   // Return a value from RANKS that is the rank of the Card.
   uint8_t rank() const;
 
@@ -44,8 +43,6 @@ public:
   const std::string str() const;
 
   /* Operator overloads */
-
-  
   // Return true iff the ranks and suits are both equal
   friend bool operator==(const Card& lhs, const Card& rhs);
 

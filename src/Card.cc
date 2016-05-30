@@ -33,7 +33,7 @@ rs_map_t Card::suit_chars = boost::assign::list_of<rs_map_t::relation>
   (HEARTS, 'h')
   (SPADES, 's');
 
-Card::Card(uint8_t rk, uint8_t st) : rank_(rk), suit_(st) {
+Card::Card(uint8_t rank, uint8_t suit) : rank_(rank), suit_(suit) {
   if (DEBUG) checkRep();
 }
 
@@ -42,10 +42,6 @@ Card::Card(const std::string ranksuit) {
   char suit = ranksuit[1];
   rank_ = rank_chars.right.at(rank);
   suit_ = suit_chars.right.at(suit);
-}
-
-Card::Card(const Card& rhs) : rank_(rhs.rank()), suit_(rhs.suit()) {
-  if (DEBUG) checkRep();
 }
 
 uint8_t Card::rank() const {
