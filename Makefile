@@ -35,15 +35,12 @@ CXXFLAGS += -g -std=c++11 -Wall -Wextra -pthread
 
 # Object files
 OBJS = Card.o Deck.o Hand.o HandEvaluator.o
-TEST_OBJS = card_unittest.o deck_unittest.o hand_unittest.o
-
-# Header files
-HEADERS = $(USER_DIR)/Card.h \
-	  $(USER_DIR)/Deck.h
+TEST_OBJS = card_unittest.o deck_unittest.o hand_unittest.o \
+	    handevaluator_unittest.o
 
 # All tests produced by this Makefile.  Remember to add new tests you
 # created to the list.
-TESTS = card_unittest deck_unittest hand_unittest
+TESTS = card_unittest deck_unittest hand_unittest handevaluator_unittest
 
 # All Google Test headers.  Usually you shouldn't change this
 # definition.
@@ -129,3 +126,11 @@ HandEvaluator.o : $(USER_DIR)/HandEvaluator.cc $(USER_DIR)/HandEvaluator.h \
 	$(GTEST_HEADERS)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(USER_DIR)/HandEvaluator.cc
 
+handevaluator_unittest.o : HandEvaluator.o $(TEST_DIR)/handevaluator_unittest.cc \
+$(GTEST_HEADERS)
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -I $(USER_DIR) -c \
+	$(TEST_DIR)/handevaluator_unittest.cc
+
+handevaluator_unittest : HandEvaluator.o handevaluator_unittest.o Hand.o \
+	Card.o gtest_main.a
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lpthread $^ -o $@

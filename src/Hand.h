@@ -6,13 +6,8 @@
 #include "Card.h"
 #include "HandEvaluator.h"
 
-// Convert a Card x to an integer in the range [1, 52] inclusive. Cards
-// are grouped by suit, ie 1 - 13 are of the same suit, 14 - 26 are of the
-// same suit, etc. 13 would be an Ace, and 1 would be a Two. This is necessary
-// for converting our Card representation to a form useable by the
-// HandEvaluator, which just treats cards as unsigned integers within the
-// above specified range.
-#define UINT_CARD(x) x.suit() * 12 + x.rank() + 1
+// Wrapper to convert our cards to ints from 1 - 52 for HandEvaluator
+#define UINT_CARD(x) x.rank() * 4 + x.suit() + 1
 
 /**
  * A Hand is a collection of 5 Cards representing a poker hand. It can be
@@ -27,6 +22,14 @@
  */
 class Hand {
 public:
+  // Hand shares a public HandEvaluator object that it uses to crunch the
+  // evals. You can use it to evaluate large hand ranges faster directly,
+  // since you don't have to construct a Hand object. You would then
+  // pass each card as an argument to evaluator_'s eval* functions, eval5 or
+  // eval7. HandEvaluators are very expensive to construct, so you should
+  // use this one if you need one instead of making a new one.
+  static const HandEvaluator evaluator_;
+  
   // Construct a Hand of the given Cards. If 7 Cards are provided, the 5
   // Cards forming the best Hand will be selected. cards must contain
   // either 5 or 7 Cards.
@@ -48,7 +51,7 @@ public:
   // Return the 5 Cards that make up the Hand.
   const std::vector<Card> &getCards() const;
 
-  // Return the type of Hand followed by kickers
+  // Return the str() of each Card in the Hand.
   const std::string str() const;
   
   /* Operator overloads */
@@ -62,8 +65,6 @@ public:
 private:
   std::vector<Card> hand_;
   int strength_;
-
-  static const HandEvaluator evaluator_;  // what actually crunches numbers
 
   static const Hand findBest5CardHand(const std::vector<Card> &cards);
   
