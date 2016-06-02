@@ -33,23 +33,22 @@ rs_map_t Card::suit_chars = boost::assign::list_of<rs_map_t::relation>
   (HEARTS, 'h')
   (SPADES, 's');
 
-Card::Card(uint8_t rank, uint8_t suit) : rank_(rank), suit_(suit) {
+Card::Card(uint8_t rank, uint8_t suit) : ranksuit_(rank << 2 | suit) {
   if (DEBUG) checkRep();
 }
 
 Card::Card(const std::string ranksuit) {
-  char rank = ranksuit[0];
-  char suit = ranksuit[1];
-  rank_ = rank_chars.right.at(rank);
-  suit_ = suit_chars.right.at(suit);
+  char r = ranksuit[0];
+  char s = ranksuit[1];
+  ranksuit_ = rank_chars.right.at(r) << 2 | suit_chars.right.at(s);
 }
 
 uint8_t Card::rank() const {
-  return rank_;
+  return ranksuit_ >> 2;
 }
 
 uint8_t Card::suit() const {
-  return suit_;
+  return ranksuit_ & 0x3;
 }
 
   
@@ -64,16 +63,16 @@ std::ostream& operator<<(std::ostream& os, const Card& c) {
 }
 
 void Card::checkRep() {
-  assert((rank_ <= ACE && rank_ >= TWO) &&
-         (suit_ == HEARTS || suit_ == CLUBS ||
-          suit_ == SPADES || suit_ == DIAMONDS));
+  assert((rank() <= ACE && rank() >= TWO) &&
+         (suit() <= SPADES && suit() >= CLUBS) &&
+         (ranksuit_ >> 6 == 0));
 }
 
 const std::string Card::str() const {
-  char rank = rank_chars.left.at(rank_);
-  char suit = suit_chars.left.at(suit_);
+  char r = rank_chars.left.at(rank());
+  char s = suit_chars.left.at(suit());
   std::stringstream ss;
-  ss << rank << suit;
+  ss << r << s;
   return ss.str();
 }
 
