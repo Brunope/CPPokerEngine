@@ -63,9 +63,7 @@ std::ostream& operator<<(std::ostream& os, const Card& c) {
 }
 
 void Card::checkRep() {
-  assert((rank() <= ACE && rank() >= TWO) &&
-         (suit() <= SPADES && suit() >= CLUBS) &&
-         (ranksuit_ >> 6 == 0));
+  assert((rank() <= ACE) && (suit() <= SPADES) && (ranksuit_ >> 6 == 0));
 }
 
 const std::string Card::str() const {
