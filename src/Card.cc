@@ -33,6 +33,10 @@ rs_map_t Card::suit_chars = boost::assign::list_of<rs_map_t::relation>
   (HEARTS, 'h')
   (SPADES, 's');
 
+Card::Card() : ranksuit_(0) {
+  if (DEBUG) checkRep();
+}
+
 Card::Card(uint8_t rank, uint8_t suit) : ranksuit_(rank << 2 | suit) {
   if (DEBUG) checkRep();
 }

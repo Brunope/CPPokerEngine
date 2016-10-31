@@ -1,12 +1,21 @@
 #include <cstdlib>
 #include <iostream>
 
-#include "Card.h"
+#include "Game.h"
+#include "HumanActor.h"
+#include "SimpleActor.h"
+#include "Observer.h"
 
 int main(void) {
-  Card c(ACE, SPADES);
+  Game g;
 
-  std::cout << c << std::endl;
+  HumanActor human;
+  SimpleActor bot;
+  g.addPlayer(human, "human", 1000);
+  g.addPlayer(bot, "bot", 1000);
 
-  return EXIT_SUCCESS;
+  Observer observer;
+  g.addObserver(observer);
+  
+  g.play();
 }

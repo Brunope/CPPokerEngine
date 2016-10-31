@@ -31,6 +31,11 @@ enum RANKS : uint8_t { TWO, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, NINE,
  */
 class Card {
 public:
+  // Construct a Card with rank and suit 0, ie TWO of CLUBS. You shouldn't
+  // invoke this constructor explicitly but it is provided to allow
+  // declarations of std::vector or std::pair containing Cards.
+  Card();
+  
   // Construct a Card of rank and suit
   Card(uint8_t rank, uint8_t suit);
 
