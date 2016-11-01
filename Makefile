@@ -1,4 +1,4 @@
-CXX = g++
+CXX = g++-6
 
 SHELL = /bin/sh
 
@@ -24,7 +24,8 @@ CPPFLAGS += -isystem $(GTEST_DIR)/include
 CXXFLAGS += -g -std=c++11 -I $(SRC_DIR)
 
 # Object files
-OBJS = Card.o Deck.o Hand.o HandEvaluator.o GameView.o SimpleActor.o
+OBJS = Card.o Deck.o Hand.o HandEvaluator.o GameView.o SimpleActor.o \
+       Game.o
 TEST_OBJS = card_unittest.o deck_unittest.o hand_unittest.o \
 	    handevaluator_unittest.o action_unittest.o gameview_unittest.o
 
@@ -131,10 +132,9 @@ handevaluator_unittest : HandEvaluator.o handevaluator_unittest.o Hand.o \
 PLAYER_H = $(SRC_DIR)/Player.h
 
 # Actions
-ACTIONS_H = $(SRC_DIR)/actions/$(wildcard *.h)
+ACTION_H = $(SRC_DIR)/actions/$(wildcard *.h) $(SRC_DIR)/Actions.h
 
-# Actions
-action_unittest.o : $(SRC_DIR)/Actions.h $(ACTIONS_H) $(PLAYER_H) \
+action_unittest.o : $(ACTION_H) $(PLAYER_H) \
  $(TEST_DIR)/action_unittest.cc $(GTEST_HEADERS)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) \
 	-c $(TEST_DIR)/action_unittest.cc
@@ -161,7 +161,8 @@ SimpleActor.o : $(PLAYER_H) $(ACTION_H) HandEvaluator.o Hand.o Card.o GameView.o
  -c $(SRC_DIR)/SimpleActor.cc
 
 Game.o : Card.o Hand.o HandEvaluator.o Deck.o $(PLAYER_H) $(ACTION_H) \
- GameView.o $(SRC_DIR)/Actor.h $(SRC_DIR)/Observer.h
+ GameView.o $(SRC_DIR)/Actor.h $(SRC_DIR)/Observer.h $(SRC_DIR)/Game.h \
+ $(SRC_DIR)/Game.cc
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(SRC_DIR)/Game.cc
 
 

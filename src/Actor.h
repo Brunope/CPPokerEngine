@@ -9,7 +9,7 @@
 #include "Player.h"
 #include "Card.h"
 
-class Game;
+class GameView;
 
 /**
  * Actor is the class that makes decisions in the Game. If you're writing

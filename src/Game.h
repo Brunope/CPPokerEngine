@@ -36,7 +36,8 @@ private:
   std::vector<Actor *> actors_;         // participants in Game
   std::vector<Player> players_;         // 1-1 index mapping with actors
   std::vector<Player *> live_players_;  // pointers into players_
-  std::vector<const Card> board_;
+  std::vector<Card> board_;
+  std::vector<Action> hand_action_;
   std::vector<Observer *> observers_;
 
   size_t button_pos_;
