@@ -9,8 +9,7 @@
 #include "Deck.h"
 #include "Hand.h"
 #include "Player.h"
-
-class Action;
+#include "Actions.h"
 
 // Bad solution - should keep this in Game but don't want the dependency
 enum STREET { PREFLOP, FLOP, TURN, RIVER };
@@ -33,6 +32,7 @@ public:
 
   // Rely on Game to set all these fields
   friend class Game;
+  friend class GameViewTest_Simple_Test;
 private:
   std::vector<Player> players_;
   std::vector<Player *> live_players_;  // pointers into players_

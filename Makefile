@@ -1,4 +1,6 @@
-CXX = g++-6
+CXX = g++
+
+SHELL = /bin/sh
 
 # Points to the root of Google Test, relative to where this file is.
 # Remember to tweak this if you move this file.
@@ -8,7 +10,7 @@ GTEST_DIR = ./gtest
 SRC_DIR = ./src
 
 # Where to find my tests
-TEST_DIR = ./tests
+TEST_DIR = ./test
 
 # Hide all the .o and .a files here except I haven't configured it yet
 OBJ_DIR = ./obj
@@ -19,19 +21,17 @@ OBJ_DIR = ./obj
 CPPFLAGS += -isystem $(GTEST_DIR)/include
 
 # Flags passed to the C++ compiler.
-CXXFLAGS += -g -std=c++11
+CXXFLAGS += -g -std=c++11 -I $(SRC_DIR)
 
 # Object files
 OBJS = Card.o Deck.o Hand.o HandEvaluator.o GameView.o SimpleActor.o
 TEST_OBJS = card_unittest.o deck_unittest.o hand_unittest.o \
-	    handevaluator_unittest.o action_unittest.o
-
-DEPS = $(addprefix $(SRC_DIR)/, Player.h Actor.h)
+	    handevaluator_unittest.o action_unittest.o gameview_unittest.o
 
 # All tests produced by this Makefile.  Remember to add new tests you
 # created to the list.
 TESTS = card_unittest deck_unittest hand_unittest handevaluator_unittest \
-	action_unittest
+	action_unittest gameview_unittest
 
 # All Google Test headers.  Usually you shouldn't change this
 # definition.
@@ -40,12 +40,13 @@ GTEST_HEADERS = $(GTEST_DIR)/include/gtest/*.h \
 
 # House-keeping build targets.
 
-all : $(OBJS) $(TEST_OBJS) $(DEPS) test_suite
+all : $(OBJS) $(TEST_OBJS) test_suite
 
 test : test_suite
+	./test_suite
 
 clean :
-	rm -rf $(TESTS) gtest.a gtest_main.a *.o test_suite *.dSYM
+	rm -rf $(TESTS) gtest.a gtest_main.a *.o test_suite *.dSYM .DS_STORE
 
 # Builds gtest.a and gtest_main.a.
 
@@ -127,32 +128,40 @@ handevaluator_unittest : HandEvaluator.o handevaluator_unittest.o Hand.o \
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lpthread $^ -o $@
 
 # Player
-Player.o : $(SRC_DIR)/Player.h
+PLAYER_H = $(SRC_DIR)/Player.h
 
 # Actions
-Actions.o : $(SRC_DIR)/actions/*.h
+ACTIONS_H = $(SRC_DIR)/actions/$(wildcard *.h)
 
-action_unittest.o : Actions.o Player.o $(TEST_DIR)/action_unittest.cc \
- $(GTEST_HEADERS)
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -I $(SRC_DIR) \
+# Actions
+action_unittest.o : $(SRC_DIR)/Actions.h $(ACTIONS_H) $(PLAYER_H) \
+ $(TEST_DIR)/action_unittest.cc $(GTEST_HEADERS)
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) \
 	-c $(TEST_DIR)/action_unittest.cc
 
 action_unittest : action_unittest.o gtest_main.a
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lpthread $^ -o $@
 
 # GameView
-GameView.o : Card.o Hand.o Player.o $(SRC_DIR)/GameView.h
+GameView.o : Card.o Hand.o $(PLAYER_H) $(ACTION_H) $(SRC_DIR)/GameView.h \
+ $(SRC_DIR)/GameView.cc
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(SRC_DIR)/GameView.cc
 
+gameview_unittest.o : GameView.o $(GTEST_HEADERS) \
+ $(TEST_DIR)/gameview_unittest.cc
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(TEST_DIR)/gameview_unittest.cc
+
+gameview_unittest : GameView.o gameview_unittest.o gtest_main.a
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lpthread $^ -o $@
+
 # SimpleActor
-SimpleActor.o : Player.o Actions.o HandEvaluator.o Hand.o Card.o GameView.o \
+SimpleActor.o : $(PLAYER_H) $(ACTION_H) HandEvaluator.o Hand.o Card.o GameView.o \
  $(SRC_DIR)/SimpleActor.h
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -I $(SRC_DIR) \
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) \
  -c $(SRC_DIR)/SimpleActor.cc
 
-Game.o : Card.o Hand.o HandEvaluator.o Deck.o Player.o Actions.o GameView.o \
- $(SRC_DIR)/Actor.h $(SRC_DIR)/Observer.h
+Game.o : Card.o Hand.o HandEvaluator.o Deck.o $(PLAYER_H) $(ACTION_H) \
+ GameView.o $(SRC_DIR)/Actor.h $(SRC_DIR)/Observer.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(SRC_DIR)/Game.cc
 
-# Game
-#Game.o : Card.o Hand.o HandEvaluator.o Deck.o Player.o SimpleActor.o 
+
