@@ -1,0 +1,2 @@
+# CPPoker Engine [![Build Status](https://travis-ci.org/Brunope/CPPokerEngine.svg?branch=master)](https://travis-ci.org/Brunope/CPPokerEngine)
+A performant no-limit Texas Hold'em poker simulator in C++11, designed for use with AI.
