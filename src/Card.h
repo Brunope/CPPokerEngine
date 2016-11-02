@@ -5,7 +5,7 @@
 #include <cinttypes>
 #include <string>
 #include <iostream>
-#include <boost/bimap.hpp>
+#include <map>
 
 // The following enums are declared for convenience. In C++11 (the
 // current Makefile configuration) it is safe to assume enumerated
@@ -70,8 +70,8 @@ private:
   // into the 8 bit field ranksuit_ like so: --rrrrss. 
   uint8_t ranksuit_;
 
-  static boost::bimap<uint8_t, char> rank_chars;
-  static boost::bimap<uint8_t, char> suit_chars;
+  static std::map<uint8_t, std::string> ranksuit_to_str;
+  static std::map<std::string, uint8_t> str_to_ranksuit;
   
   void checkRep();
 };
