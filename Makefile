@@ -1,4 +1,4 @@
-CXX = g++
+CXX = clang++
 
 SHELL = /bin/sh
 
