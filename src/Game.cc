@@ -18,8 +18,6 @@ Game::Game(uint32_t big_blind, uint32_t small_blind) {
   notifyObservers();
 }
 
-// Setters/Adders
-
 void
 Game::addPlayer(Actor *actor, std::string name, size_t chips) {
   assert(players_.size() < MAX_NUM_PLAYERS);

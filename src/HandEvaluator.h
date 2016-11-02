@@ -9,8 +9,11 @@
  * HandEvaluator uses Ray Wotton's lookup table for speedy evals. Credits
  * go to him and the rest of twoplustwo. For reference, see
  * http://archives1.twoplustwo.com/showflat.php?Cat=0&Number=8513906&page=0&fpart=13&vc=1
- * A copy of HandRanks.dat is included in the resources/ directory. Before
- * using, you should verify the following match your copy of the file.
+ * A copy of HandRanks.dat is included in the resources/ directory. The
+ * code to generate this file is not included here, but can be 
+ * found at the above link.
+ * If the HandEvaluator test fails without modification, you should 
+ * verify the following match your copy of HandRanks.dat
  * Size: 129951336 bytes
  * SHA 256: ad00f3976ad278f2cfd8c47b008cf4dbdefac642d70755a9f20707f8bbeb3c7e
  */
@@ -19,7 +22,7 @@
 
 class HandEvaluator {
 public:
-  // Read the lookup file into memory. The file is very large - 129 megabytes,
+  // Read the lookup file into memory. The file is very large - 124 megabytes,
   // so this is an expensive operation. You should avoid constructing
   // multiple copies of HandEvaluator objects. Instead, you can use
   // the public static copy in the Hand class, via Hand::evaluator_.
