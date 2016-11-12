@@ -47,28 +47,34 @@ Card::Card(const std::string ranksuit) {
   ranksuit_ = str_to_ranksuit[ranksuit];
 }
 
-uint8_t Card::rank() const {
+uint8_t
+Card::rank() const {
   return ranksuit_ >> 2;
 }
 
-uint8_t Card::suit() const {
+uint8_t
+Card::suit() const {
   return ranksuit_ & 0x3;
 }  
 
-const std::string Card::str() const {
+const std::string
+Card::str() const {
   return ranksuit_to_str[ranksuit_];
 }
 
-bool operator==(const Card& lhs, const Card& rhs) {
+bool
+operator==(const Card& lhs, const Card& rhs) {
   return lhs.ranksuit_ == rhs.ranksuit_;
 }
 
-std::ostream& operator<<(std::ostream& os, const Card& c) {
+std::ostream &
+operator<<(std::ostream& os, const Card& c) {
   os << c.str();
   return os;
 }
 
-void Card::checkRep() {
+void
+Card::checkRep() {
   assert((rank() <= ACE) && (suit() <= SPADES) && (ranksuit_ >> 6 == 0));
 }
 

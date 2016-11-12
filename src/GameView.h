@@ -4,12 +4,13 @@
 #include <vector>
 #include <cinttypes>
 #include <cstddef>
+#include <string>
 
 #include "Card.h"
 #include "Deck.h"
 #include "Hand.h"
 #include "Player.h"
-#include "Actions.h"
+#include "Action.h"
 
 // Bad solution - should keep this in Game but don't want the dependency
 enum STREET { PREFLOP, FLOP, TURN, RIVER };
@@ -24,6 +25,7 @@ public:
   STREET getStreet() const;
   uint32_t getCurrentBet() const;
   const Player &getPlayerInSeat(size_t seat) const;
+  const Player &getPlayerByName(std::string name) const;
   const std::vector<Player> &getPlayers() const;
   const std::vector<Player *> &getPlayersInHand() const;
   const std::vector<Card> &getBoard() const;

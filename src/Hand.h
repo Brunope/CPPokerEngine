@@ -62,6 +62,8 @@ public:
   // Return true iff lhs evaluates to the same score as rhs.
   friend bool operator==(const Hand &lhs, const Hand &rhs);
 
+  // TODO: operator<<
+
 private:
   std::vector<Card> hand_;
   int strength_;

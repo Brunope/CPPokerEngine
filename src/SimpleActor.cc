@@ -1,5 +1,5 @@
 #include "GameView.h"
-#include "Actions.h"
+#include "Action.h"
 #include "SimpleActor.h"
 
 Action
@@ -10,12 +10,12 @@ SimpleActor::act(const GameView &gameView) {
   
   if (gameView.getStreet() == PREFLOP) {
     if (hc_.first.rank() >= TEN && hc_.second.rank() >= TEN) {
-      return Raise(gameView.getCurrentBet() * 2);
+      return Action(RAISE, gameView.getCurrentBet() * 2);
     } else {
-      return Fold();
+      return Action(FOLD);
     }
   }
-  return Fold();
+  return Action(FOLD);
 }
 
 void SimpleActor::receiveHandHistory(const std::vector<const Action> &history) {

@@ -1,37 +1,59 @@
-#include "Actions.h"
+#include "Action.h"
 #include "Player.h"
 #include "gtest/gtest.h"
 
 TEST(ActionTest, Raise) {
-  Raise r(1);
-  EXPECT_EQ(r.getType(), RAISE);
-  EXPECT_EQ(r.getValue(), 1);
+  Action action(RAISE);
+  EXPECT_EQ(action.getType(), RAISE);
+
+  action = Action(RAISE, 1);
+  EXPECT_EQ(action.getType(), RAISE);
+  EXPECT_EQ(action.getAmount(), 1);
+  
   Player p("me");
-  Raise r2(&p, 2);
-  EXPECT_EQ(r2.getValue(), 2);
-  EXPECT_EQ(r2.getSource(), &p);
+  action = Action(RAISE, 2, &p);
+  EXPECT_EQ(action.getType(), RAISE);
+  EXPECT_EQ(action.getAmount(), 2);
+  EXPECT_EQ(action.getSource(), &p);
 }
 
 TEST(ActionTest, Call) {
-  Call c(1);
-  EXPECT_EQ(c.getType(), CALL);
-  EXPECT_EQ(c.getValue(), 1);
+  Action action(CALL);
+  EXPECT_EQ(action.getType(), CALL);
+
+  action = Action(CALL, 1);
+  EXPECT_EQ(action.getType(), CALL);
+  EXPECT_EQ(action.getAmount(), 1);
+  
   Player p("me");
-  Call c2(1, &p);
-  EXPECT_EQ(c2.getValue(), 1);
-  EXPECT_EQ(c2.getSource(), &p);
+  action = Action(CALL, 2, &p);
+  EXPECT_EQ(action.getType(), CALL);
+  EXPECT_EQ(action.getAmount(), 2);
+  EXPECT_EQ(action.getSource(), &p);
 }
 
 TEST(ActionTest, Fold) {
+  Action action(FOLD);
+  EXPECT_EQ(action.getType(), FOLD);
+
+  action = Action(FOLD, 1);
+  EXPECT_EQ(action.getType(), FOLD);
+  
   Player p("me");
-  Fold f(&p);
-  EXPECT_EQ(f.getType(), FOLD);
-  EXPECT_EQ(f.getSource(), &p);
+  action = Action(FOLD, 2, &p);
+  EXPECT_EQ(action.getType(), FOLD);
+  EXPECT_EQ(action.getSource(), &p);
 }
 
 TEST(ActionTest, Check) {
+  Action action(CHECK);
+  EXPECT_EQ(action.getType(), CHECK);
+
+  action = Action(CHECK, 1);
+  EXPECT_EQ(action.getType(), CHECK);
+  
   Player p("me");
-  Check c(&p);
-  EXPECT_EQ(c.getType(), CHECK);
-  EXPECT_EQ(c.getSource(), &p);
+  action = Action(CHECK, 2, &p);
+  EXPECT_EQ(action.getType(), CHECK);
+  EXPECT_EQ(action.getSource(), &p);
 }

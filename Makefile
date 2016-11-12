@@ -28,14 +28,16 @@ CXXFLAGS += -g -std=c++11 -I $(SRC_DIR)
 
 # Object files
 OBJS = $(addprefix $(OBJ_DIR)/, Card.o Deck.o Hand.o HandEvaluator.o \
- GameView.o SimpleActor.o Game.o)
+ GameView.o Action.o SimpleActor.o LoggerEventListener.o Game.o)
 TEST_OBJS = $(addprefix $(OBJ_DIR)/, card_unittest.o deck_unittest.o \
- hand_unittest.o handevaluator_unittest.o action_unittest.o gameview_unittest.o)
+ hand_unittest.o handevaluator_unittest.o action_unittest.o \
+ gameview_unittest.o loggereventlistener_unittest.o)
 
 # All tests produced by this Makefile.  Remember to add new tests you
 # created to the list.
 TESTS = $(addprefix $(BIN_DIR)/, card_unittest deck_unittest hand_unittest \
- handevaluator_unittest action_unittest gameview_unittest)
+ handevaluator_unittest action_unittest gameview_unittest \
+ loggereventlistener_unittest)
 
 # All Google Test headers.  Usually you shouldn't change this
 # definition.
@@ -47,6 +49,7 @@ GTEST_HEADERS = $(GTEST_DIR)/include/gtest/*.h \
 all : setup $(OBJS) $(TESTS) $(BIN_DIR)/test_suite
 
 setup :
+	if [ `wc -c < resources/HandRanks.dat` != "129951336" ]; then wget "https://github.com/Brunope/CPPokerEngine/blob/master/resources/HandRanks.dat?raw=true" -O resources/HandRanks.dat; fi
 	mkdir -p bin obj
 
 test : $(BIN_DIR)/test_suite
@@ -148,6 +151,10 @@ $(BIN_DIR)/hand_unittest : $(Hand_o) $(Card_o) $(HandEvaluator_o) $(hand_unittes
  gtest_main.a
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lpthread $^ -o $@
 
+# Action
+Action_o = $(OBJ_DIR)/Action.o
+$(Action_o) : $(SRC_DIR)/Action.h $(SRC_DIR)/Action.cc
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(SRC_DIR)/Action.cc -o $@
 
 # Player
 PLAYER_H = $(SRC_DIR)/Player.h
@@ -156,17 +163,17 @@ PLAYER_H = $(SRC_DIR)/Player.h
 ACTION_H = $(SRC_DIR)/actions/$(wildcard *.h) $(SRC_DIR)/Actions.h
 
 action_unittest_o = $(OBJ_DIR)/action_unittest.o
-$(action_unittest_o) : $(ACTION_H) $(PLAYER_H) \
+$(action_unittest_o) : $(Action_o) $(PLAYER_H) \
  $(TEST_DIR)/action_unittest.cc $(GTEST_HEADERS)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) \
  -c $(TEST_DIR)/action_unittest.cc -o $@
 
-$(BIN_DIR)/action_unittest : $(action_unittest_o) gtest_main.a
+$(BIN_DIR)/action_unittest : $(action_unittest_o) $(Action_o) gtest_main.a
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lpthread $^ -o $@
 
 # GameView
 GameView_o = $(OBJ_DIR)/GameView.o
-$(GameView_o) : $(Card_o) $(Hand_o) $(PLAYER_H) $(ACTION_H) \
+$(GameView_o) : $(Card_o) $(Hand_o) $(PLAYER_H) $(Action_o) \
  $(SRC_DIR)/GameView.h $(SRC_DIR)/GameView.cc
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(SRC_DIR)/GameView.cc -o $@
 
@@ -180,15 +187,35 @@ $(BIN_DIR)/gameview_unittest : $(GameView_o) $(gameview_unittest_o) gtest_main.a
 
 # SimpleActor
 SimpleActor_o = $(OBJ_DIR)/SimpleActor.o
-$(SimpleActor_o) : $(PLAYER_H) $(ACTION_H) $(HandEvaluator_o) $(Hand_o) \
+$(SimpleActor_o) : $(PLAYER_H) $(Action_o) $(HandEvaluator_o) $(Hand_o) \
  $(Card_o) $(GameView_o) $(SRC_DIR)/SimpleActor.h $(SRC_DIR)/SimpleActor.cc
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) \
  -c $(SRC_DIR)/SimpleActor.cc -o $@
 
+# LoggerEventListener
+LoggerEventListener_o = $(OBJ_DIR)/LoggerEventListener.o
+$(LoggerEventListener_o) : $(PLAYER_H) $(Action_o) $(Hand_o) $(GameView_o) \
+ $(HandEvaluator_o) $(SRC_DIR)/LoggerEventListener.cc \
+ $(SRC_DIR)/IEventListener.h $(SRC_DIR)/LoggerEventListener.h
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) \
+ -c $(SRC_DIR)/LoggerEventListener.cc -o $@
+
+loggereventlistener_unittest_o = $(OBJ_DIR)/loggereventlistener_unittest.o
+$(loggereventlistener_unittest_o) : $(LoggerEventListener_o) \
+ $(GameView_o) $(Hand_o) $(HandEvaluator_o) $(Card_o) $(Action_o) \
+ $(GTEST_HEADERS) $(TEST_DIR)/loggereventlistener_unittest.cc
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) \
+ -c $(TEST_DIR)/loggereventlistener_unittest.cc -o $@
+
+$(BIN_DIR)/loggereventlistener_unittest : $(loggereventlistener_unittest_o) \
+ $(LoggerEventListener_o) $(Action_o) $(Hand_o) $(HandEvaluator_o) \
+ $(Card_o) gtest_main.a
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lpthread $^ -o $@
+
 # Game
 Game_o = $(OBJ_DIR)/Game.o
 $(Game_o) : $(Card_o) $(Hand_o) $(HandEvaluator_o) $(Deck_o) $(PLAYER_H) \
- $(ACTION_H) $(GameView_o) $(SRC_DIR)/Actor.h $(SRC_DIR)/Observer.h \
+ $(Action_o) $(GameView_o) $(SRC_DIR)/Actor.h $(SRC_DIR)/Observer.h \
  $(SRC_DIR)/Game.h $(SRC_DIR)/Game.cc
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(SRC_DIR)/Game.cc -o $@
 

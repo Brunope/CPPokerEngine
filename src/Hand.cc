@@ -33,15 +33,18 @@ Hand::Hand(const std::string &cards) {
   *this = Hand(new_cards);
 }
 
-int Hand::eval() const {
+int
+Hand::eval() const {
   return strength_;
 }
 
-const std::vector<Card> &Hand::getCards() const {
+const std::vector<Card> &
+Hand::getCards() const {
   return hand_;
 }
 
-const std::string Hand::str() const {
+const std::string
+Hand::str() const {
   std::stringstream ss;
   for (const Card &c : hand_) {
     ss << c.str();
@@ -49,20 +52,24 @@ const std::string Hand::str() const {
   return ss.str();
 }
 
-bool operator>(const Hand &lhs, const Hand &rhs) {
+bool
+operator>(const Hand &lhs, const Hand &rhs) {
   return lhs.strength_ > rhs.strength_;
 }
 
-bool operator==(const Hand &lhs, const Hand &rhs) {
+bool
+operator==(const Hand &lhs, const Hand &rhs) {
   return lhs.strength_ == rhs.strength_;
 }
 
-void Hand::checkRep() const {
+void
+Hand::checkRep() const {
   assert(hand_.size() == 5);
   assert(strength_ > 0);  // even high card hand should eval to > 0
 }
 
-const Hand Hand::findBest5CardHand(const std::vector<Card> &cards) {
+const Hand
+Hand::findBest5CardHand(const std::vector<Card> &cards) {
   if (cards.size() == 5) {
     return Hand(cards);
   }

@@ -36,7 +36,7 @@ public:
   //
   // 2c = 1, 2d = 2, 2h = 3, 2s = 4, 3c = 1, ... , As = 52.
   //
-  // This is the format Roy's algorithm (and the rest of 2+2  uses). To
+  // This is the format Ray's algorithm (and the rest of 2+2  uses). To
   // convert a Card object to this integer format, use the UINT_CARD(Card)
   // wrapper macro in Hand.h.
   //

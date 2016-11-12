@@ -11,7 +11,7 @@
 #include "Player.h"
 #include "Actor.h"
 #include "Observer.h"
-#include "Actions.h"
+#include "Action.h"
 #include "GameView.h"
 
 #define STARTING_STACK 1000

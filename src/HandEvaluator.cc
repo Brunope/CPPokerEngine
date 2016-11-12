@@ -6,10 +6,12 @@
 
 #include "HandEvaluator.h"
 
+#define HR_NUM_INTS 32487834  // defined by Ray's lookup algorithm
+#define HR_FILE_BYTES 4 * HR_NUM_INTS  // 129951336
+
 HandEvaluator::HandEvaluator() {
-  uint32_t HR_size = 4 * 32487834;
-  HR_ = new int[32487834];
-  memset(HR_, 0, HR_size);
+  HR_ = new int[HR_NUM_INTS];
+  memset(HR_, 0, HR_FILE_BYTES);
   FILE *f_ = fopen(HAND_RANK_LOOKUP_FILE, "rb");
   if (!f_) {
     std::cout << "Error, could not open hand rank data file. Make sure \
@@ -17,10 +19,10 @@ the filepath is correctly referenced by the HAND_RANK_LOOKUP_FILE constant \
 in HandEvaluator.h" << std::endl;
     exit(EXIT_FAILURE);
   }
-  size_t bytes = fread((void*)HR_, 1, HR_size, f_);
-  if (bytes != HR_size) {
+  size_t bytes = fread((void *)HR_, 1, HR_FILE_BYTES, f_);
+  if (bytes != HR_FILE_BYTES) {
     std::cout << "Error, incorrect number of bytes read from hand rank data \
-file. Expected " << HR_size << ", got " << bytes << std::endl;
+file. Expected " << HR_FILE_BYTES << ", got " << bytes << std::endl;
     exit(EXIT_FAILURE);
   }
   fclose(f_);

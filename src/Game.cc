@@ -6,7 +6,7 @@
 #include "Card.h"
 #include "Hand.h"
 #include "Observer.h"
-#include "Actions.h"
+#include "Action.h"
 #include "Game.h"
 
 Game::Game(uint32_t big_blind, uint32_t small_blind) {
