@@ -8,6 +8,7 @@ GTEST_DIR = ./gtest
 
 # Where to find my code.
 SRC_DIR = ./src
+INC_DIR = ./inc
 
 # Where to find my tests
 TEST_DIR = ./test
@@ -24,7 +25,7 @@ BIN_DIR = ./bin
 CPPFLAGS += -isystem $(GTEST_DIR)/include
 
 # Flags passed to the C++ compiler.
-CXXFLAGS += -g -std=c++11 -I $(SRC_DIR)
+CXXFLAGS += -g -std=c++11 -I $(INC_DIR)
 
 # Object files
 OBJS = $(addprefix $(OBJ_DIR)/, Card.o Deck.o Hand.o HandEvaluator.o \
@@ -59,6 +60,9 @@ clean :
 	rm -rf $(TESTS) $(OBJS) $(TEST_OBJS) gtest.a gtest_main.a \
  gtest-all.o gtest_main.o $(BIN_DIR)/test_suite *.dSYM .DS_STORE
 
+$(BIN_DIR)/test_suite : gtest_main.o gtest_main.a $(TEST_OBJS) $(OBJS)
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lpthread $^ -o $@
+
 # Builds gtest.a and gtest_main.a.
 
 # Usually you shouldn't tweak such internal variables, indicated by a
@@ -84,59 +88,50 @@ gtest.a : gtest-all.o
 gtest_main.a : gtest-all.o gtest_main.o
 	$(AR) $(ARFLAGS) $@ $^
 
-# Build the test suite
-#$(BIN_DIR)/test_suite : gtest_main.o gtest_main.a $(TESTS) $(OBJS)
-#	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lpthread gtest_main.o gtest_main.a \
-# -o $@ $(OBJS) $(TEST_OBJS)
-$(BIN_DIR)/test_suite : gtest_main.o gtest_main.a $(TEST_OBJS) $(OBJS)
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lpthread $^ -o $@
-
 # Build Card and tests
 Card_o = $(OBJ_DIR)/Card.o
-$(Card_o) : $(SRC_DIR)/Card.cc $(SRC_DIR)/Card.h $(GTEST_HEADERS)
+$(Card_o) : $(SRC_DIR)/Card.cc $(INC_DIR)/Card.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(SRC_DIR)/Card.cc -o $@
 
 card_unittest_o = $(OBJ_DIR)/card_unittest.o
 $(card_unittest_o) : $(Card_o) $(TEST_DIR)/card_unittest.cc \
- $(SRC_DIR)/Card.h $(GTEST_HEADERS)
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -I $(SRC_DIR) \
- -c $(TEST_DIR)/card_unittest.cc -o $@
+ $(INC_DIR)/Card.h $(GTEST_HEADERS)
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(TEST_DIR)/card_unittest.cc -o $@
 
 $(BIN_DIR)/card_unittest : $(Card_o) $(card_unittest_o) gtest_main.a
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lpthread $^ -o $@
 
 # Build Deck and tests
 Deck_o = $(OBJ_DIR)/Deck.o
-$(Deck_o) : $(Card_o) $(SRC_DIR)/Deck.cc $(SRC_DIR)/Deck.h
+$(Deck_o) : $(Card_o) $(SRC_DIR)/Deck.cc $(INC_DIR)/Deck.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(SRC_DIR)/Deck.cc -o $@
 
 deck_unittest_o = $(OBJ_DIR)/deck_unittest.o
 $(deck_unittest_o) : $(Deck_o) $(TEST_DIR)/deck_unittest.cc \
-$(SRC_DIR)/Deck.h $(GTEST_HEADERS)
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -I $(SRC_DIR) \
--c $(TEST_DIR)/deck_unittest.cc -o $@
+$(INC_DIR)/Deck.h $(GTEST_HEADERS)
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(TEST_DIR)/deck_unittest.cc -o $@
 
 $(BIN_DIR)/deck_unittest : $(Deck_o) $(Card_o) $(deck_unittest_o) gtest_main.a
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lpthread $^ -o $@
 
 # HandEvaluator
 HandEvaluator_o = $(OBJ_DIR)/HandEvaluator.o
-$(HandEvaluator_o) : $(SRC_DIR)/HandEvaluator.cc $(SRC_DIR)/HandEvaluator.h \
+$(HandEvaluator_o) : $(SRC_DIR)/HandEvaluator.cc $(INC_DIR)/HandEvaluator.h \
 	$(GTEST_HEADERS)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(SRC_DIR)/HandEvaluator.cc -o $@
 
 # Hand actually depends on HandEvaluator, not other way around
 # but the tests depend on both
 Hand_o = $(OBJ_DIR)/Hand.o
-$(Hand_o) : $(Card_o) $(HandEvaluator_o) $(SRC_DIR)/Hand.cc $(SRC_DIR)/Hand.h \
+$(Hand_o) : $(Card_o) $(HandEvaluator_o) $(SRC_DIR)/Hand.cc $(INC_DIR)/Hand.h \
  $(GTEST_HEADERS)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(SRC_DIR)/Hand.cc -o $@
 
 handevaluator_unittest_o = $(OBJ_DIR)/handevaluator_unittest.o
 $(handevaluator_unittest_o) : $(HandEvaluator_o) $(Hand_o) \
  $(TEST_DIR)/handevaluator_unittest.cc $(GTEST_HEADERS)
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -I $(SRC_DIR) -c \
- $(TEST_DIR)/handevaluator_unittest.cc -o $@
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) \
+ -c $(TEST_DIR)/handevaluator_unittest.cc -o $@
 
 $(BIN_DIR)/handevaluator_unittest : $(HandEvaluator_o) \
  $(handevaluator_unittest_o) $(Hand_o) $(Card_o) gtest_main.a
@@ -144,23 +139,19 @@ $(BIN_DIR)/handevaluator_unittest : $(HandEvaluator_o) \
 
 hand_unittest_o = $(OBJ_DIR)/hand_unittest.o
 $(hand_unittest_o) : $(Hand_o) $(TEST_DIR)/hand_unittest.cc $(GTEST_HEADERS)
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -I $(SRC_DIR) \
- -c $(TEST_DIR)/hand_unittest.cc -o $@
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(TEST_DIR)/hand_unittest.cc -o $@
 
-$(BIN_DIR)/hand_unittest : $(Hand_o) $(Card_o) $(HandEvaluator_o) $(hand_unittest_o) \
- gtest_main.a
+$(BIN_DIR)/hand_unittest : $(Hand_o) $(Card_o) $(HandEvaluator_o) \
+ $(hand_unittest_o) gtest_main.a
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lpthread $^ -o $@
+
+# Player
+PLAYER_H = $(INC_DIR)/Player.h
 
 # Action
 Action_o = $(OBJ_DIR)/Action.o
-$(Action_o) : $(SRC_DIR)/Action.h $(SRC_DIR)/Action.cc
+$(Action_o) : $(INC_DIR)/Action.h $(SRC_DIR)/Action.cc
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(SRC_DIR)/Action.cc -o $@
-
-# Player
-PLAYER_H = $(SRC_DIR)/Player.h
-
-# Actions
-ACTION_H = $(SRC_DIR)/actions/$(wildcard *.h) $(SRC_DIR)/Actions.h
 
 action_unittest_o = $(OBJ_DIR)/action_unittest.o
 $(action_unittest_o) : $(Action_o) $(PLAYER_H) \
@@ -174,7 +165,7 @@ $(BIN_DIR)/action_unittest : $(action_unittest_o) $(Action_o) gtest_main.a
 # GameView
 GameView_o = $(OBJ_DIR)/GameView.o
 $(GameView_o) : $(Card_o) $(Hand_o) $(PLAYER_H) $(Action_o) \
- $(SRC_DIR)/GameView.h $(SRC_DIR)/GameView.cc
+ $(INC_DIR)/GameView.h $(SRC_DIR)/GameView.cc
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(SRC_DIR)/GameView.cc -o $@
 
 gameview_unittest_o = $(OBJ_DIR)/gameview_unittest.o
@@ -188,7 +179,7 @@ $(BIN_DIR)/gameview_unittest : $(GameView_o) $(gameview_unittest_o) gtest_main.a
 # SimpleActor
 SimpleActor_o = $(OBJ_DIR)/SimpleActor.o
 $(SimpleActor_o) : $(PLAYER_H) $(Action_o) $(HandEvaluator_o) $(Hand_o) \
- $(Card_o) $(GameView_o) $(SRC_DIR)/SimpleActor.h $(SRC_DIR)/SimpleActor.cc
+ $(Card_o) $(GameView_o) $(INC_DIR)/SimpleActor.h $(SRC_DIR)/SimpleActor.cc
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) \
  -c $(SRC_DIR)/SimpleActor.cc -o $@
 
@@ -196,7 +187,7 @@ $(SimpleActor_o) : $(PLAYER_H) $(Action_o) $(HandEvaluator_o) $(Hand_o) \
 LoggerEventListener_o = $(OBJ_DIR)/LoggerEventListener.o
 $(LoggerEventListener_o) : $(PLAYER_H) $(Action_o) $(Hand_o) $(GameView_o) \
  $(HandEvaluator_o) $(SRC_DIR)/LoggerEventListener.cc \
- $(SRC_DIR)/IEventListener.h $(SRC_DIR)/LoggerEventListener.h
+ $(INC_DIR)/IEventListener.h $(INC_DIR)/LoggerEventListener.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) \
  -c $(SRC_DIR)/LoggerEventListener.cc -o $@
 
@@ -215,8 +206,8 @@ $(BIN_DIR)/loggereventlistener_unittest : $(loggereventlistener_unittest_o) \
 # Game
 Game_o = $(OBJ_DIR)/Game.o
 $(Game_o) : $(Card_o) $(Hand_o) $(HandEvaluator_o) $(Deck_o) $(PLAYER_H) \
- $(Action_o) $(GameView_o) $(SRC_DIR)/Actor.h $(SRC_DIR)/Observer.h \
- $(SRC_DIR)/Game.h $(SRC_DIR)/Game.cc
+ $(Action_o) $(GameView_o) $(INC_DIR)/Actor.h $(INC_DIR)/Observer.h \
+ $(INC_DIR)/Game.h $(SRC_DIR)/Game.cc
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(SRC_DIR)/Game.cc -o $@
 
 
