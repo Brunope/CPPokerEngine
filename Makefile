@@ -29,16 +29,18 @@ CXXFLAGS += -g -std=c++11 -I $(INC_DIR)
 
 # Object files
 OBJS = $(addprefix $(OBJ_DIR)/, Card.o Deck.o Hand.o HandEvaluator.o \
- GameView.o Action.o SimpleActor.o LoggerEventListener.o Game.o)
+ GameView.o Action.o EventManager.o SimpleActor.o LoggerEventListener.o \
+ Game.o)
 TEST_OBJS = $(addprefix $(OBJ_DIR)/, card_unittest.o deck_unittest.o \
  hand_unittest.o handevaluator_unittest.o action_unittest.o \
- gameview_unittest.o loggereventlistener_unittest.o)
+ gameview_unittest.o loggereventlistener_unittest.o \
+ eventmanager_unittest.o)
 
 # All tests produced by this Makefile.  Remember to add new tests you
 # created to the list.
 TESTS = $(addprefix $(BIN_DIR)/, card_unittest deck_unittest hand_unittest \
  handevaluator_unittest action_unittest gameview_unittest \
- loggereventlistener_unittest)
+ loggereventlistener_unittest eventmanager_unittest)
 
 # All Google Test headers.  Usually you shouldn't change this
 # definition.
@@ -201,6 +203,25 @@ $(loggereventlistener_unittest_o) : $(LoggerEventListener_o) \
 $(BIN_DIR)/loggereventlistener_unittest : $(loggereventlistener_unittest_o) \
  $(LoggerEventListener_o) $(Action_o) $(Hand_o) $(HandEvaluator_o) \
  $(Card_o) gtest_main.a
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lpthread $^ -o $@
+
+# EventManager - its tests need LoggerEventListener (or a mock class)
+# to verify anything.
+EventManager_o = $(OBJ_DIR)/EventManager.o
+$(EventManager_o) : $(INC_DIR)/EventManager.h $(SRC_DIR)/EventManager.cc \
+ $(INC_DIR)/Action.h $(PLAYER_H) $(Hand_o) $(INC_DIR)/IEventListener.h
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(SRC_DIR)/EventManager.cc -o $@
+
+eventmanager_unittest_o = $(OBJ_DIR)/eventmanager_unittest.o
+$(eventmanager_unittest_o) : $(EventManager_o) $(LoggerEventListener_o) \
+ $(PLAYER_H) $(Action_o) $(Hand_o) $(GameView_o) $(HandEvaluator_o) \
+ $(TEST_DIR)/eventmanager_unittest.cc
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) \
+ -c $(TEST_DIR)/eventmanager_unittest.cc -o $@
+
+$(BIN_DIR)/eventmanager_unittest : $(eventmanager_unittest_o) \
+ $(EventManager_o) $(Action_o) $(Card_o) $(Hand_o) $(HandEvaluator_o) \
+ $(GameView_o) $(LoggerEventListener_o) gtest_main.a
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lpthread $^ -o $@
 
 # Game

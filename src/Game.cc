@@ -36,6 +36,11 @@ Game::addObserver(Observer *observer) {
 }
 
 void
+Game::addEventListener(IEventListener *listener) {
+
+}
+
+void
 Game::notifyObservers() {
   for (auto it = observers_.begin(); it != observers_.end(); ++it) {
     (*it)->notify();

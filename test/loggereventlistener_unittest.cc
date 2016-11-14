@@ -17,7 +17,7 @@ TEST(LoggerEventListenerTest, Comprehensive) {
   
   listener.onGameStart(&g);
   EXPECT_EQ(buffer.str(), "Starting game\n");
-  buffer.str("");
+  buffer.str("");  // clear buffer
   
   listener.onPlayerJoin(p1.getName());
   EXPECT_EQ(buffer.str(), "p1 joined\n");

@@ -10,6 +10,7 @@
 #include "Hand.h"
 #include "Player.h"
 #include "Actor.h"
+#include "IEventListener.h"
 #include "Observer.h"
 #include "Action.h"
 #include "GameView.h"
@@ -23,6 +24,7 @@ public:
 
   void addPlayer(Actor *actor, std::string name, size_t chips = STARTING_STACK);
   void addObserver(Observer *observer);
+  void addEventListener(IEventListener *listener);
 
   void play();
 
