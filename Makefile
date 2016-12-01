@@ -166,7 +166,7 @@ $(BIN_DIR)/action_unittest : $(action_unittest_o) $(Action_o) gtest_main.a
 
 # GameView
 GameView_o = $(OBJ_DIR)/GameView.o
-$(GameView_o) : $(Card_o) $(Hand_o) $(PLAYER_H) $(Action_o) \
+$(GameView_o) : $(Card_o) $(Hand_o) $(PLAYER_H) $(Action_o) $(Actor_o) \
  $(INC_DIR)/GameView.h $(SRC_DIR)/GameView.cc
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(SRC_DIR)/GameView.cc -o $@
 
