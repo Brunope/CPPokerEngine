@@ -20,14 +20,15 @@ public:
   // EventManager does NOT take ownership of 'listener'
   void addEventListener(IEventListener *listener);
 
-  // Remove the first occurrence of 'listener'. Any added duplicates
+  // Remove the first occurrence of 'listener'. Any duplicates
   // will remain.
   void removeEventListener(IEventListener *listener);
   
-  void fireGameStartEvent(const GameView *game);
+  void fireGameStartEvent(const GameView &game);
+  void fireGameOverEvent(const GameView &game);
   void firePlayerJoinEvent(std::string playerName);
   void firePlayerLeaveEvent(std::string playerName);
-  void fireHandStartEvent(long handNum, const GameView *game);
+  void fireHandStartEvent(long handNum, const GameView &game);
   void fireDealEvent(STREET street);
   void firePlayerActionEvent(Action action);
   void fireShowdownEvent(Hand bestHand, std::string playerName);

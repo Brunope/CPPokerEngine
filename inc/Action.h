@@ -13,7 +13,7 @@ class Player;
  */
 class Action {
 public:
-  Action(ACTION_T type, uint32_t amount = 0, Player *source = nullptr);
+  Action(ACTION_T type = NUM_ACTIONS, uint32_t amount = 0, Player *source = nullptr);
   
   ACTION_T getType() const;
   const Player *getSource() const;

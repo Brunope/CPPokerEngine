@@ -21,10 +21,15 @@ EventManager::removeEventListener(IEventListener *listener) {
 }
 
 void
-EventManager::fireGameStartEvent(const GameView *game) {
+EventManager::fireGameStartEvent(const GameView &game) {
   for (auto it = eventListeners_.begin(); it != eventListeners_.end(); ++it) {
-    (*it)->onGameStart(game);
+    (*it)->onGameStart(&game);
   }
+}
+
+void
+EventManager::fireGameOverEvent(const GameView &game) {
+
 }
 
 void
@@ -42,9 +47,9 @@ EventManager::firePlayerLeaveEvent(std::string playerName) {
 }
 
 void
-EventManager::fireHandStartEvent(long handNum, const GameView *game) {
+EventManager::fireHandStartEvent(long handNum, const GameView &game) {
   for (auto it = eventListeners_.begin(); it != eventListeners_.end(); ++it) {
-    (*it)->onHandStart(handNum, game);
+    (*it)->onHandStart(handNum, &game);
   }
 }
 

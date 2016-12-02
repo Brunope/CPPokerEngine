@@ -29,6 +29,10 @@ public:
   // eval7. HandEvaluators are very expensive to construct, so you should
   // use this one if you need one instead of making a new one.
   static const HandEvaluator evaluator_;
+
+  // Default constructs an invalid Hand with no Cards. This is ONLY
+  // provided to allow initialization of containers holding this type.
+  Hand();
   
   // Construct a Hand of the given Cards. If 7 Cards are provided, the 5
   // Cards forming the best Hand will be selected. cards must contain

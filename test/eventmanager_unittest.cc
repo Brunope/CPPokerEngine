@@ -25,7 +25,7 @@ TEST(EventManagerTest, LoggerEventListenerIntegration) {
   std::stringstream buffer;
   std::streambuf *old = std::cout.rdbuf(buffer.rdbuf());
   
-  e.fireGameStartEvent(&g);
+  e.fireGameStartEvent(g);
   EXPECT_EQ(buffer.str(), "Starting game\n");
   buffer.str("");  // clear buffer
   
@@ -40,7 +40,7 @@ TEST(EventManagerTest, LoggerEventListenerIntegration) {
   // add the same listener again and expect double the output
   e.addEventListener(&l);
   
-  e.fireHandStartEvent(0, &g);
+  e.fireHandStartEvent(0, g);
   EXPECT_EQ(buffer.str(), "Starting hand #0\nStarting hand #0\n");
   buffer.str("");
   
@@ -66,7 +66,7 @@ TEST(EventManagerTest, LoggerEventListenerIntegration) {
   // remove the last one and expect no output
   e.removeEventListener(&l);
   
-  e.fireGameStartEvent(&g);
+  e.fireGameStartEvent(g);
   EXPECT_EQ(buffer.str(), "");
 
   // Re-enable stdout

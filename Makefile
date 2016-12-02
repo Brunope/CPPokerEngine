@@ -156,12 +156,12 @@ $(Action_o) : $(INC_DIR)/Action.h $(SRC_DIR)/Action.cc
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(SRC_DIR)/Action.cc -o $@
 
 action_unittest_o = $(OBJ_DIR)/action_unittest.o
-$(action_unittest_o) : $(Action_o) $(PLAYER_H) \
+$(action_unittest_o) : $(Action_o) $(PLAYER_H) $(Card_o) \
  $(TEST_DIR)/action_unittest.cc $(GTEST_HEADERS)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) \
  -c $(TEST_DIR)/action_unittest.cc -o $@
 
-$(BIN_DIR)/action_unittest : $(action_unittest_o) $(Action_o) gtest_main.a
+$(BIN_DIR)/action_unittest : $(action_unittest_o) $(Action_o) $(Card_o) gtest_main.a
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lpthread $^ -o $@
 
 # GameView
@@ -175,7 +175,7 @@ $(gameview_unittest_o) : $(GameView_o) $(GTEST_HEADERS) \
  $(TEST_DIR)/gameview_unittest.cc
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(TEST_DIR)/gameview_unittest.cc -o $@
 
-$(BIN_DIR)/gameview_unittest : $(GameView_o) $(gameview_unittest_o) gtest_main.a
+$(BIN_DIR)/gameview_unittest : $(GameView_o) $(Card_o) $(gameview_unittest_o) gtest_main.a
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lpthread $^ -o $@
 
 # SimpleActor
@@ -228,7 +228,7 @@ $(BIN_DIR)/eventmanager_unittest : $(eventmanager_unittest_o) \
 Game_o = $(OBJ_DIR)/Game.o
 $(Game_o) : $(Card_o) $(Hand_o) $(HandEvaluator_o) $(Deck_o) $(PLAYER_H) \
  $(Action_o) $(GameView_o) $(INC_DIR)/Actor.h $(INC_DIR)/Observer.h \
- $(INC_DIR)/Game.h $(SRC_DIR)/Game.cc
+ $(EventManager_o) $(INC_DIR)/Game.h $(SRC_DIR)/Game.cc
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(SRC_DIR)/Game.cc -o $@
 
 

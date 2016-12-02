@@ -9,6 +9,9 @@
 
 const HandEvaluator Hand::evaluator_;
 
+Hand::Hand() {
+}
+
 Hand::Hand(const std::vector<Card> &cards) {
   if (cards.size() == 5) {
     hand_ = cards;
