@@ -34,13 +34,13 @@ OBJS = $(addprefix $(OBJ_DIR)/, Card.o Deck.o Hand.o HandEvaluator.o \
 TEST_OBJS = $(addprefix $(OBJ_DIR)/, card_unittest.o deck_unittest.o \
  hand_unittest.o handevaluator_unittest.o action_unittest.o \
  gameview_unittest.o loggereventlistener_unittest.o \
- eventmanager_unittest.o)
+ eventmanager_unittest.o game_unittest.o TestActor.o)
 
 # All tests produced by this Makefile.  Remember to add new tests you
 # created to the list.
 TESTS = $(addprefix $(BIN_DIR)/, card_unittest deck_unittest hand_unittest \
  handevaluator_unittest action_unittest gameview_unittest \
- loggereventlistener_unittest eventmanager_unittest)
+ loggereventlistener_unittest eventmanager_unittest game_unittest)
 
 # All Google Test headers.  Usually you shouldn't change this
 # definition.
@@ -124,6 +124,7 @@ $(HandEvaluator_o) : $(SRC_DIR)/HandEvaluator.cc $(INC_DIR)/HandEvaluator.h \
 
 # Hand actually depends on HandEvaluator, not other way around
 # but the tests depend on both
+Hand_deps = HandEvaluator Card
 Hand_o = $(OBJ_DIR)/Hand.o
 $(Hand_o) : $(Card_o) $(HandEvaluator_o) $(SRC_DIR)/Hand.cc $(INC_DIR)/Hand.h \
  $(GTEST_HEADERS)
@@ -185,6 +186,13 @@ $(SimpleActor_o) : $(PLAYER_H) $(Action_o) $(HandEvaluator_o) $(Hand_o) \
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) \
  -c $(SRC_DIR)/SimpleActor.cc -o $@
 
+# TestActor
+TestActor_o = $(OBJ_DIR)/TestActor.o
+TestActor_deps = TestActor Action HandEvaluator Card GameView
+$(TestActor_o) : $(addprefix $(INC_DIR)/, $(addsuffix .h, $(TestActor_deps) Player)) \
+ $(SRC_DIR)/TestActor.cc
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(SRC_DIR)/TestActor.cc -o $@
+
 # LoggerEventListener
 LoggerEventListener_o = $(OBJ_DIR)/LoggerEventListener.o
 $(LoggerEventListener_o) : $(PLAYER_H) $(Action_o) $(Hand_o) $(GameView_o) \
@@ -215,7 +223,7 @@ $(EventManager_o) : $(INC_DIR)/EventManager.h $(SRC_DIR)/EventManager.cc \
 eventmanager_unittest_o = $(OBJ_DIR)/eventmanager_unittest.o
 $(eventmanager_unittest_o) : $(EventManager_o) $(LoggerEventListener_o) \
  $(PLAYER_H) $(Action_o) $(Hand_o) $(GameView_o) $(HandEvaluator_o) \
- $(TEST_DIR)/eventmanager_unittest.cc
+ $(TEST_DIR)/eventmanager_unittest.cc $(GTEST_HEADERS)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) \
  -c $(TEST_DIR)/eventmanager_unittest.cc -o $@
 
@@ -231,4 +239,12 @@ $(Game_o) : $(Card_o) $(Hand_o) $(HandEvaluator_o) $(Deck_o) $(PLAYER_H) \
  $(EventManager_o) $(INC_DIR)/Game.h $(SRC_DIR)/Game.cc
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(SRC_DIR)/Game.cc -o $@
 
+game_unittest_o = $(OBJ_DIR)/game_unittest.o
+$(game_unittest_o) : $(Game_o) $(INC_DIR)/TestActor.h $(GTEST_HEADERS) \
+ $(TEST_DIR)/game_unittest.cc
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(TEST_DIR)/game_unittest.cc -o $@
 
+$(BIN_DIR)/game_unittest : $(Card_o) $(Hand_o) $(HandEvaluator_o) $(Deck_o) \
+ $(Action_o) $(GameView_o) $(EventManager_o) $(Game_o) $(SimpleActor_o) \
+ $(Actor_o) $(game_unittest_o) $(TestActor_o) gtest_main.a
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lpthread $^ -o $@

@@ -26,11 +26,12 @@ public:
   size_t getButtonPosition() const;
   STREET getStreet() const;
   uint32_t getCurrentBet() const;
-  const Player &getPlayerInSeat(size_t seat);
-  const Player &getPlayerByName(std::string name);
+  const Player *getPlayerInSeat(size_t seat) const;
+  const Player *getPlayerByName(std::string name) const;
   const std::map<size_t, Player> &getPlayers();
   const std::map<size_t, Player *> &getPlayersInHand();
   const std::vector<Card> &getBoard();
+  // return array of vectors of actions, one vector per street
   const std::vector<Action> *getHandAction();
   const std::vector<Action> &getRoundAction();
 

@@ -8,12 +8,8 @@
 
 class SimpleActor : public Actor {
 public:
-  SimpleActor(Player &self) : Actor(self) {}
-
   void receiveHoleCards(const std::pair<Card, Card> hc);
-  
   Action act(const GameView &gameView);
-
   void receiveHandHistory(const std::vector<const Action> &history);
 };
 

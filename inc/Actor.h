@@ -17,7 +17,6 @@ class GameView;
  */
 class Actor {
 public:
-  Actor(Player &self) : self_(self) {}
   // Called once at the beginning of each Hand in which this Actor is
   // participating.
   virtual void receiveHoleCards(const std::pair<Card, Card> hc) = 0;
@@ -34,10 +33,10 @@ public:
   // Called once by Game when a new Player / Actor is added. Gives the Actor
   // a reference to its own Player object that stores data on stack size,
   // seat position, name, etc.
-  void setPlayer(Player &self) { self_ = self; }
+  void setPlayer(Player *self) { self_ = self; }
 
 protected:
-  Player &self_;
+  Player *self_;
   std::pair<Card, Card> hc_;
 };
 #endif  // ACTOR_H_

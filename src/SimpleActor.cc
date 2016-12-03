@@ -5,8 +5,8 @@
 Action
 SimpleActor::act(const GameView &gameView) {
   double num_bb =
-    static_cast<double>(self_.getChips()) / gameView.getBigBlind();
-  size_t call_amt = gameView.getCurrentBet() - self_.getChipsInPlay();
+    static_cast<double>(self_->getChips()) / gameView.getBigBlind();
+  size_t call_amt = gameView.getCurrentBet() - self_->getChipsInPlay();
   
   if (gameView.getStreet() == PREFLOP) {
     if (hc_.first.rank() >= TEN && hc_.second.rank() >= TEN) {
@@ -18,6 +18,12 @@ SimpleActor::act(const GameView &gameView) {
   return Action(FOLD);
 }
 
-void SimpleActor::receiveHandHistory(const std::vector<const Action> &history) {
+void
+SimpleActor::receiveHoleCards(const std::pair<Card, Card> hc) {
+  hc_ = hc;
+}
+
+void
+SimpleActor::receiveHandHistory(const std::vector<const Action> &history) {
 
 }

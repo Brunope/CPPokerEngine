@@ -35,10 +35,23 @@ GameView::getCurrentBet() const {
   return getBigBlind();  // wrong
 }
 
-const Player &
-GameView::getPlayerInSeat(size_t seat) {
+const Player *
+GameView::getPlayerInSeat(size_t seat) const {
   assert(seat < getNumPlayers());
-  return players_[seat];
+  if (players_.count(seat)) {
+    return &players_.at(seat);
+  }
+  return nullptr;
+}
+
+const Player *
+GameView::getPlayerByName(std::string name) const {
+  for (auto it = players_.begin(); it != players_.end(); ++it) {
+    if (it->second.getName() == name) {
+      return &(it->second);
+    }
+  }
+  return nullptr;
 }
 
 const std::map<size_t, Player> &

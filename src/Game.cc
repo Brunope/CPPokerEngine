@@ -24,9 +24,7 @@
  *
  * actors_
  * - Each Actor * in 'actors_' is associated with the Player in 'players_'
- *   at the same index, ie actors_[0] is the Actor for players_[0].
- * - Since there is a 1-1 mapping, the same invariants for players_ holds
- *   for actors_.
+ *   with the same key, ie actors_[0] is the Actor for players_[0].
  */
 Game::Game(uint32_t big_blind, uint32_t small_blind) {
   big_blind_ = big_blind;
@@ -43,6 +41,7 @@ Game::addPlayer(Actor *actor, std::string name, size_t chips) {
   p.chips_ = chips;
   p.seat_ = players_.size();
   actors_[p.seat_] = actor;
+  players_[p.seat_] = p;
 
   updateView();
   eventManager_.firePlayerJoinEvent(name);
@@ -60,6 +59,7 @@ Game::removePlayer(const Player &player) {
   if (allin_players_.count(player.getSeat())) {
     allin_players_.erase(player.getSeat());
   }
+  updateView();
 }
 
 void
@@ -85,6 +85,7 @@ Game::updateView() {
   view_.button_pos_ = button_pos_;
   view_.street_ = street_;
   view_.board_ = board_;
+
   view_.players_ = players_;
 
   // copy all the action over
@@ -94,18 +95,18 @@ Game::updateView() {
   view_.hand_action_[RIVER] = hand_action_[RIVER];
 
   // copy live_players_ but point into view_.players_ instead
-  view_.live_players_ = live_players_;
-  for (auto it = view_.live_players_.begin();
-       it != view_.live_players_.end(); ++it) {
-    it->second = &view_.players_[it->second->getSeat()];
-  }
+  // view_.live_players_ = live_players_;
+  // for (auto it = view_.live_players_.begin();
+  //      it != view_.live_players_.end(); ++it) {
+  //   it->second = &view_.players_[it->second->getSeat()];
+  // }
 
-  // copy allin_players_ but point into view_.players_
-  view_.allin_players_ = allin_players_;
-  for (auto it = view_.allin_players_.begin();
-       it != view_.allin_players_.end(); ++it) {
-    it->second = &view_.players_[it->second->getSeat()];
-  }
+  // // copy allin_players_ but point into view_.players_
+  // view_.allin_players_ = allin_players_;
+  // for (auto it = view_.allin_players_.begin();
+  //      it != view_.allin_players_.end(); ++it) {
+  //   it->second = &view_.players_[it->second->getSeat()];
+  // }
 }
 
 void

@@ -25,6 +25,7 @@ public:
 
   // Caller retains ownership of 'actor'
   void addPlayer(Actor *actor, std::string name, size_t chips = STARTING_STACK);
+  void removePlayer(const Player &p);
 
   // Caller retains ownership of 'listener'
   void addEventListener(IEventListener *listener);
@@ -38,7 +39,6 @@ public:
 
   const GameView &getView() const;
 private:
-  void removePlayer(const Player &p);
   void updateView();
   void playHand();
   void setupHand();
