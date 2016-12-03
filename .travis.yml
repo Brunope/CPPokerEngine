@@ -1,4 +1,4 @@
 language: cpp
 compiler: clang
-install: wget https://github.com/Brunope/CPPokerEngine/raw/master/resources/HandRanks.dat -O resources/HandRanks.dat
+install: wget https://github.com/Brunope/Holdup/raw/master/resources/HandRanks.dat -O resources/HandRanks.dat
 script: make && make test
