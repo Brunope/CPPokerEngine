@@ -69,9 +69,13 @@ TEST(GameTest, ThreePlayerInstaFold) {
   game.play(1);
 
   // verify payout
-  EXPECT_EQ(button->getChips(), 100);
-  EXPECT_EQ(sb->getChips(), 95);
+  EXPECT_EQ(view.getPlayerInSeat(button_seat)->getChips(), 100);
+  EXPECT_EQ(view.getPlayerInSeat(button_seat + 1)->getChips(), 95);
   EXPECT_EQ(view.getPlayerInSeat(button_seat + 2)->getChips(), 105);
+
+  // EXPECT_EQ(button->getChips(), 100);
+  // EXPECT_EQ(sb->getChips(), 95);
+  // EXPECT_EQ(bb->getChips(), 105);
 
   // verify actions
   std::vector<Action> actions = view.getRoundAction();
