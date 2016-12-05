@@ -31,50 +31,65 @@ GameView::getStreet() const {
 
 uint32_t
 GameView::getCurrentBet() const {
-  // TODO
-  return getBigBlind();  // wrong
+  return current_bet_;
 }
 
-const Player *
-GameView::getPlayerInSeat(size_t seat) const {
-  if (players_.count(seat)) {
-    return &players_.at(seat);
+int
+GameView::getPlayerInSeat(size_t seat, Player *player) const {
+  // todo
+  if (players_.count(seat) && player != nullptr) {
+    *player = players_.at(seat);
+    return 0;
   }
-  return nullptr;
+  return 1;
 }
 
-const Player *
-GameView::getPlayerByName(std::string name) const {
-  for (auto it = players_.begin(); it != players_.end(); ++it) {
-    if (it->second.getName() == name) {
-      return &(it->second);
+int
+GameView::getPlayerByName(std::string name, Player *player) const {
+  if (player != nullptr) {
+    for (auto it = players_.begin(); it != players_.end(); ++it) {
+      if (it->second.getName() == name) {
+        *player = it->second;
+        return 0;
+      }
     }
   }
-  return nullptr;
+  return 1;
 }
 
-const std::map<size_t, Player> &
+std::map<size_t, Player>
 GameView::getPlayers() const {
   return players_;
 }
 
-const std::map<size_t, Player *> &
-GameView::getPlayersInHand() {
-  return live_players_;
+std::map<size_t, Player>
+GameView::getPlayersInHand() const {
+  // dereference our live_players_ for em
+  std::map<size_t, Player> live;
+  for (auto it = live_players_.begin(); it != live_players_.end(); ++it) {
+    live[it->first] = *(it->second);
+  }
+  return live;
 }
 
-const std::vector<Card> &
-GameView::getBoard() {
+std::vector<Card>
+GameView::getBoard() const {
   return board_;
 }
 
-const std::vector<Action> *
-GameView::getHandAction() const {
-  return hand_action_;
+int
+GameView::getHandAction(std::vector<Action> *hand_action) const {
+  if (hand_action != nullptr) {
+    hand_action[PREFLOP] = hand_action_[PREFLOP];
+    hand_action[FLOP] = hand_action_[FLOP];
+    hand_action[TURN] = hand_action_[TURN];
+    hand_action[RIVER] = hand_action_[RIVER];
+    return 0;
+  }
+  return 1;
 }
 
-// TODO: getRoundAction
-const std::vector<Action> &
+std::vector<Action>
 GameView::getRoundAction() const {
   return hand_action_[street_];
 }

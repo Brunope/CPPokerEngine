@@ -29,20 +29,20 @@ TEST(GameTest, AddRemovePlayer) {
   
   game.addPlayer(&actor1, "actor1");
   EXPECT_EQ(view.getNumPlayers(), 1);
-  const Player *player1 = view.getPlayerByName("actor1");
-  EXPECT_NE(player1, nullptr);
-  EXPECT_EQ(player1->getName(), "actor1");
+  Player player1;
+  EXPECT_EQ(view.getPlayerByName("actor1", &player1), 0);
+  EXPECT_EQ(player1.getName(), "actor1");
   
   game.addPlayer(&actor2, "actor2");
   EXPECT_EQ(view.getNumPlayers(), 2);
-  const Player *player2 = view.getPlayerByName("actor2");
-  EXPECT_NE(player2, nullptr);
-  EXPECT_EQ(player2->getName(), "actor2");
+  Player player2;
+  EXPECT_EQ(view.getPlayerByName("actor2", &player2), 0);
+  EXPECT_EQ(player2.getName(), "actor2");
 
-  game.removePlayer(*player1);
+  game.removePlayer(player1);
   EXPECT_EQ(view.getNumPlayers(), 1);
-  player1 = view.getPlayerByName("actor1");
-  EXPECT_EQ(player1, nullptr);
+  EXPECT_EQ(view.getPlayerByName("actor1", &player1), 1);
+  EXPECT_EQ(view.getPlayerInSeat(player1.getSeat(), &player1), 1);
 }
 
 // button and small blind fold to the big blind, who should win the pot
@@ -59,23 +59,19 @@ TEST(GameTest, ThreePlayerInstaFold) {
   actor1.queueAction(Action(FOLD));
   actor2.queueAction(Action(FOLD));
 
-  // winner is the big blind, 2 seats after the button
-  // todo: fix
-  const Player *button = view.getPlayerInSeat(button_seat);
-  const Player *sb = view.getPlayerInSeat((button_seat + 1) % MAX_NUM_PLAYERS);
-  const Player *bb = view.getPlayerInSeat((button_seat + 2) % MAX_NUM_PLAYERS);
-
+  
   // play 1 hand
   game.play(1);
 
   // verify payout
-  EXPECT_EQ(view.getPlayerInSeat(button_seat)->getChips(), 100);
-  EXPECT_EQ(view.getPlayerInSeat(button_seat + 1)->getChips(), 95);
-  EXPECT_EQ(view.getPlayerInSeat(button_seat + 2)->getChips(), 105);
-
-  // EXPECT_EQ(button->getChips(), 100);
-  // EXPECT_EQ(sb->getChips(), 95);
-  // EXPECT_EQ(bb->getChips(), 105);
+  // winner is the big blind, 2 seats after the button
+  Player button, sb, bb;
+  EXPECT_EQ(view.getPlayerInSeat(button_seat, &button), 0);
+  EXPECT_EQ(view.getPlayerInSeat(button_seat + 1, &sb), 0);  // ehhhh
+  EXPECT_EQ(view.getPlayerInSeat(button_seat + 2, &bb), 0);
+  EXPECT_EQ(button.getChips(), 100);
+  EXPECT_EQ(sb.getChips(), 95);
+  EXPECT_EQ(bb.getChips(), 105);
 
   // verify actions
   std::vector<Action> actions = view.getRoundAction();

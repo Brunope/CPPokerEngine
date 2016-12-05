@@ -38,7 +38,7 @@ Game::Game(uint32_t small_blind, uint32_t big_blind) {
   button_pos_ = 0;
   updateView();
 
-  FILE_LOG(logDEBUG) << "Initialized game with blinds " << small_blind_ \
+  FILE_LOG(logDEBUG) << "Initialized game, blinds " << small_blind_ \
                      << "/" << big_blind_;
 }
 
@@ -58,7 +58,7 @@ Game::addPlayer(Actor *actor, std::string name, size_t chips) {
   updateView();
   eventManager_.firePlayerJoinEvent(name);
 
-  FILE_LOG(logDEBUG) << "Added player " << p.name_ << " at seat " << p.seat_ \
+  FILE_LOG(logDEBUG) << "Added " << p.name_ << " in seat " << p.seat_ \
                      << " with " << chips << " chips.";
 }
 

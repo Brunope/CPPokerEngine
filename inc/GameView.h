@@ -17,6 +17,12 @@
 // Bad solution - should keep this in Game but don't want the dependency
 enum STREET { PREFLOP, FLOP, TURN, RIVER, NUM_STREETS };
 
+// Since the Game state changes very very frequently, all methods
+// return copies over references/pointers to avoid use-after-free bugs.
+// This means you should get values from the view as late as possible
+// before use. In a single threaded application (current model), it's
+// safe to save values over a duration where the Game is guaranteed
+// to be unchanged (ie waiting for action from an Actor). 
 class GameView {
 public:
   // implicit constructors/destructor fine, all members saved to stack
@@ -26,18 +32,20 @@ public:
   size_t getButtonPosition() const;
   STREET getStreet() const;
   uint32_t getCurrentBet() const;
-  // returns null if there is no player in 'seat'
-  const Player *getPlayerInSeat(size_t seat) const;
-  // returns null if there is no player named 'name'
-  const Player *getPlayerByName(std::string name) const;
-  const std::map<size_t, Player> &getPlayers() const;
-  const std::map<size_t, Player *> &getPlayersInHand();
-  const std::vector<Card> &getBoard();
-  // return array of vectors of actions for the current hand, one vector
-  // per street, with NUM_STREETS vectors in the array
-  const std::vector<Action> *getHandAction() const;
+  // returns 0 if player found in seat and 'player' filled in, 1 otherwise
+  // does nothing if 'player' is null
+  int getPlayerInSeat(size_t seat, Player *player) const;
+  // returns 0 if player found named 'name' and 'player' filled in, 1 otherwise
+  // does nothing if 'player' is null
+  int getPlayerByName(std::string name, Player *player) const;
+  std::map<size_t, Player> getPlayers() const;
+  std::map<size_t, Player> getPlayersInHand() const;
+  std::vector<Card> getBoard() const;
+  // fill in hand_action with vectors of actions for the current hand, one
+  // vector per street, must hold NUM_STREETS vectors in the array
+  int getHandAction(std::vector<Action> *hand_action) const;
   // return the vector of actions for the current street
-  const std::vector<Action> &getRoundAction() const;
+  std::vector<Action> getRoundAction() const;
 
   // Rely on Game to set all these fields
   friend class Game;
@@ -53,8 +61,8 @@ private:
 
   size_t button_pos_;
   size_t acting_player_seat_;
-  uint32_t big_blind_;
   uint32_t small_blind_;
+  uint32_t big_blind_;
   STREET street_;
   uint32_t hand_num_;
   uint32_t pot_;
