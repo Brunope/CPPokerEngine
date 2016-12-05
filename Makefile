@@ -236,7 +236,7 @@ $(BIN_DIR)/eventmanager_unittest : $(eventmanager_unittest_o) \
 Game_o = $(OBJ_DIR)/Game.o
 $(Game_o) : $(Card_o) $(Hand_o) $(HandEvaluator_o) $(Deck_o) $(PLAYER_H) \
  $(Action_o) $(GameView_o) $(INC_DIR)/Actor.h $(INC_DIR)/Observer.h \
- $(EventManager_o) $(INC_DIR)/Game.h $(SRC_DIR)/Game.cc
+ $(EventManager_o) $(INC_DIR)/Game.h $(INC_DIR)/log.h $(SRC_DIR)/Game.cc
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(SRC_DIR)/Game.cc -o $@
 
 game_unittest_o = $(OBJ_DIR)/game_unittest.o

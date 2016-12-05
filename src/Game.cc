@@ -1,6 +1,8 @@
 #include <cassert>
 #include <cstddef>
+#include <cstdio>
 
+#include "log.h"
 #include "Player.h"
 #include "Actor.h"
 #include "Card.h"
@@ -26,12 +28,22 @@
  * - Each Actor * in 'actors_' is associated with the Player in 'players_'
  *   with the same key, ie actors_[0] is the Actor for players_[0].
  */
-Game::Game(uint32_t big_blind, uint32_t small_blind) {
-  big_blind_ = big_blind;
-  small_blind_ = small_blind;
-  button_pos_ = 0;
+Game::Game(uint32_t small_blind, uint32_t big_blind) {
+  FILELog::ReportingLevel() = logDEBUG3;
+  log_fd_ = fopen("game.log", "w");
+  Output2FILE::Stream() = log_fd_;
 
+  small_blind_ = small_blind;
+  big_blind_ = big_blind;
+  button_pos_ = 0;
   updateView();
+
+  FILE_LOG(logDEBUG) << "Initialized game with blinds " << small_blind_ \
+                     << "/" << big_blind_;
+}
+
+Game::~Game() {
+  fclose(log_fd_);
 }
 
 void
@@ -45,6 +57,9 @@ Game::addPlayer(Actor *actor, std::string name, size_t chips) {
 
   updateView();
   eventManager_.firePlayerJoinEvent(name);
+
+  FILE_LOG(logDEBUG) << "Added player " << p.name_ << " at seat " << p.seat_ \
+                     << " with " << chips << " chips.";
 }
 
 // Remove the Player at seat from players_ and live_players_, and remove
@@ -59,7 +74,12 @@ Game::removePlayer(const Player &player) {
   if (allin_players_.count(player.getSeat())) {
     allin_players_.erase(player.getSeat());
   }
+
   updateView();
+  eventManager_.firePlayerLeaveEvent(player.getName());
+
+  FILE_LOG(logDEBUG) << "Removed player " << player.name_ \
+                     << " from seat " << player.seat_;
 }
 
 void
@@ -80,19 +100,26 @@ Game::getView() const {
 void
 Game::updateView() {
   // TODO: make a million times faster
-  view_.big_blind_ = big_blind_;
   view_.small_blind_ = small_blind_;
+  view_.big_blind_ = big_blind_;
   view_.button_pos_ = button_pos_;
   view_.street_ = street_;
   view_.board_ = board_;
 
   view_.players_ = players_;
 
+  auto vit = view_.players_.begin();
+  // FILE_LOG(logDEBUG2) << "view: " << vit->second.name_ << ", " \
+  //                     << vit->second.chips_;
+  // FILE_LOG(logDEBUG2) << "view: " << pot_ << " in pot";
+
   // copy all the action over
   view_.hand_action_[PREFLOP] = hand_action_[PREFLOP];
   view_.hand_action_[FLOP] = hand_action_[FLOP];
   view_.hand_action_[TURN] = hand_action_[TURN];
   view_.hand_action_[RIVER] = hand_action_[RIVER];
+
+  FILE_LOG(logDEBUG3) << "Updated view";
 
   // copy live_players_ but point into view_.players_ instead
   // view_.live_players_ = live_players_;
@@ -113,6 +140,9 @@ void
 Game::play(int num_hands) {
   assert(players_.size() >= 2 && players_.size() <= MAX_NUM_PLAYERS);
   eventManager_.fireGameStartEvent(view_);
+  FILE_LOG(logDEBUG) << "playing " << num_hands << " hands";
+
+  hand_num_ = 0;
   while (!isGameOver() && hand_num_ != num_hands) {
     playHand();
   }
@@ -126,20 +156,23 @@ Game::playHand() {
   setupHand();
 
   eventManager_.fireHandStartEvent(hand_num_, view_);
-
+  FILE_LOG(logDEBUG) << "starting hand #" << hand_num_;
+  
   postBlinds();
   dealHoleCards();
 
   // handle the preflop betting round before the loop, since we don't
   // want to deal a street beforehand
-  if (!playRound()) {
+  if (playRound()) {
     // everyone but the winner folded, hand ends
+    endHand();
     return;
   }
   
   while (street_ < NUM_STREETS) {
     dealNextStreet();
-    if (!playRound()) {
+    if (playRound()) {
+      endHand();
       return;
     }
   }
@@ -154,6 +187,7 @@ Game::playHand() {
 
 void
 Game::setupHand() {
+  pot_ = 0;
   board_.clear();
   allin_players_.clear();
   live_players_.clear();
@@ -175,20 +209,16 @@ Game::setupHand() {
   hand_action_[TURN].clear();
   hand_action_[RIVER].clear();
 
-  // rotate button around the table
-  button_pos_ = (button_pos_ + 1) % players_.size();
-
-  // action starts to the left of the button, I guess left is positive
-  acting_player_seat_ = (button_pos_ + 1) % live_players_.size();
-
   deck_.shuffle();
   street_ = PREFLOP;
+  FILE_LOG(logDEBUG2) << "Set up hand, button in seat " << button_pos_;
 }
 
 void
 Game::endHand() {
   for (auto it = players_.begin(); it != players_.end();) {
     if (it->second.getChips() == 0) {
+      FILE_LOG(logDEBUG) << it->second.name_ << " has no more chips"; 
       removePlayer(it->second);
     } else {
       it++;
@@ -196,6 +226,9 @@ Game::endHand() {
   }
 
   hand_num_++;
+  button_pos_ = getNextPlayerSeat(button_pos_);
+
+  updateView();
 }
 
 void
@@ -203,15 +236,19 @@ Game::postBlinds() {
   // post small blind
   Action post_action;
   bool illegal_action;
+  acting_player_seat_ = getNextLivePlayerSeat(button_pos_);
   Player *player = live_players_[acting_player_seat_];
   if (player->getChips() >= small_blind_) {
     post_action = Action(POST, small_blind_, player);
   } else {
     post_action = Action(POST, player->getChips(), player);
+    FILE_LOG(logDEBUG1) << player->name_ << " doesn't have enough " \
+                        << "chips for small blind";
   }
 
-  size_t throwaway = 0;
-  illegal_action = handleAction(post_action, player, &throwaway);
+  FILE_LOG(logDEBUG1) << "Posting small blind for " << player->name_;
+
+  illegal_action = handleAction(post_action, player);
   assert(!illegal_action);
 
   // post big blind
@@ -221,7 +258,10 @@ Game::postBlinds() {
   } else {
     post_action = Action(POST, player->getChips(), player);
   }
-  illegal_action = handleAction(post_action, player, &throwaway);
+
+  FILE_LOG(logDEBUG1) << "Posting big blind for " << player->name_;
+  
+  illegal_action = handleAction(post_action, player);
   assert(!illegal_action);
 }
 
@@ -262,22 +302,34 @@ Game::playRound() {
   Player *current_player;
   Actor *current_actor;
   Action current_action;
-  size_t num_callers = 0;
-  while (num_callers < live_players_.size()) {
+  size_t num_callers_ = 1;
+  while (num_callers_ < live_players_.size()) {
+    
+    FILE_LOG(logDEBUG1) << num_callers_ << " callers so far, " \
+                        << live_players_.size() << " players";
+    
     current_player = live_players_[acting_player_seat_];
     if (current_player->isAllIn()) {
-      num_callers++;
+      num_callers_++;
+      acting_player_seat_ = getNextLivePlayerSeat(acting_player_seat_);
+      FILE_LOG(logDEBUG2) << "Skipping all in player " << current_player->name_;
       continue;
     }
     current_actor = actors_[acting_player_seat_];
+    
+    FILE_LOG(logDEBUG1) << "Asking " << current_player->name_ \
+                        << " for action";
+    
     current_action = current_actor->act(view_);
-    handleAction(current_action, current_player, &num_callers);
+    handleAction(current_action, current_player);
   }
 
   // uhhhahaha
   endRound();
 
   if (live_players_.size() == 1) {
+    // give chips to the winner, the only remaining entry in live_players_
+    potWin(pot_, live_players_.begin()->second);
     return true;
   }
   return false;
@@ -287,9 +339,15 @@ Game::playRound() {
 // chips in play for all players, not just live ones.
 void
 Game::setupRound() {
-  acting_player_seat_ = (button_pos_ + 1) % live_players_.size();
-  for (size_t seat = 0; seat < players_.size(); seat++) {
-    players_[seat].chips_in_play_ = 0;
+  // preflop, the blinds have already been posted before the round starts,
+  // so the current actor is already initialized to the player after the
+  // big blind.
+  if (street_ > PREFLOP) {
+    acting_player_seat_ = getNextLivePlayerSeat(button_pos_);
+  }
+  
+  for (auto it = live_players_.begin(); it != live_players_.end(); ++it) {
+    it->second->chips_in_play_ = 0;
   }
 }
 
@@ -302,21 +360,22 @@ Game::endRound() {
 // return true if action was originally illegal and changed to
 // a legal action (fold or check)
 bool
-Game::handleAction(Action action, Player *source, size_t *num_callers) {
+Game::handleAction(Action action, Player *source) {
   // ensure action is legal, and has proper source player
   updateLegalActions();
   action = Action(action.getType(), action.getAmount(), source);
   bool action_changed = forceLegalAction(&action, source);
 
+  FILE_LOG(logDEBUG1) << "Handling " << action.getType() << ", " \
+                      << action.getAmount() << " from " << source->name_;
+
   switch (action.getType()) {
   case FOLD:
     live_players_.erase(acting_player_seat_);
-    // elements shift over on erase, so if we didn't decrement
-    // here, the increment after the switch would skip an actor
-    acting_player_seat_ = (acting_player_seat_ - 1) % live_players_.size();
+    FILE_LOG(logDEBUG1) << source->name_ << " folded, no longer live";
     break;
   case CHECK:
-    (*num_callers)++;
+    (num_callers_)++;
     break;
   case RAISE:
     // can be greater if source player raises twice, second time all in
@@ -332,7 +391,7 @@ Game::handleAction(Action action, Player *source, size_t *num_callers) {
     current_raise_by_ = action.getAmount() - current_bet_;
     current_bet_ = action.getAmount();
     // new highest bet, everyone has to call again
-    *num_callers = 1;
+    num_callers_ = 1;
     // since the action's amount is the amount to raise to, if the
     // player already has chips in the pot (maybe because of a previous
     // raise), the additional chips to add to the pot is the difference
@@ -340,7 +399,7 @@ Game::handleAction(Action action, Player *source, size_t *num_callers) {
     playerBet(source, action.getAmount() - source->getChipsInPlay());
     break;
   case CALL:
-    (*num_callers)++;
+    (num_callers_)++;
     // confusing, but for calls, the amount is already the difference
     // in chips to call
     playerBet(source, action.getAmount());
@@ -353,7 +412,7 @@ Game::handleAction(Action action, Player *source, size_t *num_callers) {
     // to post the full amount.
     current_bet_ = big_blind_;
     current_raise_by_ = big_blind_;
-    *num_callers = 1;
+    num_callers_ = 1;
     playerBet(source, action.getAmount());
     break;
   default:
@@ -362,10 +421,33 @@ Game::handleAction(Action action, Player *source, size_t *num_callers) {
   }
 
   hand_action_[street_].push_back(action);
-  acting_player_seat_ = (acting_player_seat_ + 1) % live_players_.size();
+  acting_player_seat_ = getNextLivePlayerSeat(acting_player_seat_);
+  
+  updateView();
   eventManager_.firePlayerActionEvent(action);
 
+  FILE_LOG(logDEBUG2) << "Next actor in seat " << acting_player_seat_;
+
   return action_changed;
+}
+
+// return the next filled seat following 'seat'
+size_t
+Game::getNextPlayerSeat(size_t seat) {
+  size_t next_seat = (seat + 1) % MAX_NUM_PLAYERS;
+  while (!players_.count(next_seat)) {
+    next_seat = (next_seat + 1) % MAX_NUM_PLAYERS;
+  }
+  return next_seat;
+}
+
+size_t
+Game::getNextLivePlayerSeat(size_t seat) {
+  size_t next_seat = (seat + 1) % MAX_NUM_PLAYERS;
+  while (!live_players_.count(next_seat)) {
+    next_seat = (next_seat + 1) % MAX_NUM_PLAYERS;
+  }
+  return next_seat;
 }
 
 // add player chips to the pot
@@ -383,13 +465,20 @@ Game::playerBet(Player *player, uint32_t chips) {
   player->chips_in_play_ += chips;
   player_chips_in_pot_per_hand_[player->getSeat()] += chips;
   pot_ += chips;
+
+  updateView();
+  
+  FILE_LOG(logDEBUG1) << "Added " << chips << " chips to pot from "  \
+                      << player->name_;
 }
   
 // return true if action was modified
 bool
 Game::forceLegalAction(Action *action, Player *source) {
   assert(source);
+  FILE_LOG(logDEBUG2) << "Force legal action";
   if (!isLegalAction(*action)) {
+    FILE_LOG(logDEBUG1) << "Action " << action->getType() << " illegal";
     if (legal_actions_[CHECK]) {
       *action = Action(CHECK, 0, source);
     } else {
@@ -416,6 +505,9 @@ Game::isLegalAction(const Action &action) {
 void
 Game::updateLegalActions() {
   const Player &player = players_[acting_player_seat_];
+
+  FILE_LOG(logDEBUG2) << "Updating legal actions for " << player.name_;
+
   bool can_raise = current_bet_ - player.getChipsInPlay() < player.getChips();
 
   // A post must be the first or second action of the hand
@@ -426,37 +518,45 @@ Game::updateLegalActions() {
     legal_actions_[FOLD] = false;
     legal_actions_[CHECK] = false;
     legal_actions_[POST] = true;
-  }
 
-  Action &last_action = hand_action_[street_].back();
-  assert(last_action.getType() < NUM_ACTIONS);
-
-  if (last_action.getType() == CHECK) {
-    legal_actions_[RAISE] = can_raise;
-    legal_actions_[CALL] = false;
-    legal_actions_[FOLD] = false;
-    legal_actions_[CHECK] = true;
-    legal_actions_[POST] = false;
+    FILE_LOG(logDEBUG2) << "Allow POST";
   } else {
-    // action.getType() == RAISE, CALL, FOLD, or POST
-    legal_actions_[RAISE] = can_raise;
-    legal_actions_[CALL] = true;
-    legal_actions_[FOLD] = true;
-    legal_actions_[CHECK] = false;
-    legal_actions_[POST] = false;
-  }
+    Action &last_action = hand_action_[street_].back();
+    assert(last_action.getType() < NUM_ACTIONS);
 
-  // There's a special case where everyone simply calls the big blind,
-  // and the player in the big blind then has the option to check or
-  // raise but not call. The player in the big blind is two seats after
-  // the dealer.
-  if (current_bet_ == big_blind_ &&
-      acting_player_seat_ == (button_pos_ + 2) % players_.size()) {
-    legal_actions_[RAISE] = can_raise;  // think this is always true
-    legal_actions_[CALL] = false;
-    legal_actions_[FOLD] = false;
-    legal_actions_[CHECK] = true;
-    legal_actions_[POST] = false;
+    if (last_action.getType() == CHECK) {
+      legal_actions_[RAISE] = can_raise;
+      legal_actions_[CALL] = false;
+      legal_actions_[FOLD] = false;
+      legal_actions_[CHECK] = true;
+      legal_actions_[POST] = false;
+
+      FILE_LOG(logDEBUG2) << "Allow CHECK";
+    } else {
+      // action.getType() == RAISE, CALL, FOLD, or POST
+      legal_actions_[RAISE] = can_raise;
+      legal_actions_[CALL] = true;
+      legal_actions_[FOLD] = true;
+      legal_actions_[CHECK] = false;
+      legal_actions_[POST] = false;
+
+      FILE_LOG(logDEBUG2) << "Allow FOLD";
+    }
+
+    // There's a special case where everyone simply calls the big blind,
+    // and the player in the big blind then has the option to check or
+    // raise but not call. The player in the big blind is two seats after
+    // the dealer.
+    if (current_bet_ == big_blind_ && acting_player_seat_ ==
+        getNextLivePlayerSeat(getNextLivePlayerSeat(button_pos_))) {
+      legal_actions_[RAISE] = can_raise;  // think this is always true
+      legal_actions_[CALL] = false;
+      legal_actions_[FOLD] = false;
+      legal_actions_[CHECK] = true;
+      legal_actions_[POST] = false;
+
+      FILE_LOG(logDEBUG2) << "Allow big blind to CHECK option";
+    }
   }
 }
 
@@ -532,8 +632,15 @@ Game::showdownAllIn() {
 void 
 Game::showdownWin(const Hand &hand, uint32_t pot, Player *player) {
   eventManager_.fireShowdownEvent(hand, player->getName());
+  potWin(pot, player);
+}
+
+void
+Game::potWin(uint32_t pot, Player *player) {
   player->chips_ += pot;
-  eventManager_.firePotWinEvent(pot, player->getName());
+  updateView();
+  eventManager_.firePotWinEvent(pot, player->name_);
+  FILE_LOG(logDEBUG) << player->name_ << " won " << pot;
 }
 
 std::map<size_t, Hand>

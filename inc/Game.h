@@ -21,7 +21,8 @@
 
 class Game {
 public:
-  Game(uint32_t big_blind, uint32_t small_blind);
+  Game(uint32_t small_blind, uint32_t big_blind);
+  ~Game();
 
   // Caller retains ownership of 'actor'
   void addPlayer(Actor *actor, std::string name, size_t chips = STARTING_STACK);
@@ -49,7 +50,9 @@ private:
   bool playRound();
   void setupRound();
   void endRound();
-  bool handleAction(Action action, Player *source, size_t *num_callers);
+  bool handleAction(Action action, Player *source);
+  size_t getNextPlayerSeat(size_t seat);
+  size_t getNextLivePlayerSeat(size_t seat);
   bool isGameOver();
   void updateLegalActions();
   bool isLegalAction(const Action &action);
@@ -58,6 +61,7 @@ private:
   void showdownNoAllIn();
   void showdownAllIn();
   void showdownWin(const Hand &hand, uint32_t pot, Player *player);
+  void potWin(uint32_t pot, Player *player);
   void playerBet(Player *source, uint32_t chips);
   std::map<size_t, Hand> getPlayerHands();
 
@@ -83,6 +87,8 @@ private:
   uint32_t pot_;
   uint32_t current_bet_;
   uint32_t current_raise_by_;
+  size_t num_callers_;
+  FILE *log_fd_;
 };
 
 #endif  // GAME_H_

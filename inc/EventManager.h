@@ -26,6 +26,7 @@ public:
   
   void fireGameStartEvent(const GameView &game);
   void fireGameOverEvent(const GameView &game);
+  // todo: change params to const player &
   void firePlayerJoinEvent(std::string playerName);
   void firePlayerLeaveEvent(std::string playerName);
   void fireHandStartEvent(long handNum, const GameView &game);

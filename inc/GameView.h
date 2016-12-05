@@ -26,14 +26,18 @@ public:
   size_t getButtonPosition() const;
   STREET getStreet() const;
   uint32_t getCurrentBet() const;
+  // returns null if there is no player in 'seat'
   const Player *getPlayerInSeat(size_t seat) const;
+  // returns null if there is no player named 'name'
   const Player *getPlayerByName(std::string name) const;
-  const std::map<size_t, Player> &getPlayers();
+  const std::map<size_t, Player> &getPlayers() const;
   const std::map<size_t, Player *> &getPlayersInHand();
   const std::vector<Card> &getBoard();
-  // return array of vectors of actions, one vector per street
-  const std::vector<Action> *getHandAction();
-  const std::vector<Action> &getRoundAction();
+  // return array of vectors of actions for the current hand, one vector
+  // per street, with NUM_STREETS vectors in the array
+  const std::vector<Action> *getHandAction() const;
+  // return the vector of actions for the current street
+  const std::vector<Action> &getRoundAction() const;
 
   // Rely on Game to set all these fields
   friend class Game;

@@ -37,7 +37,6 @@ GameView::getCurrentBet() const {
 
 const Player *
 GameView::getPlayerInSeat(size_t seat) const {
-  assert(seat < getNumPlayers());
   if (players_.count(seat)) {
     return &players_.at(seat);
   }
@@ -55,7 +54,7 @@ GameView::getPlayerByName(std::string name) const {
 }
 
 const std::map<size_t, Player> &
-GameView::getPlayers() {
+GameView::getPlayers() const {
   return players_;
 }
 
@@ -70,12 +69,12 @@ GameView::getBoard() {
 }
 
 const std::vector<Action> *
-GameView::getHandAction() {
+GameView::getHandAction() const {
   return hand_action_;
 }
 
 // TODO: getRoundAction
 const std::vector<Action> &
-GameView::getRoundAction() {
+GameView::getRoundAction() const {
   return hand_action_[street_];
 }
