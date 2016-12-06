@@ -13,9 +13,7 @@
 #include "Player.h"
 #include "Action.h"
 #include "Actor.h"
-
-// Bad solution - should keep this in Game but don't want the dependency
-enum STREET { PREFLOP, FLOP, TURN, RIVER, NUM_STREETS };
+#include "GameDefs.h"
 
 // Since the Game state changes very very frequently, all methods
 // return copies over references/pointers to avoid use-after-free bugs.
@@ -32,17 +30,27 @@ public:
   size_t getButtonPosition() const;
   STREET getStreet() const;
   uint32_t getCurrentBet() const;
-  // returns 0 if player found in seat and 'player' filled in, 1 otherwise
-  // does nothing if 'player' is null
-  int getPlayerInSeat(size_t seat, Player *player) const;
-  // returns 0 if player found named 'name' and 'player' filled in, 1 otherwise
-  // does nothing if 'player' is null
+  
+  // fills in 'player' and returns 0 if 'player' is non-null and there
+  // exists a Player in seat 'seat', 1 otherwise
+  int getPlayerBySeat(size_t seat, Player *player) const;
+  // fills in 'player' and returns 0 if 'player' is non-null and there
+  // exists a Player named 'name'
   int getPlayerByName(std::string name, Player *player) const;
+  // returns the player sitting to the left of 'player' (left increases
+  // with seat number). Will return 'player' if there is only one Player
+  // left.
+  Player getNextPlayer(const Player &player) const;
+  // Returns the next live player to the left of 'player', or 'player'
+  // if there is only one live Player remaining.
+  // Unspecified behavior if not called during the middle of a hand.
+  Player getNextLivePlayer(const Player &player) const;
   std::map<size_t, Player> getPlayers() const;
   std::map<size_t, Player> getPlayersInHand() const;
   std::vector<Card> getBoard() const;
   // fill in hand_action with vectors of actions for the current hand, one
   // vector per street, must hold NUM_STREETS vectors in the array
+  // returns 0 on success, 1 otherwise
   int getHandAction(std::vector<Action> *hand_action) const;
   // return the vector of actions for the current street
   std::vector<Action> getRoundAction() const;

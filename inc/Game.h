@@ -16,9 +16,6 @@
 #include "Action.h"
 #include "GameView.h"
 
-#define STARTING_STACK 1000
-#define MAX_NUM_PLAYERS 9
-
 class Game {
 public:
   Game(uint32_t small_blind, uint32_t big_blind);

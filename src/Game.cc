@@ -105,13 +105,11 @@ Game::updateView() {
   view_.button_pos_ = button_pos_;
   view_.street_ = street_;
   view_.board_ = board_;
+  view_.current_bet_ = current_bet_;
+  view_.current_raise_by_ = current_raise_by_;
+  view_.acting_player_seat_ = acting_player_seat_;
 
   view_.players_ = players_;
-
-  auto vit = view_.players_.begin();
-  // FILE_LOG(logDEBUG2) << "view: " << vit->second.name_ << ", " \
-  //                     << vit->second.chips_;
-  // FILE_LOG(logDEBUG2) << "view: " << pot_ << " in pot";
 
   // copy all the action over
   view_.hand_action_[PREFLOP] = hand_action_[PREFLOP];
@@ -187,6 +185,8 @@ Game::playHand() {
 
 void
 Game::setupHand() {
+  assert(players_.size() > 1);
+
   pot_ = 0;
   board_.clear();
   allin_players_.clear();
@@ -236,7 +236,15 @@ Game::postBlinds() {
   // post small blind
   Action post_action;
   bool illegal_action;
-  acting_player_seat_ = getNextLivePlayerSeat(button_pos_);
+  // Special case with only two players - the button is the small
+  // blind, and the other player is the big blind. The button
+  // starts the action
+  if (live_players_.size() == 2) {
+    acting_player_seat_ = button_pos_;
+  } else {
+    acting_player_seat_ = getNextLivePlayerSeat(button_pos_);
+  }
+  
   Player *player = live_players_[acting_player_seat_];
   if (player->getChips() >= small_blind_) {
     post_action = Action(POST, small_blind_, player);
@@ -545,17 +553,16 @@ Game::updateLegalActions() {
 
     // There's a special case where everyone simply calls the big blind,
     // and the player in the big blind then has the option to check or
-    // raise but not call. The player in the big blind is two seats after
-    // the dealer.
-    if (current_bet_ == big_blind_ && acting_player_seat_ ==
-        getNextLivePlayerSeat(getNextLivePlayerSeat(button_pos_))) {
-      legal_actions_[RAISE] = can_raise;  // think this is always true
+    // raise but not call. Or maybe a player joins and opts to
+    // post their blind immediately instead of waiting.
+    if (current_bet_ == player.getChipsInPlay()) {
+      legal_actions_[RAISE] = can_raise;
       legal_actions_[CALL] = false;
       legal_actions_[FOLD] = false;
       legal_actions_[CHECK] = true;
       legal_actions_[POST] = false;
 
-      FILE_LOG(logDEBUG2) << "Allow big blind to CHECK option";
+      FILE_LOG(logDEBUG2) << "Allow CHECK";
     }
   }
 }

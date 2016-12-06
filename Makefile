@@ -1,4 +1,4 @@
-CXX = g++-6
+CXX = clang++
 
 SHELL = /bin/sh
 
@@ -168,7 +168,7 @@ $(BIN_DIR)/action_unittest : $(action_unittest_o) $(Action_o) $(Card_o) gtest_ma
 # GameView
 GameView_o = $(OBJ_DIR)/GameView.o
 $(GameView_o) : $(Card_o) $(Hand_o) $(PLAYER_H) $(Action_o) $(Actor_o) \
- $(INC_DIR)/GameView.h $(SRC_DIR)/GameView.cc
+ $(INC_DIR)/GameDefs.h $(INC_DIR)/GameView.h $(SRC_DIR)/GameView.cc
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(SRC_DIR)/GameView.cc -o $@
 
 gameview_unittest_o = $(OBJ_DIR)/gameview_unittest.o
@@ -236,7 +236,8 @@ $(BIN_DIR)/eventmanager_unittest : $(eventmanager_unittest_o) \
 Game_o = $(OBJ_DIR)/Game.o
 $(Game_o) : $(Card_o) $(Hand_o) $(HandEvaluator_o) $(Deck_o) $(PLAYER_H) \
  $(Action_o) $(GameView_o) $(INC_DIR)/Actor.h $(INC_DIR)/Observer.h \
- $(EventManager_o) $(INC_DIR)/Game.h $(INC_DIR)/log.h $(SRC_DIR)/Game.cc
+ $(EventManager_o) $(INC_DIR)/GameDefs.h $(INC_DIR)/Game.h $(INC_DIR)/log.h \
+ $(SRC_DIR)/Game.cc
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(SRC_DIR)/Game.cc -o $@
 
 game_unittest_o = $(OBJ_DIR)/game_unittest.o

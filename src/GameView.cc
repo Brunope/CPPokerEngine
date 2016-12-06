@@ -35,7 +35,7 @@ GameView::getCurrentBet() const {
 }
 
 int
-GameView::getPlayerInSeat(size_t seat, Player *player) const {
+GameView::getPlayerBySeat(size_t seat, Player *player) const {
   // todo
   if (players_.count(seat) && player != nullptr) {
     *player = players_.at(seat);
@@ -55,6 +55,30 @@ GameView::getPlayerByName(std::string name, Player *player) const {
     }
   }
   return 1;
+}
+
+Player
+GameView::getNextPlayer(const Player &player) const {
+  size_t seat = (player.getSeat() + 1) % MAX_NUM_PLAYERS;
+  while (seat != player.getSeat()) {
+    if (players_.count(seat)) {
+      return players_.at(seat);
+    }
+    seat = (seat + 1) % MAX_NUM_PLAYERS;
+  }
+  return player;
+}
+
+Player
+GameView::getNextLivePlayer(const Player &player) const {
+  size_t seat = (player.getSeat() + 1) % MAX_NUM_PLAYERS;
+  while (seat != player.getSeat()) {
+    if (live_players_.count(seat)) {
+      return *(live_players_.at(seat));
+    }
+    seat = (seat + 1) % MAX_NUM_PLAYERS;
+  }
+  return player;
 }
 
 std::map<size_t, Player>
