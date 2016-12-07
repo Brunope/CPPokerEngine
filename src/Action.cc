@@ -1,5 +1,8 @@
 #include <cinttypes>
 #include <cassert>
+#include <iostream>
+#include <string>
+#include <sstream>
 
 #include "Debug.h"
 #include "Action.h"
@@ -28,4 +31,38 @@ Action::getAmount() const {
 void
 Action::checkRep() {
   assert(type_ < NUM_ACTIONS);
+}
+
+std::string
+Action::str() const {
+  std::stringstream ss;
+  ss << source_->getName() << " ";
+  switch (type_) {
+  case RAISE:
+    ss << "raises " << amount_;
+    break;
+  case CALL:
+    ss << "calls " << amount_;
+    break;
+  case FOLD:
+    ss << "folds";
+    break;
+  case CHECK:
+    ss << "checks";
+    break;
+  case POST:
+    ss << "posts " << amount_;
+    break;
+  default:
+    assert(type_ < NUM_ACTIONS);
+    break;
+  }
+
+  return ss.str();
+}
+
+std::ostream &
+operator<<(std::ostream &os, const Action &action) {
+  os << action.str();
+  return os;
 }

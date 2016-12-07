@@ -310,7 +310,12 @@ Game::playRound() {
   Player *current_player;
   Actor *current_actor;
   Action current_action;
-  size_t num_callers_ = 1;
+
+  // preflop, blinds set num_callers_
+  if (street_ > PREFLOP) {
+    num_callers_ = 0;
+  }
+  
   while (num_callers_ < live_players_.size()) {
     
     FILE_LOG(logDEBUG1) << num_callers_ << " callers so far, " \
@@ -362,7 +367,7 @@ Game::setupRound() {
 // Don't actually need to do anything here I don't think
 void
 Game::endRound() {
-
+  FILE_LOG(logDEBUG1) << "End round";
 }  
 
 // return true if action was originally illegal and changed to
@@ -374,8 +379,8 @@ Game::handleAction(Action action, Player *source) {
   action = Action(action.getType(), action.getAmount(), source);
   bool action_changed = forceLegalAction(&action, source);
 
-  FILE_LOG(logDEBUG1) << "Handling " << action.getType() << ", " \
-                      << action.getAmount() << " from " << source->name_;
+  FILE_LOG(logDEBUG1) << "Handling: " << action;
+  FILE_LOG(logDEBUG3) << num_callers_ << "callers";
 
   switch (action.getType()) {
   case FOLD:
@@ -383,7 +388,7 @@ Game::handleAction(Action action, Player *source) {
     FILE_LOG(logDEBUG1) << source->name_ << " folded, no longer live";
     break;
   case CHECK:
-    (num_callers_)++;
+    num_callers_++;
     break;
   case RAISE:
     // can be greater if source player raises twice, second time all in
@@ -407,7 +412,7 @@ Game::handleAction(Action action, Player *source) {
     playerBet(source, action.getAmount() - source->getChipsInPlay());
     break;
   case CALL:
-    (num_callers_)++;
+    num_callers_++;
     // confusing, but for calls, the amount is already the difference
     // in chips to call
     playerBet(source, action.getAmount());
@@ -435,6 +440,7 @@ Game::handleAction(Action action, Player *source) {
   eventManager_.firePlayerActionEvent(action);
 
   FILE_LOG(logDEBUG2) << "Next actor in seat " << acting_player_seat_;
+  FILE_LOG(logDEBUG3) << num_callers_ << " callers";
 
   return action_changed;
 }
@@ -476,8 +482,7 @@ Game::playerBet(Player *player, uint32_t chips) {
 
   updateView();
   
-  FILE_LOG(logDEBUG1) << "Added " << chips << " chips to pot from "  \
-                      << player->name_;
+  FILE_LOG(logDEBUG1) << "pot: " << pot_;
 }
   
 // return true if action was modified
@@ -486,7 +491,7 @@ Game::forceLegalAction(Action *action, Player *source) {
   assert(source);
   FILE_LOG(logDEBUG2) << "Force legal action";
   if (!isLegalAction(*action)) {
-    FILE_LOG(logDEBUG1) << "Action " << action->getType() << " illegal";
+    FILE_LOG(logDEBUG1) << *action << " is illegal";
     if (legal_actions_[CHECK]) {
       *action = Action(CHECK, 0, source);
     } else {
@@ -500,13 +505,7 @@ Game::forceLegalAction(Action *action, Player *source) {
 
 bool
 Game::isLegalAction(const Action &action) {
-  if (action.getType() == RAISE) {
-    return (legal_actions_[RAISE] &&
-            (action.getAmount() - action.getSource()->getChipsInPlay()) >
-            action.getSource()->getChips());
-  } else {
-    return legal_actions_[action.getType()];
-  }
+  return legal_actions_[action.getType()];
 }
 
 // must have acting_player_seat_ pointing to the player about to act
@@ -517,6 +516,8 @@ Game::updateLegalActions() {
   FILE_LOG(logDEBUG2) << "Updating legal actions for " << player.name_;
 
   bool can_raise = current_bet_ - player.getChipsInPlay() < player.getChips();
+
+  FILE_LOG(logDEBUG3) << "Can raise: " << can_raise;
 
   // A post must be the first or second action of the hand
   // for now ignore the case where a blind puts player all in
@@ -529,10 +530,7 @@ Game::updateLegalActions() {
 
     FILE_LOG(logDEBUG2) << "Allow POST";
   } else {
-    Action &last_action = hand_action_[street_].back();
-    assert(last_action.getType() < NUM_ACTIONS);
-
-    if (last_action.getType() == CHECK) {
+    if (hand_action_[street_].empty()) {
       legal_actions_[RAISE] = can_raise;
       legal_actions_[CALL] = false;
       legal_actions_[FOLD] = false;
@@ -541,28 +539,41 @@ Game::updateLegalActions() {
 
       FILE_LOG(logDEBUG2) << "Allow CHECK";
     } else {
-      // action.getType() == RAISE, CALL, FOLD, or POST
-      legal_actions_[RAISE] = can_raise;
-      legal_actions_[CALL] = true;
-      legal_actions_[FOLD] = true;
-      legal_actions_[CHECK] = false;
-      legal_actions_[POST] = false;
+      Action &last_action = hand_action_[street_].back();
+      assert(last_action.getType() < NUM_ACTIONS);
 
-      FILE_LOG(logDEBUG2) << "Allow FOLD";
-    }
+      if (last_action.getType() == CHECK) {
+        legal_actions_[RAISE] = can_raise;
+        legal_actions_[CALL] = false;
+        legal_actions_[FOLD] = false;
+        legal_actions_[CHECK] = true;
+        legal_actions_[POST] = false;
 
-    // There's a special case where everyone simply calls the big blind,
-    // and the player in the big blind then has the option to check or
-    // raise but not call. Or maybe a player joins and opts to
-    // post their blind immediately instead of waiting.
-    if (current_bet_ == player.getChipsInPlay()) {
-      legal_actions_[RAISE] = can_raise;
-      legal_actions_[CALL] = false;
-      legal_actions_[FOLD] = false;
-      legal_actions_[CHECK] = true;
-      legal_actions_[POST] = false;
+        FILE_LOG(logDEBUG2) << "Allow CHECK";
+      } else {
+        // action.getType() == RAISE, CALL, FOLD, or POST
+        legal_actions_[RAISE] = can_raise;
+        legal_actions_[CALL] = true;
+        legal_actions_[FOLD] = true;
+        legal_actions_[CHECK] = false;
+        legal_actions_[POST] = false;
 
-      FILE_LOG(logDEBUG2) << "Allow CHECK";
+        FILE_LOG(logDEBUG2) << "Allow FOLD";
+      }
+
+      // There's a special case where everyone simply calls the big blind,
+      // and the player in the big blind then has the option to check or
+      // raise but not call. Or maybe a player joins and opts to
+      // post their blind immediately instead of waiting.
+      if (current_bet_ == player.getChipsInPlay()) {
+        legal_actions_[RAISE] = can_raise;
+        legal_actions_[CALL] = false;
+        legal_actions_[FOLD] = false;
+        legal_actions_[CHECK] = true;
+        legal_actions_[POST] = false;
+
+        FILE_LOG(logDEBUG2) << "Allow CHECK";
+      }
     }
   }
 }

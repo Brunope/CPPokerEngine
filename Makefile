@@ -153,11 +153,11 @@ PLAYER_H = $(INC_DIR)/Player.h
 
 # Action
 Action_o = $(OBJ_DIR)/Action.o
-$(Action_o) : $(INC_DIR)/Action.h $(SRC_DIR)/Action.cc
+$(Action_o) : $(PLAYER_H) $(INC_DIR)/Action.h $(SRC_DIR)/Action.cc
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(SRC_DIR)/Action.cc -o $@
 
 action_unittest_o = $(OBJ_DIR)/action_unittest.o
-$(action_unittest_o) : $(Action_o) $(PLAYER_H) $(Card_o) \
+$(action_unittest_o) : $(Action_o) $(Card_o) \
  $(TEST_DIR)/action_unittest.cc $(GTEST_HEADERS)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) \
  -c $(TEST_DIR)/action_unittest.cc -o $@
