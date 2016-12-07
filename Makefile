@@ -52,7 +52,7 @@ GTEST_HEADERS = $(GTEST_DIR)/include/gtest/*.h \
 all : setup $(OBJS) $(TESTS) $(BIN_DIR)/test_suite
 
 setup :
-	if [ `wc -c < resources/HandRanks.dat` != "129951336" ]; then wget "https://github.com/Brunope/CPPokerEngine/blob/master/resources/HandRanks.dat?raw=true" -O resources/HandRanks.dat; fi
+	if [ `shasum resources/HandRanks.dat | cut -d ' ' -f 1` != "f8467e36f470c9beea98c47d661c9b2c4a13e577" ]; then wget "https://github.com/Brunope/CPPokerEngine/blob/master/resources/HandRanks.dat?raw=true" -O resources/HandRanks.dat; fi  # forgive the really long line it's more portable unlike 'mkdir -p'
 	mkdir -p bin obj
 
 test : $(BIN_DIR)/test_suite
