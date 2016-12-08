@@ -30,7 +30,7 @@
  *   with the same key, ie actors_[0] is the Actor for players_[0].
  */
 Game::Game(uint32_t small_blind, uint32_t big_blind) {
-  FILELog::ReportingLevel() = logDEBUG3;
+  FILELog::ReportingLevel() = logDEBUG1;
   log_fd_ = fopen("game.log", "w");
   Output2FILE::Stream() = log_fd_;
 
@@ -302,14 +302,14 @@ Game::dealNextStreet() {
     board_.push_back(deck_.dealNextCard());
     board_.push_back(deck_.dealNextCard());
 
-    FILE_LOG(logDEBUG) << "flop: " << board_[0] << board_[1] << board_[2];
+    FILE_LOG(logDEBUG1) << "flop: " << board_[0] << board_[1] << board_[2];
   } else {
     board_.push_back(deck_.dealNextCard());
 
     if (street_ == TURN) {
-      FILE_LOG(logDEBUG) << "turn: " << board_[3];
+      FILE_LOG(logDEBUG1) << "turn: " << board_[3];
     } else {
-      FILE_LOG(logDEBUG) << "river: " << board_[4];
+      FILE_LOG(logDEBUG1) << "river: " << board_[4];
     }
   }
 
@@ -346,7 +346,7 @@ Game::playRound() {
     }
     current_actor = actors_[acting_player_seat_];
     
-    FILE_LOG(logDEBUG1) << "Asking " << current_player->name_ \
+    FILE_LOG(logDEBUG2) << "Asking " << current_player->name_ \
                         << " for action";
     
     current_action = current_actor->act(view_);
@@ -390,7 +390,7 @@ Game::setupRound() {
 // Don't actually need to do anything here I don't think
 void
 Game::endRound() {
-  FILE_LOG(logDEBUG1) << "End round " << street_;
+  FILE_LOG(logDEBUG2) << "End round " << street_;
 }  
 
 // return true if action was originally illegal and changed to
@@ -402,12 +402,12 @@ Game::handleAction(Action action, Player *source) {
   action = Action(action.getType(), action.getAmount(), source);
   bool action_changed = forceLegalAction(&action, source);
 
-  FILE_LOG(logDEBUG) << action;
+  FILE_LOG(logDEBUG1) << action;
 
   switch (action.getType()) {
   case FOLD:
     live_players_.erase(acting_player_seat_);
-    FILE_LOG(logDEBUG1) << source->name_ << " folded, no longer live";
+    FILE_LOG(logDEBUG2) << source->name_ << " folded, no longer live";
     break;
   case CHECK:
     num_callers_++;
@@ -517,7 +517,7 @@ Game::playerBet(Player *player, uint32_t chips) {
 bool
 Game::forceLegalAction(Action *action, Player *source) {
   assert(source);
-  FILE_LOG(logDEBUG2) << "Force legal action";
+  FILE_LOG(logDEBUG3) << "Force legal action";
   if (!isLegalAction(*action)) {
     FILE_LOG(logDEBUG1) << *action << " is illegal";
     if (legal_actions_[CHECK]) {
@@ -541,7 +541,7 @@ void
 Game::updateLegalActions() {
   const Player &player = players_[acting_player_seat_];
 
-  FILE_LOG(logDEBUG2) << "Updating legal actions for " << player.name_;
+  FILE_LOG(logDEBUG3) << "Updating legal actions for " << player.name_;
 
   bool can_raise = current_bet_ - player.getChipsInPlay() < player.getChips();
 
@@ -556,7 +556,7 @@ Game::updateLegalActions() {
     legal_actions_[CHECK] = false;
     legal_actions_[POST] = true;
 
-    FILE_LOG(logDEBUG2) << "Allow POST";
+    FILE_LOG(logDEBUG3) << "Allow POST";
   } else {
     if (history_.hand_action_[street_].empty()) {
       legal_actions_[RAISE] = can_raise;
@@ -565,7 +565,7 @@ Game::updateLegalActions() {
       legal_actions_[CHECK] = true;
       legal_actions_[POST] = false;
 
-      FILE_LOG(logDEBUG2) << "Allow CHECK";
+      FILE_LOG(logDEBUG3) << "Allow CHECK";
     } else {
       Action &last_action = history_.hand_action_[street_].back();
       assert(last_action.getType() < NUM_ACTIONS);
@@ -577,7 +577,7 @@ Game::updateLegalActions() {
         legal_actions_[CHECK] = true;
         legal_actions_[POST] = false;
 
-        FILE_LOG(logDEBUG2) << "Allow CHECK";
+        FILE_LOG(logDEBUG3) << "Allow CHECK";
       } else {
         // action.getType() == RAISE, CALL, FOLD, or POST
         legal_actions_[RAISE] = can_raise;
@@ -586,7 +586,7 @@ Game::updateLegalActions() {
         legal_actions_[CHECK] = false;
         legal_actions_[POST] = false;
 
-        FILE_LOG(logDEBUG2) << "Allow FOLD";
+        FILE_LOG(logDEBUG3) << "Allow FOLD";
       }
 
       // There's a special case where everyone simply calls the big blind,
@@ -600,7 +600,7 @@ Game::updateLegalActions() {
         legal_actions_[CHECK] = true;
         legal_actions_[POST] = false;
 
-        FILE_LOG(logDEBUG2) << "Allow CHECK";
+        FILE_LOG(logDEBUG3) << "Allow CHECK";
       }
     }
   }
@@ -691,7 +691,7 @@ Game::potWin(uint32_t pot, Player *player) {
   history_.winner_ = *player;
   updateView();
   eventManager_.firePotWinEvent(pot, player->name_);
-  FILE_LOG(logDEBUG) << player->name_ << " wins " << pot;
+  FILE_LOG(logDEBUG1) << player->name_ << " wins " << pot;
 }
 
 std::map<size_t, Hand>
