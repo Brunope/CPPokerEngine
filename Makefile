@@ -29,8 +29,8 @@ CXXFLAGS += -g -std=c++11 -I $(INC_DIR)
 
 # Object files
 OBJS = $(addprefix $(OBJ_DIR)/, Card.o Deck.o Hand.o HandEvaluator.o \
- GameView.o Action.o EventManager.o SimpleActor.o LoggerEventListener.o \
- Game.o)
+ GameView.o Action.o HandHistory.o EventManager.o SimpleActor.o \
+ LoggerEventListener.o Game.o)
 TEST_OBJS = $(addprefix $(OBJ_DIR)/, card_unittest.o deck_unittest.o \
  hand_unittest.o handevaluator_unittest.o action_unittest.o \
  gameview_unittest.o loggereventlistener_unittest.o \
@@ -60,7 +60,7 @@ test : $(BIN_DIR)/test_suite
 
 clean :
 	rm -rf $(TESTS) $(OBJS) $(TEST_OBJS) gtest.a gtest_main.a \
- gtest-all.o gtest_main.o $(BIN_DIR)/test_suite *.dSYM .DS_STORE
+ gtest-all.o gtest_main.o $(BIN_DIR)/test_suite $(BIN_DIR)/*.dSYM .DS_STORE
 
 $(BIN_DIR)/test_suite : gtest_main.o gtest_main.a $(TEST_OBJS) $(OBJS)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lpthread $^ -o $@
@@ -165,9 +165,16 @@ $(action_unittest_o) : $(Action_o) $(Card_o) \
 $(BIN_DIR)/action_unittest : $(action_unittest_o) $(Action_o) $(Card_o) gtest_main.a
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lpthread $^ -o $@
 
+# HandHistory
+HandHistory_o = $(OBJ_DIR)/HandHistory.o
+$(HandHistory_o) : $(PLAYER_H) $(Action_o) $(Hand_o) $(INC_DIR)/GameDefs.h \
+ $(INC_DIR)/HandHistory.h $(SRC_DIR)/HandHistory.cc
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(SRC_DIR)/HandHistory.cc -o $@
+
 # GameView
 GameView_o = $(OBJ_DIR)/GameView.o
 $(GameView_o) : $(Card_o) $(Hand_o) $(PLAYER_H) $(Action_o) $(Actor_o) \
+ $(HandHistory_o) \
  $(INC_DIR)/GameDefs.h $(INC_DIR)/GameView.h $(SRC_DIR)/GameView.cc
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(SRC_DIR)/GameView.cc -o $@
 
@@ -176,7 +183,8 @@ $(gameview_unittest_o) : $(GameView_o) $(GTEST_HEADERS) \
  $(TEST_DIR)/gameview_unittest.cc
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(TEST_DIR)/gameview_unittest.cc -o $@
 
-$(BIN_DIR)/gameview_unittest : $(GameView_o) $(Card_o) $(gameview_unittest_o) gtest_main.a
+$(BIN_DIR)/gameview_unittest : $(GameView_o) $(Card_o) $(HandHistory_o) \
+ $(gameview_unittest_o) gtest_main.a
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lpthread $^ -o $@
 
 # SimpleActor
@@ -210,14 +218,15 @@ $(loggereventlistener_unittest_o) : $(LoggerEventListener_o) \
 
 $(BIN_DIR)/loggereventlistener_unittest : $(loggereventlistener_unittest_o) \
  $(LoggerEventListener_o) $(Action_o) $(Hand_o) $(HandEvaluator_o) \
- $(Card_o) gtest_main.a
+ $(Card_o) $(HandHistory_o) $(GameView_o) gtest_main.a
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lpthread $^ -o $@
 
 # EventManager - its tests need LoggerEventListener (or a mock class)
 # to verify anything.
 EventManager_o = $(OBJ_DIR)/EventManager.o
 $(EventManager_o) : $(INC_DIR)/EventManager.h $(SRC_DIR)/EventManager.cc \
- $(INC_DIR)/Action.h $(PLAYER_H) $(Hand_o) $(INC_DIR)/IEventListener.h
+ $(INC_DIR)/Action.h $(INC_DIR)/GameView.h $(INC_DIR)/HandHistory.h \
+ $(PLAYER_H) $(Hand_o) $(INC_DIR)/IEventListener.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(SRC_DIR)/EventManager.cc -o $@
 
 eventmanager_unittest_o = $(OBJ_DIR)/eventmanager_unittest.o
@@ -229,15 +238,15 @@ $(eventmanager_unittest_o) : $(EventManager_o) $(LoggerEventListener_o) \
 
 $(BIN_DIR)/eventmanager_unittest : $(eventmanager_unittest_o) \
  $(EventManager_o) $(Action_o) $(Card_o) $(Hand_o) $(HandEvaluator_o) \
- $(GameView_o) $(LoggerEventListener_o) gtest_main.a
+ $(HandHistory_o) $(GameView_o) $(LoggerEventListener_o) gtest_main.a
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lpthread $^ -o $@
 
 # Game
 Game_o = $(OBJ_DIR)/Game.o
 $(Game_o) : $(Card_o) $(Hand_o) $(HandEvaluator_o) $(Deck_o) $(PLAYER_H) \
  $(Action_o) $(GameView_o) $(INC_DIR)/Actor.h $(INC_DIR)/Observer.h \
- $(EventManager_o) $(INC_DIR)/GameDefs.h $(INC_DIR)/Game.h $(INC_DIR)/log.h \
- $(SRC_DIR)/Game.cc
+ $(EventManager_o) $(HandHistory_o) $(INC_DIR)/GameDefs.h \
+ $(INC_DIR)/Game.h $(INC_DIR)/log.h $(SRC_DIR)/Game.cc
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(SRC_DIR)/Game.cc -o $@
 
 game_unittest_o = $(OBJ_DIR)/game_unittest.o
@@ -246,6 +255,6 @@ $(game_unittest_o) : $(Game_o) $(INC_DIR)/TestActor.h $(GTEST_HEADERS) \
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(TEST_DIR)/game_unittest.cc -o $@
 
 $(BIN_DIR)/game_unittest : $(Card_o) $(Hand_o) $(HandEvaluator_o) $(Deck_o) \
- $(Action_o) $(GameView_o) $(EventManager_o) $(Game_o) $(SimpleActor_o) \
- $(Actor_o) $(game_unittest_o) $(TestActor_o) gtest_main.a
+ $(Action_o) $(GameView_o) $(EventManager_o) $(HandHistory_o) $(Game_o) \
+ $(SimpleActor_o) $(Actor_o) $(game_unittest_o) $(TestActor_o) gtest_main.a
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lpthread $^ -o $@
