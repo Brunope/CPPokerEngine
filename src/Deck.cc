@@ -1,5 +1,6 @@
 #include <cinttypes>
 #include <cstdlib>
+#include <ctime>
 #include <vector>
 #include <iostream>
 
@@ -8,6 +9,7 @@
 
 
 Deck::Deck() {
+  srand(time(nullptr));
   constructDeck();
   shuffle();
 }
