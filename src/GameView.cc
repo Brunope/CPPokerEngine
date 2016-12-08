@@ -101,19 +101,7 @@ GameView::getBoard() const {
   return board_;
 }
 
-int
-GameView::getHandAction(std::vector<Action> *hand_action) const {
-  if (hand_action != nullptr) {
-    hand_action[PREFLOP] = hand_action_[PREFLOP];
-    hand_action[FLOP] = hand_action_[FLOP];
-    hand_action[TURN] = hand_action_[TURN];
-    hand_action[RIVER] = hand_action_[RIVER];
-    return 0;
-  }
-  return 1;
-}
-
-std::vector<Action>
-GameView::getRoundAction() const {
-  return hand_action_[street_];
+const HandHistory &
+GameView::getHandHistory() const {
+  return history_;
 }

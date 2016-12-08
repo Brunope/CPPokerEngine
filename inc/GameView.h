@@ -14,6 +14,7 @@
 #include "Action.h"
 #include "Actor.h"
 #include "GameDefs.h"
+#include "HandHistory.h"
 
 // Since the Game state changes very very frequently, all methods
 // return copies over references/pointers to avoid use-after-free bugs.
@@ -48,12 +49,9 @@ public:
   std::map<size_t, Player> getPlayers() const;
   std::map<size_t, Player> getPlayersInHand() const;
   std::vector<Card> getBoard() const;
-  // fill in hand_action with vectors of actions for the current hand, one
-  // vector per street, must hold NUM_STREETS vectors in the array
-  // returns 0 on success, 1 otherwise
-  int getHandAction(std::vector<Action> *hand_action) const;
-  // return the vector of actions for the current street
-  std::vector<Action> getRoundAction() const;
+  // Return hand history of current hand. Cleared as soon as a new hand
+  // is started
+  const HandHistory& getHandHistory() const;
 
   // Rely on Game to set all these fields
   friend class Game;
@@ -66,6 +64,7 @@ private:
   
   std::vector<Card> board_;
   std::vector<Action> hand_action_[NUM_STREETS];
+  HandHistory history_;
 
   size_t button_pos_;
   size_t acting_player_seat_;

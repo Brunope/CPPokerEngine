@@ -2,6 +2,8 @@
 #include "Action.h"
 #include "Game.h"
 #include "SimpleActor.h"
+#include "GameView.h"
+#include "HandHistory.h"
 #include "TestActor.h"
 #include "gtest/gtest.h"
 
@@ -57,6 +59,7 @@ TEST(GameTest, TwoPlayerBlinds) {
   game.addPlayer(&actor1, "p1", 100);
   actor0.queueAction(Action(FOLD));
   actor1.queueAction(Action(FOLD));
+
   game.play(1);
 
   Player button, big_blind;
@@ -64,8 +67,14 @@ TEST(GameTest, TwoPlayerBlinds) {
   big_blind = view.getNextPlayer(button);
 
   // button should have folded small blind to the big blind who wins 15
-  std::vector<Action> hand_action[NUM_ACTIONS];
-  EXPECT_EQ(view.getHandAction(hand_action), 0);
+  const HandHistory hh = view.getHandHistory();
+  // const std::vector<Action> *hand_action =
+  //   view.getHandHistory().getHandAction();
+  const std::vector<Action> *hand_action = hh.getHandAction();
+  const std::vector<Action> round_action =
+    view.getHandHistory().getRoundAction(PREFLOP);
+
+  EXPECT_EQ(round_action.size(), 3);
   EXPECT_EQ(hand_action[PREFLOP].size(), 3);
   Action sbpost = hand_action[PREFLOP][0];
   Action bbpost = hand_action[PREFLOP][1];
@@ -108,7 +117,7 @@ TEST(GameTest, ThreePlayerInstaFold) {
   EXPECT_EQ(bb.getChips(), 105);
 
   // verify actions
-  std::vector<Action> actions = view.getRoundAction();
+  std::vector<Action> actions = view.getHandHistory().getRoundAction(PREFLOP);
   EXPECT_EQ(actions.size(), 4);
   EXPECT_EQ(actions[0].getType(), POST);
   EXPECT_EQ(actions[1].getType(), POST);
@@ -155,8 +164,13 @@ TEST(GameTest, FourPlayerFlopFold) {
   EXPECT_EQ(p2.getChips(), 140);
   EXPECT_EQ(p3.getChips(), 80);
 
-  std::vector<Action> hand_action[NUM_ACTIONS];
-  EXPECT_EQ(view.getHandAction(hand_action), 0);
+  // can't do this, WHY?
+  // const std::vector<Action> *hand_action =
+  //   view.getHandHistory().getHandAction();
+  
+  HandHistory hh  = view.getHandHistory();
+  const std::vector<Action> *hand_action = hh.getHandAction();
+  
   
   EXPECT_EQ(hand_action[PREFLOP].size(), 6);
   EXPECT_EQ(hand_action[PREFLOP][0].getType(), POST);
@@ -175,4 +189,71 @@ TEST(GameTest, FourPlayerFlopFold) {
   EXPECT_EQ(hand_action[FLOP][1].getAmount(), 30);
   EXPECT_EQ(hand_action[FLOP][2].getType(), FOLD);
   EXPECT_EQ(hand_action[FLOP][2].getType(), FOLD);
+}
+
+TEST(GameTest, BigBlindRaiseOptionCheckToShowdown) {
+  Game game(5, 10);
+  const GameView &view = game.getView();
+  TestActor a0, a1, a2, a3;
+  game.addPlayer(&a0, "p0", 100);
+  game.addPlayer(&a1, "p1", 100);
+  game.addPlayer(&a2, "p2", 100);
+  game.addPlayer(&a3, "p3", 100);
+
+  Player p0, p1, p2, p3;
+  // need p0 in seat 0
+  EXPECT_EQ(view.getPlayerBySeat(0, &p0), 0);
+  EXPECT_EQ(p0.getName(), "p0");
+  
+  // a1 post sb, a2 post bb
+  a3.queueAction(Action(CALL, 10));
+  a0.queueAction(Action(CALL, 10));
+  a1.queueAction(Action(CALL, 5));
+  a2.queueAction(Action(RAISE, 20));
+  // everyone has to call 10 more to see a flop
+  a3.queueAction(Action(CALL, 10));
+  a0.queueAction(Action(CALL, 10));
+  a1.queueAction(Action(CALL, 10));
+  // deal flop, now everyone check starting with a1
+  a1.queueAction(Action(CHECK));
+  a2.queueAction(Action(CHECK));
+  a3.queueAction(Action(CHECK));
+  a0.queueAction(Action(CHECK));
+  // deal turn
+  a1.queueAction(Action(CHECK));
+  a2.queueAction(Action(CHECK));
+  a3.queueAction(Action(CHECK));
+  a0.queueAction(Action(CHECK));
+  // river
+  a1.queueAction(Action(CHECK));
+  a2.queueAction(Action(CHECK));
+  a3.queueAction(Action(CHECK));
+  a0.queueAction(Action(CHECK));
+  // showdown! check who wins
+
+  game.play(1);
+
+  const HandHistory& history = view.getHandHistory();
+  Player winner = history.getWinner();
+  ASSERT_TRUE(winner.getSeat() <= 3);
+
+  std::map<size_t, Player> players = view.getPlayers();
+  for (auto it = players.begin(); it != players.end(); ++it) {
+    if (it->second.getSeat() == winner.getSeat()) {
+      EXPECT_EQ(it->second.getName(), winner.getName());
+      // should have won pot of 80, net +60
+      EXPECT_EQ(it->second.getChips(), 160);
+      EXPECT_EQ(winner.getChips(), 160);
+    } else {
+      EXPECT_EQ(it->second.getChips(), 80);
+    }
+  }
+
+  const std::vector<Action> *actions = history.getHandAction();
+  EXPECT_EQ(actions[PREFLOP].size(), 9);
+}
+
+// Raise - reraise - call on every street up to showdown
+TEST(GameTest, BetRaiseCallToShowdown) {
+
 }

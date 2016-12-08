@@ -9,6 +9,7 @@
 #include "Hand.h"
 #include "Observer.h"
 #include "Action.h"
+#include "HandHistory.h"
 #include "Game.h"
 
 
@@ -35,7 +36,7 @@ Game::Game(uint32_t small_blind, uint32_t big_blind) {
 
   small_blind_ = small_blind;
   big_blind_ = big_blind;
-  button_pos_ = 0;
+  button_seat_ = 0;
   updateView();
 
   FILE_LOG(logDEBUG) << "Initialized game, blinds " << small_blind_ \
@@ -102,7 +103,7 @@ Game::updateView() {
   // TODO: make a million times faster
   view_.small_blind_ = small_blind_;
   view_.big_blind_ = big_blind_;
-  view_.button_pos_ = button_pos_;
+  view_.button_pos_ = button_seat_;  // todo
   view_.street_ = street_;
   view_.board_ = board_;
   view_.current_bet_ = current_bet_;
@@ -111,11 +112,8 @@ Game::updateView() {
 
   view_.players_ = players_;
 
-  // copy all the action over
-  view_.hand_action_[PREFLOP] = hand_action_[PREFLOP];
-  view_.hand_action_[FLOP] = hand_action_[FLOP];
-  view_.hand_action_[TURN] = hand_action_[TURN];
-  view_.hand_action_[RIVER] = hand_action_[RIVER];
+  // copy hand history
+  view_.history_ = history_;
 
   FILE_LOG(logDEBUG3) << "Updated view";
 
@@ -166,8 +164,11 @@ Game::playHand() {
     endHand();
     return;
   }
-  
-  while (street_ < NUM_STREETS) {
+
+  // dealNextStreet increments street_ then deals the new street,
+  // to keep street_ consistent with the current state of the board.
+  // So, we don't want to deal another street after we reach the river
+  while (street_ < RIVER) {
     dealNextStreet();
     if (playRound()) {
       endHand();
@@ -204,14 +205,28 @@ Game::setupHand() {
   }
 
   // clear hand_action_ from previous hand
-  hand_action_[PREFLOP].clear();
-  hand_action_[FLOP].clear();
-  hand_action_[TURN].clear();
-  hand_action_[RIVER].clear();
+  history_.hand_action_[PREFLOP].clear();
+  history_.hand_action_[FLOP].clear();
+  history_.hand_action_[TURN].clear();
+  history_.hand_action_[RIVER].clear();
+  history_.known_hands_.clear();
 
   deck_.shuffle();
   street_ = PREFLOP;
-  FILE_LOG(logDEBUG2) << "Set up hand, button in seat " << button_pos_;
+
+  // Set small blind and big blind seats. Special case with only two players,
+  // the button is actually the small blind and the other player is the big
+  // blind. Otherwise, the small blind is directly to the left of the dealer,
+  // and the big blind is to the left of the small blind.
+  if (live_players_.size() == 2) {
+    sb_seat_ = button_seat_;
+    bb_seat_ = getNextLivePlayerSeat(sb_seat_);
+  } else {
+    sb_seat_ = getNextLivePlayerSeat(button_seat_);
+    bb_seat_ = getNextLivePlayerSeat(sb_seat_);
+  }
+  
+  FILE_LOG(logDEBUG2) << "Set up hand, button in seat " << button_seat_;
 }
 
 void
@@ -226,7 +241,7 @@ Game::endHand() {
   }
 
   hand_num_++;
-  button_pos_ = getNextPlayerSeat(button_pos_);
+  button_seat_ = getNextPlayerSeat(button_seat_);
 
   updateView();
 }
@@ -236,15 +251,8 @@ Game::postBlinds() {
   // post small blind
   Action post_action;
   bool illegal_action;
-  // Special case with only two players - the button is the small
-  // blind, and the other player is the big blind. The button
-  // starts the action
-  if (live_players_.size() == 2) {
-    acting_player_seat_ = button_pos_;
-  } else {
-    acting_player_seat_ = getNextLivePlayerSeat(button_pos_);
-  }
-  
+
+  acting_player_seat_ = sb_seat_;
   Player *player = live_players_[acting_player_seat_];
   if (player->getChips() >= small_blind_) {
     post_action = Action(POST, small_blind_, player);
@@ -253,8 +261,6 @@ Game::postBlinds() {
     FILE_LOG(logDEBUG1) << player->name_ << " doesn't have enough " \
                         << "chips for small blind";
   }
-
-  FILE_LOG(logDEBUG1) << "Posting small blind for " << player->name_;
 
   illegal_action = handleAction(post_action, player);
   assert(!illegal_action);
@@ -267,8 +273,6 @@ Game::postBlinds() {
     post_action = Action(POST, player->getChips(), player);
   }
 
-  FILE_LOG(logDEBUG1) << "Posting big blind for " << player->name_;
-  
   illegal_action = handleAction(post_action, player);
   assert(!illegal_action);
 }
@@ -278,23 +282,35 @@ Game::dealHoleCards() {
   assert(street_ == PREFLOP);
   for (size_t seat = 0; seat < players_.size(); seat++) {
     players_[seat].hc_ = deck_.dealHoleCards();
+    FILE_LOG(logDEBUG1) << "Dealt " << players_[seat].name_ << " " \
+                        << players_[seat].hc_.first \
+                        << players_[seat].hc_.second;
   }
   eventManager_.fireDealEvent(PREFLOP);
 }
 
 // increment street_, then deal that street
+// requires street < RIVER
 void
 Game::dealNextStreet() {
-  assert(street_ <= RIVER);
+  assert(street_ < RIVER);
 
   street_ = static_cast<STREET>(static_cast<int>(street_) + 1);  // sorry
   // deal 3 cards for the flop, 1 card everywhere else
-  if (street_ == PREFLOP) {
+  if (street_ == FLOP) {
     board_.push_back(deck_.dealNextCard());
     board_.push_back(deck_.dealNextCard());
     board_.push_back(deck_.dealNextCard());
+
+    FILE_LOG(logDEBUG) << "flop: " << board_[0] << board_[1] << board_[2];
   } else {
     board_.push_back(deck_.dealNextCard());
+
+    if (street_ == TURN) {
+      FILE_LOG(logDEBUG) << "turn: " << board_[3];
+    } else {
+      FILE_LOG(logDEBUG) << "river: " << board_[4];
+    }
   }
 
   eventManager_.fireDealEvent(street_);
@@ -316,9 +332,9 @@ Game::playRound() {
     num_callers_ = 0;
   }
   
-  while (num_callers_ < live_players_.size()) {
+  while (num_callers_ < live_players_.size() && live_players_.size() > 1) {
     
-    FILE_LOG(logDEBUG1) << num_callers_ << " callers so far, " \
+    FILE_LOG(logDEBUG2) << num_callers_ << " callers so far, " \
                         << live_players_.size() << " players";
     
     current_player = live_players_[acting_player_seat_];
@@ -356,10 +372,17 @@ Game::setupRound() {
   // so the current actor is already initialized to the player after the
   // big blind.
   if (street_ > PREFLOP) {
-    acting_player_seat_ = getNextLivePlayerSeat(button_pos_);
+    acting_player_seat_ = getNextLivePlayerSeat(button_seat_);
   }
-  
+
+  // Clear chips in play
+  // Important! Don't clobber chips in play for the small blind and
+  // big blind players preflop, for the same reason as before
   for (auto it = live_players_.begin(); it != live_players_.end(); ++it) {
+    if (street_ == PREFLOP &&
+        (it->first == sb_seat_ || it->first == bb_seat_)) {
+      continue;
+    }
     it->second->chips_in_play_ = 0;
   }
 }
@@ -367,7 +390,7 @@ Game::setupRound() {
 // Don't actually need to do anything here I don't think
 void
 Game::endRound() {
-  FILE_LOG(logDEBUG1) << "End round";
+  FILE_LOG(logDEBUG1) << "End round " << street_;
 }  
 
 // return true if action was originally illegal and changed to
@@ -379,8 +402,7 @@ Game::handleAction(Action action, Player *source) {
   action = Action(action.getType(), action.getAmount(), source);
   bool action_changed = forceLegalAction(&action, source);
 
-  FILE_LOG(logDEBUG1) << "Handling: " << action;
-  FILE_LOG(logDEBUG3) << num_callers_ << "callers";
+  FILE_LOG(logDEBUG) << action;
 
   switch (action.getType()) {
   case FOLD:
@@ -405,6 +427,8 @@ Game::handleAction(Action action, Player *source) {
     current_bet_ = action.getAmount();
     // new highest bet, everyone has to call again
     num_callers_ = 1;
+    FILE_LOG(logDEBUG3) << source->name_ << " has " << source->chips_in_play_ \
+                        << " chips in play";
     // since the action's amount is the amount to raise to, if the
     // player already has chips in the pot (maybe because of a previous
     // raise), the additional chips to add to the pot is the difference
@@ -425,7 +449,7 @@ Game::handleAction(Action action, Player *source) {
     // to post the full amount.
     current_bet_ = big_blind_;
     current_raise_by_ = big_blind_;
-    num_callers_ = 1;
+    num_callers_ = 0;
     playerBet(source, action.getAmount());
     break;
   default:
@@ -433,7 +457,7 @@ Game::handleAction(Action action, Player *source) {
     break;
   }
 
-  hand_action_[street_].push_back(action);
+  history_.hand_action_[street_].push_back(action);
   acting_player_seat_ = getNextLivePlayerSeat(acting_player_seat_);
   
   updateView();
@@ -469,6 +493,8 @@ void
 Game::playerBet(Player *player, uint32_t chips) {
   assert(player->chips_ >= chips);  // reaaaally don't wanna underflow
   assert(live_players_[acting_player_seat_] == player);
+
+  FILE_LOG(logDEBUG2) << player->name_ << " bet " << chips;
   
   // player all in
   if (player->chips_ == chips) {
@@ -483,6 +509,8 @@ Game::playerBet(Player *player, uint32_t chips) {
   updateView();
   
   FILE_LOG(logDEBUG1) << "pot: " << pot_;
+  FILE_LOG(logDEBUG3) << player->name_ << " has " << player->chips_in_play_ \
+                      << " chips in play";
 }
   
 // return true if action was modified
@@ -521,7 +549,7 @@ Game::updateLegalActions() {
 
   // A post must be the first or second action of the hand
   // for now ignore the case where a blind puts player all in
-  if (street_ == PREFLOP && hand_action_[PREFLOP].size() < 2) {
+  if (street_ == PREFLOP && history_.hand_action_[PREFLOP].size() < 2) {
     legal_actions_[RAISE] = false;
     legal_actions_[CALL] = false;
     legal_actions_[FOLD] = false;
@@ -530,7 +558,7 @@ Game::updateLegalActions() {
 
     FILE_LOG(logDEBUG2) << "Allow POST";
   } else {
-    if (hand_action_[street_].empty()) {
+    if (history_.hand_action_[street_].empty()) {
       legal_actions_[RAISE] = can_raise;
       legal_actions_[CALL] = false;
       legal_actions_[FOLD] = false;
@@ -539,7 +567,7 @@ Game::updateLegalActions() {
 
       FILE_LOG(logDEBUG2) << "Allow CHECK";
     } else {
-      Action &last_action = hand_action_[street_].back();
+      Action &last_action = history_.hand_action_[street_].back();
       assert(last_action.getType() < NUM_ACTIONS);
 
       if (last_action.getType() == CHECK) {
@@ -580,7 +608,6 @@ Game::updateLegalActions() {
 
 void
 Game::showdown() {
-  // find player with the best hand
   if (allin_players_.empty()) {
     showdownNoAllIn();
   } else {
@@ -593,13 +620,17 @@ void
 Game::showdownNoAllIn() {
   std::map<size_t, Hand> live_player_hands = getPlayerHands();
   size_t winning_player_seat = getBestHand(live_player_hands);
+
+  history_.winner_ = players_[winning_player_seat];
+  history_.known_hands_ = live_player_hands;
+  
   showdownWin(live_player_hands[winning_player_seat],
               pot_, &players_[winning_player_seat]);
 }
 
 // Enforce that a player can only win up to what they have contributed to the
 // pot from each other player. Pay out to the best hands until the entire
-// pot is used up.
+// pot is used up. For now, this doesn't properly update the hand history, TODO
 void
 Game::showdownAllIn() {
   // map seat numbers to winnings for this hand
@@ -650,15 +681,17 @@ Game::showdownAllIn() {
 void 
 Game::showdownWin(const Hand &hand, uint32_t pot, Player *player) {
   eventManager_.fireShowdownEvent(hand, player->getName());
+  FILE_LOG(logDEBUG1) << player->name_ << " wins with " << hand.str();
   potWin(pot, player);
 }
 
 void
 Game::potWin(uint32_t pot, Player *player) {
   player->chips_ += pot;
+  history_.winner_ = *player;
   updateView();
   eventManager_.firePotWinEvent(pot, player->name_);
-  FILE_LOG(logDEBUG) << player->name_ << " won " << pot;
+  FILE_LOG(logDEBUG) << player->name_ << " wins " << pot;
 }
 
 std::map<size_t, Hand>

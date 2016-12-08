@@ -14,6 +14,7 @@
 #include "IEventListener.h"
 #include "EventManager.h"
 #include "Action.h"
+#include "HandHistory.h"
 #include "GameView.h"
 
 class Game {
@@ -72,10 +73,13 @@ private:
   std::map<size_t, uint32_t> player_chips_in_pot_per_hand_;
   std::vector<Card> board_;
   std::vector<Action> hand_action_[NUM_STREETS];
+  HandHistory history_;
   bool legal_actions_[NUM_ACTIONS];
   Deck deck_;
   EventManager eventManager_;
-  size_t button_pos_;
+  size_t button_seat_;
+  size_t sb_seat_;
+  size_t bb_seat_;
   size_t acting_player_seat_;
   uint32_t big_blind_;
   uint32_t small_blind_;
