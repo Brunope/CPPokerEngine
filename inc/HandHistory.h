@@ -24,6 +24,7 @@ public:
   const Player getWinner() const;
   
   friend class Game;
+  friend class HandHistoryTest_CopyAssignment_Test;
 private:
   std::vector<Action> hand_action_[NUM_STREETS];
   std::map<size_t, Hand> known_hands_;

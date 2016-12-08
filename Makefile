@@ -34,13 +34,14 @@ OBJS = $(addprefix $(OBJ_DIR)/, Card.o Deck.o Hand.o HandEvaluator.o \
 TEST_OBJS = $(addprefix $(OBJ_DIR)/, card_unittest.o deck_unittest.o \
  hand_unittest.o handevaluator_unittest.o action_unittest.o \
  gameview_unittest.o loggereventlistener_unittest.o \
- eventmanager_unittest.o game_unittest.o TestActor.o)
+ eventmanager_unittest.o handhistory_unittest.o game_unittest.o TestActor.o)
 
 # All tests produced by this Makefile.  Remember to add new tests you
 # created to the list.
 TESTS = $(addprefix $(BIN_DIR)/, card_unittest deck_unittest hand_unittest \
  handevaluator_unittest action_unittest gameview_unittest \
- loggereventlistener_unittest eventmanager_unittest game_unittest)
+ loggereventlistener_unittest eventmanager_unittest handhistory_unittest \
+ game_unittest)
 
 # All Google Test headers.  Usually you shouldn't change this
 # definition.
@@ -170,6 +171,15 @@ HandHistory_o = $(OBJ_DIR)/HandHistory.o
 $(HandHistory_o) : $(PLAYER_H) $(Action_o) $(Hand_o) $(INC_DIR)/GameDefs.h \
  $(INC_DIR)/HandHistory.h $(SRC_DIR)/HandHistory.cc
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(SRC_DIR)/HandHistory.cc -o $@
+
+handhistory_unittest_o = $(OBJ_DIR)/handhistory_unittest.o
+$(handhistory_unittest_o) : $(HandHistory_o) $(GTEST_HEADERS)
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) \
+ -c $(TEST_DIR)/handhistory_unittest.cc -o $@
+
+$(BIN_DIR)/handhistory_unittest : $(HandHistory_o) $(Action_o) $(Hand_o) \
+ $(Card_o) $(HandEvaluator_o) gtest_main.a
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lpthread $^ -o $@
 
 # GameView
 GameView_o = $(OBJ_DIR)/GameView.o
