@@ -1,6 +1,6 @@
 #include <cinttypes>
 #include <cstdlib>
-#include <ctime>
+#include <cassert>
 #include <vector>
 #include <iostream>
 
@@ -9,24 +9,39 @@
 
 
 Deck::Deck() {
-  srand(time(nullptr));
+  std::srand(std::time(0));
   constructDeck();
   shuffle();
 }
 
-// Uses the modern Fisher-Yates shuffle
+// Fisher-Yates shuffle
 void
-Deck::shuffle() {
-  constructDeck();
+Deck::fyShuffle() {
   for (size_t i = deck_.size() - 1; i > 0; i--) {
-    size_t j = rand() % (i + 1);
+    size_t j = std::rand() % (i + 1);
     Card temp = deck_[i];
     deck_[i] = deck_[j];
     deck_[j] = temp;
   }
 }
+
+void
+Deck::shuffle() {
+  constructDeck();
+  fyShuffle();
+}
+
+void
+Deck::shuffle7() {
+  constructDeck();
+  for (size_t i = 0; i < 7; i++) {
+    fyShuffle();
+  }
+}
+
 const Card
 Deck::dealNextCard() {
+  assert(!deck_.empty());
   Card c = deck_.back();
   deck_.pop_back();
   return c;

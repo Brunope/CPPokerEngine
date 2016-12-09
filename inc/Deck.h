@@ -13,6 +13,9 @@ public:
   // Return all dealt Cards to the Deck and shuffle them.
   void shuffle();
 
+  // Return all dealt Cards to the Deck and shuffle 7 times for good luck
+  void shuffle7();
+
   // Return the top Card, and remove it from the Deck.
   // Deck must contain at least 1 Card.
   const Card dealNextCard();
@@ -26,9 +29,10 @@ public:
   uint8_t cardsLeft() const;
 
 private:
-  std::vector<Card> deck_;
-
+  void fyShuffle();
   void constructDeck();
+
+  std::vector<Card> deck_;
 };
 
 #endif  // DECK_H_
