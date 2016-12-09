@@ -236,8 +236,9 @@ Game::endHand() {
     FILE_LOG(logDEBUG3) << "it == end: " << (it == players_.end());
     if (it->second.getChips() == 0) {
       FILE_LOG(logDEBUG) << it->second.name_ << " has no more chips";
-      const Player &to_remove = it->second;
-      ++it;
+      // remove from players_ here, cause we need the next iterator
+      Player to_remove = it->second;
+      it = players_.erase(it);
       removePlayer(to_remove);
     } else {
       ++it;
