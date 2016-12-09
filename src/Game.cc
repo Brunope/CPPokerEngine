@@ -79,8 +79,8 @@ Game::removePlayer(const Player &player) {
   updateView();
   eventManager_.firePlayerLeaveEvent(player.getName());
 
-  FILE_LOG(logDEBUG) << "Removed player " << player.name_ \
-                     << " from seat " << player.seat_;
+  FILE_LOG(logDEBUG) << "Removed " << player.name_ << " from seat " \
+                     << player.seat_;
 }
 
 void
@@ -232,11 +232,15 @@ Game::setupHand() {
 void
 Game::endHand() {
   for (auto it = players_.begin(); it != players_.end();) {
+    FILE_LOG(logDEBUG3) << "it == begin: " << (it == players_.begin());
+    FILE_LOG(logDEBUG3) << "it == end: " << (it == players_.end());
     if (it->second.getChips() == 0) {
-      FILE_LOG(logDEBUG) << it->second.name_ << " has no more chips"; 
-      removePlayer(it->second);
+      FILE_LOG(logDEBUG) << it->second.name_ << " has no more chips";
+      const Player &to_remove = it->second;
+      ++it;
+      removePlayer(to_remove);
     } else {
-      it++;
+      ++it;
     }
   }
 

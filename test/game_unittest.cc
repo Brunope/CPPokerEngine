@@ -329,3 +329,38 @@ TEST(GameTest, FivePlayerBetRaiseCallToShowdown) {
   EXPECT_EQ(actions[TURN].size(), 7);
   EXPECT_EQ(actions[RIVER].size(), 6);
 }
+
+TEST(GameTest, TwoPlayerSingleAllIn) {
+  Game game(5, 10);
+  const GameView &view = game.getView();
+  TestActor a0, a1;
+  game.addPlayer(&a0, "p0", 100);
+  game.addPlayer(&a1, "p1", 100);
+
+  a0.queueAction(Action(RAISE, 100));
+  a1.queueAction(Action(CALL, 90));
+
+  // should play only one hand, remove the losing player at end of hand
+  game.play();
+
+  Player p0, p1;
+  
+  const HandHistory& hh = view.getHandHistory();
+  Player winner = hh.getWinner();
+  EXPECT_EQ(winner.getChips(), 200);
+  if (winner.getSeat() == 0) {
+    EXPECT_EQ(view.getPlayerBySeat(0, &p0), 0);
+    // p1 shouldn't exist in game anymore
+    EXPECT_EQ(view.getPlayerBySeat(1, &p1), 1);
+    EXPECT_EQ(p0.getName(), winner.getName());
+    EXPECT_EQ(p0.getChips(), 200);
+  } else {
+    EXPECT_EQ(winner.getSeat(), 1);
+    // p0 shouldn't exist in game anymore
+    EXPECT_EQ(view.getPlayerBySeat(0, &p0), 1);
+    EXPECT_EQ(view.getPlayerBySeat(1, &p1), 0);
+    EXPECT_EQ(p1.getName(), winner.getName());
+    EXPECT_EQ(p1.getChips(), 200);
+  }
+}
+  
