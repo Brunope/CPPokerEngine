@@ -211,7 +211,7 @@ Game::setupHand() {
   history_.hand_action_[RIVER].clear();
   history_.known_hands_.clear();
 
-  deck_.shuffle();
+  deck_.shuffle7();  // extra extra random namsayin
   street_ = PREFLOP;
 
   // Set small blind and big blind seats. Special case with only two players,
@@ -353,7 +353,7 @@ Game::playRound() {
     handleAction(current_action, current_player);
   }
 
-  // uhhhahaha
+  // Reset current_bet_ and current_raise_by_
   endRound();
 
   if (live_players_.size() == 1) {
@@ -387,9 +387,11 @@ Game::setupRound() {
   }
 }
 
-// Don't actually need to do anything here I don't think
+// Reset current_bet_ and current_raise_by_
 void
 Game::endRound() {
+  current_bet_ = 0;
+  current_raise_by_ = 0;
   FILE_LOG(logDEBUG2) << "End round " << street_;
 }  
 

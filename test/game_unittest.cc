@@ -254,6 +254,78 @@ TEST(GameTest, BigBlindRaiseOptionCheckToShowdown) {
 }
 
 // Raise - reraise - call on every street up to showdown
-TEST(GameTest, BetRaiseCallToShowdown) {
+TEST(GameTest, FivePlayerBetRaiseCallToShowdown) {
+  Game game(5, 10);
+  const GameView &view = game.getView();
+  TestActor a0, a1, a2, a3, a4;
+  game.addPlayer(&a0, "p0", 1000);  // lil extra chips
+  game.addPlayer(&a1, "p1", 1000);
+  game.addPlayer(&a2, "p2", 1000);
+  game.addPlayer(&a3, "p3", 1000);
+  game.addPlayer(&a4, "p4", 1000);
 
+  // preflop
+  a3.queueAction(Action(RAISE, 30));
+  a4.queueAction(Action(CALL, 30));
+  a0.queueAction(Action(CALL, 30));
+  a1.queueAction(Action(CALL, 25));
+  a2.queueAction(Action(RAISE, 60));
+  a3.queueAction(Action(CALL, 30));
+  a4.queueAction(Action(CALL, 30));
+  a0.queueAction(Action(CALL, 30));
+  a1.queueAction(Action(CALL, 30));
+
+  // flop
+  a1.queueAction(Action(CHECK));
+  a2.queueAction(Action(CHECK));
+  a3.queueAction(Action(CHECK));
+  a4.queueAction(Action(CHECK));
+  a0.queueAction(Action(RAISE, 25));
+  a1.queueAction(Action(CALL, 25));
+  a2.queueAction(Action(RAISE, 75));
+  a3.queueAction(Action(CALL, 75));
+  a4.queueAction(Action(CALL, 75));
+  a0.queueAction(Action(CALL, 50));
+  a1.queueAction(Action(CALL, 50));
+
+  // turn
+  a1.queueAction(Action(CHECK));
+  a2.queueAction(Action(RAISE, 100));
+  a3.queueAction(Action(RAISE, 300));
+  a4.queueAction(Action(CALL, 300));
+  a0.queueAction(Action(CALL, 300));
+  a1.queueAction(Action(CALL, 300));
+  a2.queueAction(Action(CALL, 200));
+
+  // river
+  a1.queueAction(Action(RAISE, 200));
+  a2.queueAction(Action(RAISE, 500));
+  a3.queueAction(Action(CALL, 500));
+  a4.queueAction(Action(CALL, 500));
+  a0.queueAction(Action(CALL, 500));
+  a1.queueAction(Action(CALL, 300));
+
+  game.play(1);
+  
+  const HandHistory& history = view.getHandHistory();
+  Player winner = history.getWinner();
+  ASSERT_TRUE(winner.getSeat() <= 4);
+
+  std::map<size_t, Player> players = view.getPlayers();
+  for (auto it = players.begin(); it != players.end(); ++it) {
+    if (it->second.getSeat() == winner.getSeat()) {
+      EXPECT_EQ(it->second.getName(), winner.getName());
+      // should have won pot of 4675, net +3740
+      EXPECT_EQ(it->second.getChips(), 4740);
+      EXPECT_EQ(winner.getChips(), 4740);
+    } else {
+      EXPECT_EQ(it->second.getChips(), 65);
+    }
+  }
+
+  const std::vector<Action> *actions = history.getHandAction();
+  EXPECT_EQ(actions[PREFLOP].size(), 11);
+  EXPECT_EQ(actions[FLOP].size(), 11);
+  EXPECT_EQ(actions[TURN].size(), 7);
+  EXPECT_EQ(actions[RIVER].size(), 6);
 }
