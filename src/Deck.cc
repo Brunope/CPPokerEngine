@@ -9,7 +9,7 @@
 
 
 Deck::Deck() {
-  std::srand(std::time(0));
+  srand(time(0));
   constructDeck();
   shuffle();
 }
