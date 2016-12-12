@@ -472,4 +472,58 @@ TEST(GameTest, ThreePlayerSingleAllInSidePot) {
     }
   }
 }
+
+// Everyone all in for different amounts
+TEST(GameTest, EveryoneAllIn) {
+  Game game(5, 10);
+  const GameView &view = game.getView();
+  TestActor a0, a1, a2, a3, a4, a5, a6, a7, a8;
   
+  game.addPlayer(&a0, "p0", 100);
+  game.addPlayer(&a1, "p1", 200);
+  game.addPlayer(&a2, "p2", 300);
+  game.addPlayer(&a3, "p3", 400);
+  game.addPlayer(&a4, "p4", 500);
+  game.addPlayer(&a5, "p5", 600);
+  game.addPlayer(&a6, "p6", 700);
+  game.addPlayer(&a7, "p7", 800);
+  game.addPlayer(&a8, "p8", 900);
+
+  a3.queueAction(Action(RAISE, 400));
+  a4.queueAction(Action(RAISE, 500));
+  a5.queueAction(Action(RAISE, 600));
+  a6.queueAction(Action(RAISE, 700));
+  a7.queueAction(Action(RAISE, 800));
+  a8.queueAction(Action(RAISE, 900));
+  a0.queueAction(Action(CALL, 100));
+  a1.queueAction(Action(CALL, 195));
+  a2.queueAction(Action(CALL, 290));
+
+  game.play(1);
+  
+  const HandHistory &hh = view.getHandHistory();
+  std::map<size_t, uint32_t> pwin = hh.getPlayerWinnings();
+  std::map<size_t, uint32_t> pchips;
+  pchips[0] = 100;
+  pchips[1] = 200;
+  pchips[2] = 300;
+  pchips[3] = 400;
+  pchips[4] = 500;
+  pchips[5] = 600;
+  pchips[6] = 700;
+  pchips[7] = 800;
+  pchips[8] = 900;
+
+  // simply make sure no player won more than they could have contributed,
+  // and that the total winnings sum to the pot - don't wanna
+  // reimplement the same alg
+  uint32_t pot = 100 + 200 + 300 + 400 + 500 + 600 + 700 + 800 + 900;
+  for (auto it = pwin.begin(); it != pwin.end(); ++it) {
+    // can win at most what they contribute from each player after them
+    // (with more chips), and what each player before them has
+    // lil bit of gauss' sum
+    ASSERT_TRUE(it->second <= pchips[it->first] * (9 - it->first) +
+                100 * (it->first * (it->first + 1) / 2));
+    pot -= it->second;
+  }
+}

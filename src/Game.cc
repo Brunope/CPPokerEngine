@@ -428,7 +428,7 @@ Game::handleAction(Action action, Player *source) {
     break;
   case RAISE:
     // can be greater if source player raises twice, second time all in
-    if (action.getAmount() > source->getChips()) {
+    if (action.getAmount() >= source->getChips()) {
       assert(action.getAmount() ==
              source->getChips() + source->getChipsInPlay());
       allin_players_[acting_player_seat_] = source;
