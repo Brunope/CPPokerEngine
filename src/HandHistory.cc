@@ -12,6 +12,7 @@ HandHistory::HandHistory(const HandHistory &other) {
   hand_action_[TURN] = other.hand_action_[TURN];
   hand_action_[RIVER] = other.hand_action_[RIVER];
   known_hands_ = other.known_hands_;
+  player_winnings_ = other.player_winnings_;
   winner_ = other.winner_;
 }
 
@@ -25,6 +26,7 @@ HandHistory::operator=(const HandHistory &other) {
   hand_action_[TURN] = other.hand_action_[TURN];
   hand_action_[RIVER] = other.hand_action_[RIVER];
   known_hands_ = other.known_hands_;
+  player_winnings_ = other.player_winnings_;
   winner_ = other.winner_;
   return *this;
 }
@@ -43,6 +45,16 @@ HandHistory::getHandAction() const {
 const std::map<size_t, Hand>
 HandHistory::getKnownHands() const {
   return known_hands_;
+}
+
+bool
+HandHistory::multipleWinners() const {
+  return player_winnings_.size() > 1;
+}
+
+const std::map<size_t, uint32_t>
+HandHistory::getPlayerWinnings() const {
+  return player_winnings_;
 }
 
 const Player

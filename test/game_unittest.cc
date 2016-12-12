@@ -41,7 +41,7 @@ TEST(GameTest, AddRemovePlayer) {
   EXPECT_EQ(view.getPlayerByName("actor2", &player2), 0);
   EXPECT_EQ(player2.getName(), "actor2");
 
-  game.removePlayer(player1);
+  game.removePlayer(player1.getSeat());
   EXPECT_EQ(view.getNumPlayers(), 1);
   EXPECT_EQ(view.getPlayerByName("actor1", &player1), 1);
   EXPECT_EQ(view.getPlayerBySeat(player1.getSeat(), &player1), 1);
@@ -118,6 +118,7 @@ TEST(GameTest, ThreePlayerInstaFold) {
 
   // verify actions
   std::vector<Action> actions = view.getHandHistory().getRoundAction(PREFLOP);
+  EXPECT_EQ(view.getHandHistory().multipleWinners(), false);
   EXPECT_EQ(actions.size(), 4);
   EXPECT_EQ(actions[0].getType(), POST);
   EXPECT_EQ(actions[1].getType(), POST);
@@ -169,6 +170,7 @@ TEST(GameTest, FourPlayerFlopFold) {
   //   view.getHandHistory().getHandAction();
   
   HandHistory hh  = view.getHandHistory();
+  EXPECT_EQ(hh.multipleWinners(), false);
   const std::vector<Action> *hand_action = hh.getHandAction();
   
   
@@ -234,6 +236,7 @@ TEST(GameTest, BigBlindRaiseOptionCheckToShowdown) {
   game.play(1);
 
   const HandHistory& history = view.getHandHistory();
+  EXPECT_EQ(history.multipleWinners(), false);
   Player winner = history.getWinner();
   ASSERT_TRUE(winner.getSeat() <= 3);
 
@@ -346,6 +349,7 @@ TEST(GameTest, TwoPlayerSingleAllIn) {
   Player p0, p1;
   
   const HandHistory& hh = view.getHandHistory();
+  EXPECT_EQ(hh.multipleWinners(), false);
   Player winner = hh.getWinner();
   EXPECT_EQ(winner.getChips(), 200);
   if (winner.getSeat() == 0) {
@@ -361,6 +365,111 @@ TEST(GameTest, TwoPlayerSingleAllIn) {
     EXPECT_EQ(view.getPlayerBySeat(1, &p1), 0);
     EXPECT_EQ(p1.getName(), winner.getName());
     EXPECT_EQ(p1.getChips(), 200);
+  }
+}
+
+
+// short stack all in preflop, other two players bet on side pot
+// on later streets
+TEST(GameTest, ThreePlayerSingleAllInSidePot) {
+  Game game(5, 10);
+  const GameView &view = game.getView();
+  TestActor a0, a1, a2;
+
+  // play 10 hands, try to hit the case where short stack wins, then a
+  // big stack wins the remaining side pot - 1/3 prob so 10 tries gives
+  // 98% chance to hit
+  for (int i = 0; i < 10; i++) {
+    // first remove any players from the game, and re-add them with
+    // the right number of chips
+    std::map<size_t, Player> players = view.getPlayers();
+    for (auto it = players.begin(); it != players.end(); ++it) {
+      game.removePlayer(it->first);
+    }
+
+    // add players such that p0 is always in the button, p1 always
+    // in the sb, p2 always in the big blind
+    size_t button_seat = view.getButtonPosition();
+    size_t p0_seat, p1_seat, p2_seat;
+    if (button_seat == 0) {
+      p0_seat = 0;
+      p1_seat = 1;
+      p2_seat = 2;
+      game.addPlayer(&a0, "p0", 100);
+      game.addPlayer(&a1, "p1", 200);
+      game.addPlayer(&a2, "p2", 300);
+    } else if (button_seat == 1) {
+      p0_seat = 1;
+      p1_seat = 2;
+      p2_seat = 0;
+      game.addPlayer(&a2, "p2", 300);
+      game.addPlayer(&a0, "p0", 100);
+      game.addPlayer(&a1, "p1", 200);
+    } else {
+      EXPECT_EQ(button_seat, 2);
+      p0_seat = 2;
+      p1_seat = 0;
+      p2_seat = 1;
+      game.addPlayer(&a1, "p1", 200);
+      game.addPlayer(&a2, "p2", 300);
+      game.addPlayer(&a0, "p0", 100);
+    }      
+
+    // queue up the actions and play the hand
+    // preflop
+    a0.queueAction(Action(RAISE, 100));
+    a1.queueAction(Action(CALL, 95));
+    a2.queueAction(Action(CALL, 90));
+    // flop
+    a1.queueAction(Action(RAISE, 30));
+    a2.queueAction(Action(CALL, 30));
+    // turn
+    a1.queueAction(Action(RAISE, 50));
+    a2.queueAction(Action(CALL, 50));
+    // river
+    a1.queueAction(Action(CHECK));
+    a2.queueAction(Action(CHECK));
+    game.play(1);
+
+    const HandHistory& hh = view.getHandHistory();
+    Player winner, p0, p1, p2;
+    EXPECT_EQ(view.getPlayerBySeat(p1_seat, &p1), 0);
+    EXPECT_EQ(view.getPlayerBySeat(p2_seat, &p2), 0);
+    if (hh.multipleWinners()) {
+      // short stack must have won
+      std::map<size_t, uint32_t> player_winnings = hh.getPlayerWinnings();
+      EXPECT_EQ(view.getPlayerBySeat(p0_seat, &p0), 0);
+
+      EXPECT_EQ(p0.getChips(), 300);
+      EXPECT_EQ(player_winnings.at(p0_seat), 300);
+
+      if (player_winnings.count(p1_seat)) {
+        // p1 won side pot of 160
+        EXPECT_EQ(p1.getChips(), 180);
+        EXPECT_EQ(player_winnings.at(p1_seat), 160);
+        EXPECT_EQ(p2.getChips(), 120);
+      } else {
+        EXPECT_EQ(player_winnings.count(p2_seat), 1);
+        EXPECT_EQ(p2.getChips(), 280);
+        EXPECT_EQ(player_winnings.at(p2_seat), 160);
+        EXPECT_EQ(p1.getChips(), 20);
+      }
+    } else {
+      // p1 or p2 won, p0 lost all chips and removed
+      EXPECT_EQ(view.getPlayerBySeat(p0_seat, &p0), 1);
+      winner = hh.getWinner();
+      if (winner.getSeat() == p1_seat) {
+        EXPECT_EQ(winner.getName(), p1.getName());
+        EXPECT_EQ(winner.getChips(), 480);
+        EXPECT_EQ(p1.getChips(), 480);
+        EXPECT_EQ(p2.getChips(), 120);
+      } else {
+        EXPECT_EQ(winner.getName(), p2.getName());
+        EXPECT_EQ(winner.getChips(), 580);
+        EXPECT_EQ(p2.getChips(), 580);
+        EXPECT_EQ(p1.getChips(), 20);
+      }
+    }
   }
 }
   

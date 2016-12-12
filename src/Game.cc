@@ -84,6 +84,13 @@ Game::removePlayer(const Player &player) {
 }
 
 void
+Game::removePlayer(size_t seat) {
+  if (players_.count(seat)) {
+    removePlayer(players_.at(seat));
+  }
+}
+
+void
 Game::addEventListener(IEventListener *listener) {
   eventManager_.addEventListener(listener);
 }
@@ -630,7 +637,9 @@ Game::showdownNoAllIn() {
 
   history_.winner_ = players_[winning_player_seat];
   history_.known_hands_ = live_player_hands;
-  
+  history_.player_winnings_.clear();
+
+  // also updates history_.player_winnings_
   showdownWin(live_player_hands[winning_player_seat],
               pot_, &players_[winning_player_seat]);
 }
@@ -646,6 +655,8 @@ Game::showdownAllIn() {
     player_winnings[it->first] = 0;
   }
 
+  FILE_LOG(logDEBUG2) << "All in showdown";
+
   std::map<size_t, Hand> live_player_hands = getPlayerHands();
   std::map<size_t, Hand> remaining_player_hands = live_player_hands;
   std::map<size_t, uint32_t> player_contrib = player_chips_in_pot_per_hand_;
@@ -655,28 +666,34 @@ Game::showdownAllIn() {
   while (remaining_pot) {
     winning_player_seat = getBestHand(remaining_player_hands);
 
+    FILE_LOG(logDEBUG3) << remaining_pot << " chips remaining for payout";
+    FILE_LOG(logDEBUG3) << players_[winning_player_seat].name_ \
+                        << " has winning hand " \
+                        << remaining_player_hands[winning_player_seat].str();
+    
     // subtract the amount of chips the player can win from each other
     // player's contribution to the pot
     chips_can_win = player_contrib[winning_player_seat];
-    chips_won = chips_can_win;
+    chips_won = 0;
     for (auto it = player_contrib.begin(); it != player_contrib.end(); ++it) {
-      if (it->first != winning_player_seat) {
-        if (it->second >= chips_can_win) {
-          chips_won += chips_can_win;
-          it->second -= chips_can_win;
-        } else {
-          chips_won += it->second;
-          it->second = 0;
-        }
+      if (it->second >= chips_can_win) {
+        chips_won += chips_can_win;
+        it->second -= chips_can_win;
+      } else {
+        chips_won += it->second;
+        it->second = 0;
       }
     }
+
+    FILE_LOG(logDEBUG3) << "win " << chips_won << " chips";
     
-    player_winnings[winning_player_seat] += chips_won;
     assert(chips_won <= remaining_pot);
+    player_winnings[winning_player_seat] += chips_won;
     remaining_pot -= chips_won;
     remaining_player_hands.erase(winning_player_seat);
   }
 
+  history_.player_winnings_.clear();
   for (auto it = player_winnings.begin(); it != player_winnings.end(); ++it) {
     if (it->second > 0) {  // player actually won some chips
       showdownWin(live_player_hands[it->first], it->second,
@@ -696,6 +713,7 @@ void
 Game::potWin(uint32_t pot, Player *player) {
   player->chips_ += pot;
   history_.winner_ = *player;
+  history_.player_winnings_[player->seat_] = pot;
   updateView();
   eventManager_.firePotWinEvent(pot, player->name_);
   FILE_LOG(logDEBUG1) << player->name_ << " wins " << pot;
