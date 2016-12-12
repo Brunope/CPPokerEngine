@@ -39,7 +39,7 @@ public:
   const GameView &getView() const;
 private:
   void updateView();
-  void removePlayer(const Player &player);
+  void removePlayer(const Player player);
   void playHand();
   void setupHand();
   void endHand();

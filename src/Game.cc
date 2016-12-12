@@ -66,7 +66,7 @@ Game::addPlayer(Actor *actor, std::string name, size_t chips) {
 // Remove the Player at seat from players_ and live_players_, and remove
 // its Actor from actors_.
 void
-Game::removePlayer(const Player &player) {
+Game::removePlayer(const Player player) {
   actors_.erase(player.getSeat());
   players_.erase(player.getSeat());
   if (live_players_.count(player.getSeat())) {
