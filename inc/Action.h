@@ -7,7 +7,7 @@
 
 #include "Player.h"
 
-enum ACTION_T { RAISE, CALL, FOLD, CHECK, POST, NUM_ACTIONS };
+enum ACTION_T : uint8_t { RAISE, CALL, FOLD, CHECK, POST, NUM_ACTIONS };
 
 
 /**

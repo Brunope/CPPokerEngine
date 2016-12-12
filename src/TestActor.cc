@@ -1,4 +1,6 @@
 #include <cassert>
+
+#include "HandHistory.h"
 #include "TestActor.h"
 
 void
@@ -16,7 +18,7 @@ TestActor::act(const GameView &view) {
 }
 
 void
-TestActor::receiveHandHistory(const std::vector<const Action> &history) {}
+TestActor::receiveHandHistory(const HandHistory &history) {}
 
 void
 TestActor::queueAction(Action action) {

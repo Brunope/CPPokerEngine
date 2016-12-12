@@ -30,7 +30,7 @@
  *   with the same key, ie actors_[0] is the Actor for players_[0].
  */
 Game::Game(uint32_t small_blind, uint32_t big_blind) {
-  FILELog::ReportingLevel() = logDEBUG1;
+  FILELog::ReportingLevel() = logDEBUG3;
   log_fd_ = fopen("game.log", "w");
   Output2FILE::Stream() = log_fd_;
 
@@ -122,6 +122,19 @@ Game::updateView() {
   // copy hand history
   view_.history_ = history_;
 
+  // copy all legal actions
+  for (uint8_t type = 0; type < NUM_ACTIONS; type++) {
+    view_.legal_actions_[type] = legal_actions_[type];
+  }
+
+  // give all actors pointers to their copy of player stored in the view
+  // shouldn't have to do this so often...
+  for (auto it = actors_.begin(); it != actors_.end(); ++it) {
+    it->second->setPlayer(&(view_.players_.at(it->first)));
+  }
+
+  FILE_LOG(logDEBUG3) << "current_bet_: " << view_.current_bet_;
+  FILE_LOG(logDEBUG3) << "current_raise_by_: " << view_.current_raise_by_;
   FILE_LOG(logDEBUG3) << "Updated view";
 
   // copy live_players_ but point into view_.players_ instead
@@ -159,8 +172,12 @@ Game::playHand() {
   setupHand();
 
   eventManager_.fireHandStartEvent(hand_num_, view_);
-  FILE_LOG(logDEBUG) << "starting hand #" << hand_num_;
   
+  FILE_LOG(logDEBUG) << "starting hand #" << hand_num_;
+  for (auto it = players_.begin(); it != players_.end(); ++it) {
+    FILE_LOG(logDEBUG1) << it->second.name_ << ": " << it->second.chips_;
+  }
+      
   postBlinds();
   dealHoleCards();
 
@@ -232,15 +249,14 @@ Game::setupHand() {
     sb_seat_ = getNextLivePlayerSeat(button_seat_);
     bb_seat_ = getNextLivePlayerSeat(sb_seat_);
   }
-  
+
+  updateView();
   FILE_LOG(logDEBUG2) << "Set up hand, button in seat " << button_seat_;
 }
 
 void
 Game::endHand() {
   for (auto it = players_.begin(); it != players_.end();) {
-    FILE_LOG(logDEBUG3) << "it == begin: " << (it == players_.begin());
-    FILE_LOG(logDEBUG3) << "it == end: " << (it == players_.end());
     if (it->second.getChips() == 0) {
       FILE_LOG(logDEBUG) << it->second.name_ << " has no more chips";
       // remove from players_ here, cause we need the next iterator
@@ -343,7 +359,8 @@ Game::playRound() {
   if (street_ > PREFLOP) {
     num_callers_ = 0;
   }
-  
+
+  // todo: case when 1 non-all in player, first to act, don't ask for action
   while (num_callers_ < live_players_.size() && live_players_.size() > 1) {
     
     FILE_LOG(logDEBUG2) << num_callers_ << " callers so far, " \
@@ -403,7 +420,7 @@ Game::setupRound() {
 void
 Game::endRound() {
   current_bet_ = 0;
-  current_raise_by_ = 0;
+  current_raise_by_ = big_blind_;
   FILE_LOG(logDEBUG2) << "End round " << street_;
 }  
 
@@ -429,7 +446,7 @@ Game::handleAction(Action action, Player *source) {
   case RAISE:
     // can be greater if source player raises twice, second time all in
     if (action.getAmount() >= source->getChips()) {
-      assert(action.getAmount() ==
+      assert(action.getAmount() <=
              source->getChips() + source->getChipsInPlay());
       allin_players_[acting_player_seat_] = source;
     } else {
@@ -473,12 +490,14 @@ Game::handleAction(Action action, Player *source) {
 
   history_.hand_action_[street_].push_back(action);
   acting_player_seat_ = getNextLivePlayerSeat(acting_player_seat_);
-  
+  updateLegalActions();  // todo: figure out if this should be in setup or end
   updateView();
   eventManager_.firePlayerActionEvent(action);
 
   FILE_LOG(logDEBUG2) << "Next actor in seat " << acting_player_seat_;
   FILE_LOG(logDEBUG3) << num_callers_ << " callers";
+  FILE_LOG(logDEBUG3) << history_.hand_action_[street_].size() \
+                      << " actions for street " << street_;
 
   return action_changed;
 }
@@ -527,11 +546,13 @@ Game::playerBet(Player *player, uint32_t chips) {
                       << " chips in play";
 }
   
-// return true if action was modified
+// return true if the type of action was changed
+// the amount may be changed if the type is CALL or RAISE to match
+// source's chips; false returned in this case
 bool
 Game::forceLegalAction(Action *action, Player *source) {
-  assert(source);
-  FILE_LOG(logDEBUG3) << "Force legal action";
+  assert(source != nullptr);
+  FILE_LOG(logDEBUG3) << "Force legal action, type: " << action->getType();
   if (!isLegalAction(*action)) {
     FILE_LOG(logDEBUG1) << *action << " is illegal";
     if (legal_actions_[CHECK]) {
@@ -541,8 +562,26 @@ Game::forceLegalAction(Action *action, Player *source) {
       *action = Action(FOLD, 0, source);
     }
     return true;
-  }
+  } else {
+    // make sure call chips are correct
+    if (action->getType() == CALL) {
+      *action = Action(CALL,
+                       std::min(current_bet_ - source->chips_in_play_,
+                                source->chips_),
+                       source);
+      FILE_LOG(logDEBUG3) << "New call amount: " << action->getAmount();
+    } else if (action->getType() == RAISE) {
+      // player can't raise more their chip count
+      if (action->getAmount() > source->chips_ + source->chips_in_play_) {
+        *action = Action(RAISE, source->chips_ + source->chips_in_play_,
+                         source);
+        FILE_LOG(logDEBUG3) << "New raise amount: " << action->getAmount();
+      }
+      // todo: catch too low raises
+    }
+    FILE_LOG(logDEBUG3) << "Action is legal";
   return false;
+  }
 }
 
 bool
@@ -553,6 +592,10 @@ Game::isLegalAction(const Action &action) {
 // must have acting_player_seat_ pointing to the player about to act
 void
 Game::updateLegalActions() {
+  // NUM_ACTIONS is always invalid - don't need to reset this every time
+  // but I wanna constrain updating this var to this method
+  legal_actions_[NUM_ACTIONS] = false;
+  
   const Player &player = players_[acting_player_seat_];
 
   FILE_LOG(logDEBUG3) << "Updating legal actions for " << player.name_;

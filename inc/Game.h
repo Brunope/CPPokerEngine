@@ -75,7 +75,7 @@ private:
   std::vector<Card> board_;
   std::vector<Action> hand_action_[NUM_STREETS];
   HandHistory history_;
-  bool legal_actions_[NUM_ACTIONS];
+  bool legal_actions_[NUM_ACTIONS + 1];
   Deck deck_;
   EventManager eventManager_;
   size_t button_seat_;

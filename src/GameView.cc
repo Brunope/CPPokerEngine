@@ -34,6 +34,16 @@ GameView::getCurrentBet() const {
   return current_bet_;
 }
 
+uint32_t
+GameView::getCurrentRaiseBy() const {
+  return current_raise_by_;
+}
+
+const bool *
+GameView::getLegalActions() const {
+  return legal_actions_;
+}
+
 int
 GameView::getPlayerBySeat(size_t seat, Player *player) const {
   // todo

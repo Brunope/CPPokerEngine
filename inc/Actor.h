@@ -7,6 +7,7 @@
 
 #include "Action.h"
 #include "Player.h"
+#include "HandHistory.h"
 #include "Card.h"
 
 class GameView;
@@ -28,15 +29,15 @@ public:
   // Called at the end of every hand. history contains the sequence of
   // Actions that made up the hand, sorted in chronological order, ie
   // most recent Action at the back. 
-  virtual void receiveHandHistory(const std::vector<const Action> &history) = 0;
+  virtual void receiveHandHistory(const HandHistory &history) = 0;
 
   // Called once by Game when a new Player / Actor is added. Gives the Actor
   // a reference to its own Player object that stores data on stack size,
   // seat position, name, etc.
-  void setPlayer(Player *self) { self_ = self; }
+  void setPlayer(const Player *self) { self_ = self; }
 
 protected:
-  Player *self_;
+  const Player *self_;
   std::pair<Card, Card> hc_;
 };
 #endif  // ACTOR_H_

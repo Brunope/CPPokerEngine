@@ -1,5 +1,6 @@
 #include "GameView.h"
 #include "Action.h"
+#include "HandHistory.h"
 #include "SimpleActor.h"
 
 Action
@@ -24,6 +25,6 @@ SimpleActor::receiveHoleCards(const std::pair<Card, Card> hc) {
 }
 
 void
-SimpleActor::receiveHandHistory(const std::vector<const Action> &history) {
+SimpleActor::receiveHandHistory(const HandHistory &history) {
 
 }

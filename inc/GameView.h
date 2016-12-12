@@ -30,7 +30,21 @@ public:
   size_t getNumPlayers() const;
   size_t getButtonPosition() const;
   STREET getStreet() const;
+
+  // return the total amount to call
   uint32_t getCurrentBet() const;
+
+  // return the difference between the current bet and the last current
+  // bet, ie the amount raised BY in the most recent raise.
+  uint32_t getCurrentRaiseBy() const;
+
+  // return a boolean array of size NUM_ACTIONS, the value at index
+  // ACTION_T indicates the legality of that action, ie if
+  // getLegalActions()[CHECK] is true, a CHECK is legal. This array
+  // is dependent on the state of the current actor. For example, A raise
+  // may be legal for the current actor, but not for the next actor if
+  // they do not have enough chips.
+  const bool *getLegalActions() const;
   
   // fills in 'player' and returns 0 if 'player' is non-null and there
   // exists a Player in seat 'seat', 1 otherwise
@@ -64,6 +78,7 @@ private:
   
   std::vector<Card> board_;
   std::vector<Action> hand_action_[NUM_STREETS];
+  bool legal_actions_[NUM_ACTIONS];
   HandHistory history_;
 
   size_t button_pos_;

@@ -30,7 +30,7 @@ CXXFLAGS += -g -std=c++11 -I $(INC_DIR)
 # Object files
 OBJS = $(addprefix $(OBJ_DIR)/, Card.o Deck.o Hand.o HandEvaluator.o \
  GameView.o Action.o HandHistory.o EventManager.o SimpleActor.o \
- LoggerEventListener.o Game.o)
+ RandomActor.o LoggerEventListener.o Game.o)
 TEST_OBJS = $(addprefix $(OBJ_DIR)/, card_unittest.o deck_unittest.o \
  hand_unittest.o handevaluator_unittest.o action_unittest.o \
  gameview_unittest.o loggereventlistener_unittest.o \
@@ -204,16 +204,24 @@ $(BIN_DIR)/gameview_unittest : $(GameView_o) $(Card_o) $(HandHistory_o) \
 # SimpleActor
 SimpleActor_o = $(OBJ_DIR)/SimpleActor.o
 $(SimpleActor_o) : $(PLAYER_H) $(Action_o) $(HandEvaluator_o) $(Hand_o) \
- $(Card_o) $(GameView_o) $(INC_DIR)/SimpleActor.h $(SRC_DIR)/SimpleActor.cc
+ $(Card_o) $(GameView_o) $(HandHistory_o) $(INC_DIR)/SimpleActor.h \
+ $(SRC_DIR)/SimpleActor.cc
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) \
  -c $(SRC_DIR)/SimpleActor.cc -o $@
 
 # TestActor
 TestActor_o = $(OBJ_DIR)/TestActor.o
-TestActor_deps = TestActor Action HandEvaluator Card GameView
+TestActor_deps = TestActor Action HandEvaluator Card GameView HandHistory
 $(TestActor_o) : $(addprefix $(INC_DIR)/, $(addsuffix .h, $(TestActor_deps) Player)) \
  $(SRC_DIR)/TestActor.cc
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(SRC_DIR)/TestActor.cc -o $@
+
+# RandomActor
+RandomActor_o = $(OBJ_DIR)/RandomActor.o
+RandomActor_deps = RandomActor Action Card GameView HandHistory
+$(RandomActor_o) : $(addprefix $(INC_DIR)/, \
+ $(addsuffix .h, $(RandomActor_deps) Player)) $(SRC_DIR)/RandomActor.cc
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(SRC_DIR)/RandomActor.cc -o $@
 
 # LoggerEventListener
 LoggerEventListener_o = $(OBJ_DIR)/LoggerEventListener.o
@@ -270,5 +278,6 @@ $(game_unittest_o) : $(Game_o) $(INC_DIR)/TestActor.h $(GTEST_HEADERS) \
 
 $(BIN_DIR)/game_unittest : $(Card_o) $(Hand_o) $(HandEvaluator_o) $(Deck_o) \
  $(Action_o) $(GameView_o) $(EventManager_o) $(HandHistory_o) $(Game_o) \
- $(SimpleActor_o) $(Actor_o) $(game_unittest_o) $(TestActor_o) gtest_main.a
+ $(SimpleActor_o) $(Actor_o) $(game_unittest_o) $(TestActor_o) \
+ $(RandomActor_o) gtest_main.a
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lpthread $^ -o $@

@@ -5,6 +5,7 @@
 #include "GameView.h"
 #include "HandHistory.h"
 #include "TestActor.h"
+#include "RandomActor.h"
 #include "gtest/gtest.h"
 
 #include <cstdio>
@@ -527,3 +528,37 @@ TEST(GameTest, EveryoneAllIn) {
     pot -= it->second;
   }
 }
+
+// Play a full game between two players choosing random actions,
+// one of em should win
+TEST(GameTest, TwoRandomActorFullGame) {
+  Game game(5, 10);
+  const GameView &view = game.getView();
+  RandomActor a0, a1;
+
+  game.addPlayer(&a0, "p0", 500);
+  game.addPlayer(&a1, "p1", 500);
+
+  game.play();
+
+  std::map<size_t, Player> players = view.getPlayers();
+
+  EXPECT_EQ(players.size(), 1);
+  EXPECT_EQ(players.begin()->second.getChips(), 1000);
+}
+  
+// TODO:
+TEST(GameTest, LegalActions) {
+  // raise amounts
+  // folds, checks
+  // no posts
+  // calls
+}
+
+// TODO:
+// Case second player to act is all in, first player still prompted to act
+TEST(GameTest, AllInNoAction) {
+
+}
+
+// update view in right places (missing after new round)
