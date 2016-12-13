@@ -360,8 +360,15 @@ Game::playRound() {
     num_callers_ = 0;
   }
 
-  // todo: case when 1 non-all in player, first to act, don't ask for action
-  while (num_callers_ < live_players_.size() && live_players_.size() > 1) {
+  // Every live player that is not all in must act at least once.
+  // The betting continues until all players have put equal chips
+  // into the pot, ie chips_in_play_ is equal for all players. This
+  // is the case when num_callers == live_players_.size(). The
+  // second loop condition skips the betting round when there is only
+  // one non-allin player.
+  size_t num_allin_at_start = allin_players_.size();
+  while (num_callers_ < live_players_.size() &&
+         live_players_.size() - num_allin_at_start > 1) {
     
     FILE_LOG(logDEBUG2) << num_callers_ << " callers so far, " \
                         << live_players_.size() << " players";

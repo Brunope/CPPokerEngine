@@ -341,8 +341,9 @@ TEST(GameTest, TwoPlayerSingleAllIn) {
   game.addPlayer(&a0, "p0", 100);
   game.addPlayer(&a1, "p1", 100);
 
-  a0.queueAction(Action(RAISE, 100));
-  a1.queueAction(Action(CALL, 90));
+  a0.queueAction(Action(CALL, 5));
+  a1.queueAction(Action(RAISE, 100));
+  a0.queueAction(Action(CALL, 90));
 
   // should play only one hand, remove the losing player at end of hand
   game.play();
@@ -350,6 +351,9 @@ TEST(GameTest, TwoPlayerSingleAllIn) {
   Player p0, p1;
   
   const HandHistory& hh = view.getHandHistory();
+  EXPECT_EQ(hh.getRoundAction(FLOP).size(), 0);
+  EXPECT_EQ(hh.getRoundAction(TURN).size(), 0);
+  EXPECT_EQ(hh.getRoundAction(RIVER).size(), 0);
   EXPECT_EQ(hh.multipleWinners(), false);
   Player winner = hh.getWinner();
   EXPECT_EQ(winner.getChips(), 200);
