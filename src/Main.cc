@@ -3,19 +3,16 @@
 
 #include "Game.h"
 #include "HumanActor.h"
-#include "SimpleActor.h"
-#include "Observer.h"
+#include "RandomActor.h"
+#include "LoggerEventListener.h"
 
 int main(void) {
-  Game g;
-
+  Game game(10, 20);
   HumanActor human;
-  SimpleActor bot;
-  g.addPlayer(human, "human", 1000);
-  g.addPlayer(bot, "bot", 1000);
-
-  Observer observer;
-  g.addObserver(observer);
-  
-  g.play();
+  RandomActor bot;
+  LoggerEventListener listener;
+  game.addEventListener(&listener);
+  game.addPlayer(&human, "human", 1000);
+  game.addPlayer(&bot, "bot", 1000);
+  game.play();
 }

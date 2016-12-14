@@ -37,27 +37,7 @@ LoggerEventListener::onDeal(STREET street) {
 
 void
 LoggerEventListener::onPlayerAction(Action action) {
-  std::stringstream ss;
-  ss << action.getSource()->getName();
-  
-  switch(action.getType()) {
-  case RAISE:
-    ss << " raised to " << action.getAmount();
-    break;
-  case CALL:
-    ss << " called " << action.getAmount();
-    break;
-  case FOLD:
-    ss << " folded";
-    break;
-  case CHECK:
-    ss << " checked";
-    break;
-  default:
-    std::cerr << "Unknown Action type: " << action.getType() << std::endl;
-    break;
-  }
-  std::cout << ss.str() << std::endl;
+  std::cout << action << std::endl;
 }
 
 void

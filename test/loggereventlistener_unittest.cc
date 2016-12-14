@@ -36,7 +36,7 @@ TEST(LoggerEventListenerTest, Comprehensive) {
   buffer.str("");
   
   listener.onPlayerAction(Action(RAISE, 10, &p1));
-  EXPECT_EQ(buffer.str(), "p1 raised to 10\n");
+  EXPECT_EQ(buffer.str(), "p1 raises 10\n");
   buffer.str("");
   
   listener.onShowdown(h, p1.getName());

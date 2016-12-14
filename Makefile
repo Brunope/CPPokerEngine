@@ -50,7 +50,7 @@ GTEST_HEADERS = $(GTEST_DIR)/include/gtest/*.h \
 
 # House-keeping build targets.
 
-all : setup $(OBJS) $(TESTS) $(BIN_DIR)/test_suite
+all : setup $(OBJS) $(TESTS) $(BIN_DIR)/test_suite $(BIN_DIR)/main
 
 HandRanksDat_Fpath = "resources/HandRanks.dat"
 HandRanksDat_Url = "https://www.dropbox.com/s/iw6yuk8naanppn0/HandRanks.dat?dl=0"
@@ -223,6 +223,14 @@ $(RandomActor_o) : $(addprefix $(INC_DIR)/, \
  $(addsuffix .h, $(RandomActor_deps) Player)) $(SRC_DIR)/RandomActor.cc
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(SRC_DIR)/RandomActor.cc -o $@
 
+# HumanActor
+HumanActor_o = $(OBJ_DIR)/HumanActor.o
+HumanActor_deps = HumanActor Action Card GameView HandHistory
+$(HumanActor_o) : $(addprefix $(INC_DIR)/, \
+ $(addsuffix .h, $(HumanActor_deps) Player)) $(SRC_DIR)/HumanActor.cc
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(SRC_DIR)/HumanActor.cc -o $@
+
+
 # LoggerEventListener
 LoggerEventListener_o = $(OBJ_DIR)/LoggerEventListener.o
 $(LoggerEventListener_o) : $(PLAYER_H) $(Action_o) $(Hand_o) $(GameView_o) \
@@ -281,3 +289,14 @@ $(BIN_DIR)/game_unittest : $(Card_o) $(Hand_o) $(HandEvaluator_o) $(Deck_o) \
  $(SimpleActor_o) $(Actor_o) $(game_unittest_o) $(TestActor_o) \
  $(RandomActor_o) gtest_main.a
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lpthread $^ -o $@
+
+# Main
+Main_o = $(OBJ_DIR)/Main.o
+$(Main_o) : $(Game_o) $(HumanActor_o) $(RandomActor_o)
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(SRC_DIR)/Main.cc -o $@
+
+$(BIN_DIR)/main : $(Card_o) $(Hand_o) $(HandEvaluator_o) $(Deck_o) \
+ $(Action_o) $(GameView_o) $(EventManager_o) $(HandHistory_o) $(Game_o) \
+ $(Actor_o) $(HumanActor_o) $(RandomActor_o) $(HumanActor_o) \
+ $(LoggerEventListener_o) $(Main_o)
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $^ -o $@

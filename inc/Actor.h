@@ -24,7 +24,7 @@ public:
 
   // Called every time it's this Actor's turn to act. Return an Action,
   // which contains the type of action and an amount.
-  virtual Action act(const GameView &gameView) = 0;
+  virtual Action act(const GameView &view) = 0;
 
   // Called at the end of every hand. history contains the sequence of
   // Actions that made up the hand, sorted in chronological order, ie

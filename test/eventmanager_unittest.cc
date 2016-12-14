@@ -52,7 +52,7 @@ TEST(EventManagerTest, LoggerEventListenerIntegration) {
   e.removeEventListener(&l);
   
   e.firePlayerActionEvent(Action(RAISE, 10, &p1));
-  EXPECT_EQ(buffer.str(), "p1 raised to 10\n");
+  EXPECT_EQ(buffer.str(), "p1 raises 10\n");
   buffer.str("");
   
   e.fireShowdownEvent(h, p1.getName());

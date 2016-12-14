@@ -254,6 +254,8 @@ Game::setupHand() {
   FILE_LOG(logDEBUG2) << "Set up hand, button in seat " << button_seat_;
 }
 
+// Give each actor the hand history of the hand that just ended,
+// and remove any player with no more chips
 void
 Game::endHand() {
   for (auto it = players_.begin(); it != players_.end();) {
@@ -264,6 +266,7 @@ Game::endHand() {
       it = players_.erase(it);
       removePlayer(to_remove);
     } else {
+      actors_[it->first]->receiveHandHistory(view_.history_);
       ++it;
     }
   }
@@ -310,6 +313,7 @@ Game::dealHoleCards() {
   assert(street_ == PREFLOP);
   for (size_t seat = 0; seat < players_.size(); seat++) {
     players_[seat].hc_ = deck_.dealHoleCards();
+    actors_[seat]->receiveHoleCards(players_[seat].hc_);
     FILE_LOG(logDEBUG1) << "Dealt " << players_[seat].name_ << " " \
                         << players_[seat].hc_.first \
                         << players_[seat].hc_.second;
