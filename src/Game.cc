@@ -115,6 +115,7 @@ Game::updateView() {
   view_.board_ = board_;
   view_.current_bet_ = current_bet_;
   view_.current_raise_by_ = current_raise_by_;
+  view_.pot_ = pot_;
   view_.acting_player_seat_ = acting_player_seat_;
 
   view_.players_ = players_;
@@ -345,6 +346,7 @@ Game::dealNextStreet() {
     }
   }
 
+  updateView();
   eventManager_.fireDealEvent(street_);
 }
 

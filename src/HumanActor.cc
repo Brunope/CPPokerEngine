@@ -1,4 +1,5 @@
 #include <iostream>
+#include <sstream>
 #include <string>
 #include <cassert>
 
@@ -15,15 +16,6 @@ HumanActor::receiveHoleCards(const std::pair<Card, Card> hc) {
 
 Action
 HumanActor::act(const GameView &view) {
-  std::vector<Card> board = view.getBoard();
-  if (board.size() > 0) {
-    std::cout << "board: ";
-    for (auto it = board.begin(); it != board.end(); ++it) {
-      std::cout << *it;
-    }
-    std::cout << std::endl;
-  }
-
   std::cout << "current bet: " << view.getCurrentBet() << std::endl;
 
   const bool *legal_actions = view.getLegalActions();
@@ -51,17 +43,29 @@ HumanActor::act(const GameView &view) {
     }
   }
 
+  // get action input
   std::cout << std::endl << "action: ";
+  std::string input;
+  std::getline(std::cin, input);
+  // auto fold if not a single char
   char type;
-  std::cin >> type;
+  if (input.length() != 1) {
+    type = 'f';
+  } else {
+    type = input[0];
+  }
+  
   switch (type) {
   case 'r':
     // get amount
     uint32_t amount;
     std::cout << "amount: ";
-    std::cin >> amount;
-
-    return Action(RAISE, amount);
+    std::getline(std::cin, input);
+    if (std::stringstream(input) >> amount) {
+      return Action(RAISE, amount);
+    }
+    std::cout << "not an integer value" << std::endl;
+    return Action(FOLD);
     break;
   case 'c':
     if (legal_actions[CALL]) {

@@ -30,6 +30,7 @@ public:
   size_t getNumPlayers() const;
   size_t getButtonPosition() const;
   STREET getStreet() const;
+  uint32_t getPot() const;
 
   // return the total amount to call
   uint32_t getCurrentBet() const;

@@ -28,7 +28,7 @@ TEST(LoggerEventListenerTest, Comprehensive) {
   buffer.str("");
   
   listener.onHandStart(0, &g);
-  EXPECT_EQ(buffer.str(), "Starting hand #0\n");
+  EXPECT_EQ(buffer.str(), "\nStarting hand #0\n");
   buffer.str("");
   
   listener.onDeal(PREFLOP);
@@ -36,7 +36,9 @@ TEST(LoggerEventListenerTest, Comprehensive) {
   buffer.str("");
   
   listener.onPlayerAction(Action(RAISE, 10, &p1));
-  EXPECT_EQ(buffer.str(), "p1 raises 10\n");
+  // expect print out action, then pot size, but pot is
+  // garbo
+  EXPECT_EQ(buffer.str().substr(0, 17), "p1 raises 10\npot:");
   buffer.str("");
   
   listener.onShowdown(h, p1.getName());

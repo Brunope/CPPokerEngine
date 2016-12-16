@@ -41,7 +41,7 @@ TEST(EventManagerTest, LoggerEventListenerIntegration) {
   e.addEventListener(&l);
   
   e.fireHandStartEvent(0, g);
-  EXPECT_EQ(buffer.str(), "Starting hand #0\nStarting hand #0\n");
+  EXPECT_EQ(buffer.str(), "\nStarting hand #0\n\nStarting hand #0\n");
   buffer.str("");
   
   e.fireDealEvent(PREFLOP);
@@ -52,7 +52,7 @@ TEST(EventManagerTest, LoggerEventListenerIntegration) {
   e.removeEventListener(&l);
   
   e.firePlayerActionEvent(Action(RAISE, 10, &p1));
-  EXPECT_EQ(buffer.str(), "p1 raises 10\n");
+  EXPECT_EQ(buffer.str().substr(0, 17), "p1 raises 10\npot:");
   buffer.str("");
   
   e.fireShowdownEvent(h, p1.getName());

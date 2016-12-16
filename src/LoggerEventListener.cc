@@ -27,17 +27,33 @@ LoggerEventListener::onPlayerLeave(std::string playerName) {
 
 void
 LoggerEventListener::onHandStart(long handNum, const GameView *game) {
+  std::cout << std::endl;
   std::cout << "Starting hand #" << handNum << std::endl;
+  game_ = game;  // update just in case
+  std::map<size_t, Player> players = game->getPlayers();
+  for (auto it = players.begin(); it != players.end(); ++it) {
+    std::cout << it->second.getName() << ": " << it->second.getChips() \
+              << std::endl;
+  }
 }
 
 void
 LoggerEventListener::onDeal(STREET street) {
   std::cout << "Dealing cards" << std::endl;
+  if (street > PREFLOP) {
+    std::cout << "board: ";
+    std::vector<Card> board = game_->getBoard();
+    for (auto it = board.begin(); it != board.end(); ++it) {
+      std:: cout << *it;
+    }
+  std::cout << std::endl;
+  }
 }
 
 void
 LoggerEventListener::onPlayerAction(Action action) {
   std::cout << action << std::endl;
+  std::cout << "pot: " << game_->getPot() << std::endl;
 }
 
 void
