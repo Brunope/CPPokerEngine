@@ -30,6 +30,11 @@ GameView::getStreet() const {
 }
 
 uint32_t
+GameView::getPot() const {
+  return pot_;
+}
+
+uint32_t
 GameView::getCurrentBet() const {
   return current_bet_;
 }
