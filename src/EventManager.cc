@@ -21,35 +21,35 @@ EventManager::removeEventListener(IEventListener *listener) {
 }
 
 void
-EventManager::fireGameStartEvent(const GameView &game) {
+EventManager::fireGameStartEvent(const GameView &view) {
   for (auto it = eventListeners_.begin(); it != eventListeners_.end(); ++it) {
-    (*it)->onGameStart(&game);
+    (*it)->onGameStart(&view);
   }
 }
 
 void
-EventManager::fireGameOverEvent(const GameView &game) {
+EventManager::fireGameOverEvent(const GameView &view) {
 
 }
 
 void
-EventManager::firePlayerJoinEvent(std::string playerName) {
+EventManager::firePlayerJoinEvent(std::string name) {
   for (auto it = eventListeners_.begin(); it != eventListeners_.end(); ++it) {
-    (*it)->onPlayerJoin(playerName);
+    (*it)->onPlayerJoin(name);
   }
 }
 
 void
-EventManager::firePlayerLeaveEvent(std::string playerName) {
+EventManager::firePlayerLeaveEvent(std::string name) {
   for (auto it = eventListeners_.begin(); it != eventListeners_.end(); ++it) {
-    (*it)->onPlayerLeave(playerName);
+    (*it)->onPlayerLeave(name);
   }
 }
 
 void
-EventManager::fireHandStartEvent(long handNum, const GameView &game) {
+EventManager::fireHandStartEvent(long hand_num, const GameView &view) {
   for (auto it = eventListeners_.begin(); it != eventListeners_.end(); ++it) {
-    (*it)->onHandStart(handNum, &game);
+    (*it)->onHandStart(hand_num, &view);
   }
 }
 
@@ -68,16 +68,24 @@ EventManager::firePlayerActionEvent(Action action) {
 }
 
 void
-EventManager::fireShowdownEvent(Hand bestHand, std::string playerName) {
+EventManager::fireShowCardsEvent(std::pair<Card, Card> cards,
+                                 std::string name) {
   for (auto it = eventListeners_.begin(); it != eventListeners_.end(); ++it) {
-    (*it)->onShowdown(bestHand, playerName);
+    (*it)->onShowCards(cards, name);
   }
 }
 
 void
-EventManager::firePotWinEvent(int pot, std::string playerName) {
+EventManager::fireShowdownEvent(Hand best_hand, std::string name) {
   for (auto it = eventListeners_.begin(); it != eventListeners_.end(); ++it) {
-    (*it)->onPotWin(pot, playerName);
+    (*it)->onShowdown(best_hand, name);
+  }
+}
+
+void
+EventManager::firePotWinEvent(int pot, std::string name) {
+  for (auto it = eventListeners_.begin(); it != eventListeners_.end(); ++it) {
+    (*it)->onPotWin(pot, name);
   }
 }
 

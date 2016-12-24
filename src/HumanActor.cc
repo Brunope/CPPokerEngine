@@ -33,7 +33,7 @@ HumanActor::act(const GameView &view) {
         break;
       case CHECK:
         // ok to use 'c' for this too, since it's never the case that
-        // both check and fold are legal actions
+        // both check and fold XFare legal actions
         std::cout << "[c]heck ";
         break;
       default:
@@ -43,11 +43,13 @@ HumanActor::act(const GameView &view) {
     }
   }
 
+  uint32_t min_raise = view.getCurrentBet() + view.getCurrentRaiseBy();
+
   // get action input
   std::cout << std::endl << "action: ";
   std::string input;
   std::getline(std::cin, input);
-  // auto fold if not a single char
+  // auto fold if not a single charxs
   char type;
   if (input.length() != 1) {
     type = 'f';
@@ -62,6 +64,10 @@ HumanActor::act(const GameView &view) {
     std::cout << "amount: ";
     std::getline(std::cin, input);
     if (std::stringstream(input) >> amount) {
+      if (amount < min_raise) {
+        std::cout << "oops, must raise at least " << min_raise << std::endl;
+        return Action(FOLD);
+      }
       return Action(RAISE, amount);
     }
     std::cout << "not an integer value" << std::endl;

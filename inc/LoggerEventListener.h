@@ -6,16 +6,19 @@
 class LoggerEventListener : public IEventListener {
 public:
   LoggerEventListener();
-  void onGameStart(const GameView *game);
-  void onPlayerJoin(std::string playerName);
-  void onPlayerLeave(std::string playerName);
-  void onHandStart(long handNum, const GameView *game);
+
+  // seems redundant to redefine these, can I not?
+  void onGameStart(const GameView *view);
+  void onPlayerJoin(std::string name);
+  void onPlayerLeave(std::string name);
+  void onHandStart(long handNum, const GameView *view);
   void onDeal(STREET street);
   void onPlayerAction(Action action);
-  void onShowdown(Hand bestHand, std::string playerName);
-  void onPotWin(int pot, std::string playerName);
+  void onShowCards(std::pair<Card, Card> cards, std::string name);
+  void onShowdown(Hand best_hand, std::string name);
+  void onPotWin(int pot, std::string name);
 private:
-  const GameView *game_;
+  const GameView *view_;
 };
 
 #endif  // LOGGER_EVENT_LISTENER_H_

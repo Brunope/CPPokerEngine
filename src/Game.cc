@@ -57,14 +57,15 @@ Game::addPlayer(Actor *actor, std::string name, size_t chips) {
   players_[p.seat_] = p;
 
   updateView();
-  eventManager_.firePlayerJoinEvent(name);
+  event_manager_.firePlayerJoinEvent(name);
 
   FILE_LOG(logDEBUG) << "Added " << p.name_ << " in seat " << p.seat_ \
                      << " with " << chips << " chips.";
 }
 
-// Remove the Player at seat from players_ and live_players_, and remove
-// its Actor from actors_.
+// Remove the Player at player.getSeat() from players_ and live_players_, and
+// remove its Actor from actors_. You shouldn't call this method directly,
+// rather call removePlayer(seat) which calls this.
 void
 Game::removePlayer(const Player player) {
   actors_.erase(player.getSeat());
@@ -77,7 +78,7 @@ Game::removePlayer(const Player player) {
   }
 
   updateView();
-  eventManager_.firePlayerLeaveEvent(player.getName());
+  event_manager_.firePlayerLeaveEvent(player.getName());
 
   FILE_LOG(logDEBUG) << "Removed " << player.name_ << " from seat " \
                      << player.seat_;
@@ -92,12 +93,12 @@ Game::removePlayer(size_t seat) {
 
 void
 Game::addEventListener(IEventListener *listener) {
-  eventManager_.addEventListener(listener);
+  event_manager_.addEventListener(listener);
 }
 
 void
 Game::removeEventListener(IEventListener *listener) {
-  eventManager_.removeEventListener(listener);
+  event_manager_.removeEventListener(listener);
 }
 
 const GameView &
@@ -156,7 +157,7 @@ Game::updateView() {
 void
 Game::play(int num_hands) {
   assert(players_.size() >= 2 && players_.size() <= MAX_NUM_PLAYERS);
-  eventManager_.fireGameStartEvent(view_);
+  event_manager_.fireGameStartEvent(view_);
   FILE_LOG(logDEBUG) << "playing " << num_hands << " hands";
 
   hand_num_ = 0;
@@ -164,7 +165,7 @@ Game::play(int num_hands) {
     playHand();
   }
   
-  eventManager_.fireGameOverEvent(view_);
+  event_manager_.fireGameOverEvent(view_);
 }
 
 void
@@ -172,7 +173,7 @@ Game::playHand() {
   // reset a bunch of variables, and add all player pointers to the live list
   setupHand();
 
-  eventManager_.fireHandStartEvent(hand_num_, view_);
+  event_manager_.fireHandStartEvent(hand_num_, view_);
   
   FILE_LOG(logDEBUG) << "starting hand #" << hand_num_;
   for (auto it = players_.begin(); it != players_.end(); ++it) {
@@ -319,7 +320,7 @@ Game::dealHoleCards() {
                         << players_[seat].hc_.first \
                         << players_[seat].hc_.second;
   }
-  eventManager_.fireDealEvent(PREFLOP);
+  event_manager_.fireDealEvent(PREFLOP);
 }
 
 // increment street_, then deal that street
@@ -347,7 +348,7 @@ Game::dealNextStreet() {
   }
 
   updateView();
-  eventManager_.fireDealEvent(street_);
+  event_manager_.fireDealEvent(street_);
 }
 
 // return true if the hand is over because everyone folded but the winner
@@ -505,7 +506,7 @@ Game::handleAction(Action action, Player *source) {
   acting_player_seat_ = getNextLivePlayerSeat(acting_player_seat_);
   updateLegalActions();  // todo: figure out if this should be in setup or end
   updateView();
-  eventManager_.firePlayerActionEvent(action);
+  event_manager_.firePlayerActionEvent(action);
 
   FILE_LOG(logDEBUG2) << "Next actor in seat " << acting_player_seat_;
   FILE_LOG(logDEBUG3) << num_callers_ << " callers";
@@ -678,6 +679,11 @@ Game::updateLegalActions() {
 
 void
 Game::showdown() {
+  // show hole cards of all remaining live players
+  for (auto it = live_players_.begin(); it != live_players_.end(); ++it) {
+    event_manager_.fireShowCardsEvent(it->second->hc_, it->second->name_);
+  }
+  
   if (allin_players_.empty()) {
     showdownNoAllIn();
   } else {
@@ -760,7 +766,7 @@ Game::showdownAllIn() {
 
 void 
 Game::showdownWin(const Hand &hand, uint32_t pot, Player *player) {
-  eventManager_.fireShowdownEvent(hand, player->getName());
+  event_manager_.fireShowdownEvent(hand, player->getName());
   FILE_LOG(logDEBUG1) << player->name_ << " wins with " << hand.str();
   potWin(pot, player);
 }
@@ -771,7 +777,7 @@ Game::potWin(uint32_t pot, Player *player) {
   history_.winner_ = *player;
   history_.player_winnings_[player->seat_] = pot;
   updateView();
-  eventManager_.firePotWinEvent(pot, player->name_);
+  event_manager_.firePotWinEvent(pot, player->name_);
   FILE_LOG(logDEBUG1) << player->name_ << " wins " << pot;
 }
 

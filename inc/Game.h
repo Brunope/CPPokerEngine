@@ -77,7 +77,7 @@ private:
   HandHistory history_;
   bool legal_actions_[NUM_ACTIONS + 1];
   Deck deck_;
-  EventManager eventManager_;
+  EventManager event_manager_;
   size_t button_seat_;
   size_t sb_seat_;
   size_t bb_seat_;

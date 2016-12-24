@@ -2,6 +2,7 @@
 #define EVENT_MANAGER_H_
 
 #include <vector>
+#include <utility>
 #include <string>
 
 #include "Action.h"
@@ -24,16 +25,28 @@ public:
   // will remain.
   void removeEventListener(IEventListener *listener);
   
-  void fireGameStartEvent(const GameView &game);
-  void fireGameOverEvent(const GameView &game);
+  void fireGameStartEvent(const GameView &view);
+  void fireGameOverEvent(const GameView &view);
+
   // todo: change params to const player &
-  void firePlayerJoinEvent(std::string playerName);
-  void firePlayerLeaveEvent(std::string playerName);
-  void fireHandStartEvent(long handNum, const GameView &game);
+  void firePlayerJoinEvent(std::string name);
+  void firePlayerLeaveEvent(std::string name);
+
+  void fireHandStartEvent(long handNum, const GameView &view);
+
+  // 'street' is the street just dealt
   void fireDealEvent(STREET street);
+
   void firePlayerActionEvent(Action action);
-  void fireShowdownEvent(Hand bestHand, std::string playerName);
-  void firePotWinEvent(int pot, std::string playerName);
+
+  // when a player shows their cards (by going to showdown)
+  void fireShowCardsEvent(std::pair<Card, Card> cards, std::string name);
+  
+  // when a player wins a hand at showdown
+  void fireShowdownEvent(Hand best_hand, std::string name);
+
+  // when a player wins a pot
+  void firePotWinEvent(int pot, std::string name);
 private:
   std::vector<IEventListener *> eventListeners_;
 };

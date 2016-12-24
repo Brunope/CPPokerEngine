@@ -10,27 +10,27 @@ LoggerEventListener::LoggerEventListener() {
 }
 
 void
-LoggerEventListener::onGameStart(const GameView *game) {
-  game_ = game;
+LoggerEventListener::onGameStart(const GameView *view) {
+  view_ = view;
   std::cout << "Starting game" << std::endl;
 }
 
 void
-LoggerEventListener::onPlayerJoin(std::string playerName) {
-  std::cout << playerName << " joined" << std::endl;
+LoggerEventListener::onPlayerJoin(std::string name) {
+  std::cout << name << " joined" << std::endl;
 }
 
 void
-LoggerEventListener::onPlayerLeave(std::string playerName) {
-  std::cout << playerName << " left" << std::endl;
+LoggerEventListener::onPlayerLeave(std::string name) {
+  std::cout << name << " left" << std::endl;
 }
 
 void
-LoggerEventListener::onHandStart(long handNum, const GameView *game) {
+LoggerEventListener::onHandStart(long hand_num, const GameView *view) {
   std::cout << std::endl;
-  std::cout << "Starting hand #" << handNum << std::endl;
-  game_ = game;  // update just in case
-  std::map<size_t, Player> players = game->getPlayers();
+  std::cout << "Starting hand #" << hand_num << std::endl;
+  view_ = view;  // update just in case
+  std::map<size_t, Player> players = view->getPlayers();
   for (auto it = players.begin(); it != players.end(); ++it) {
     std::cout << it->second.getName() << ": " << it->second.getChips() \
               << std::endl;
@@ -42,7 +42,7 @@ LoggerEventListener::onDeal(STREET street) {
   std::cout << "Dealing cards" << std::endl;
   if (street > PREFLOP) {
     std::cout << "board: ";
-    std::vector<Card> board = game_->getBoard();
+    std::vector<Card> board = view_->getBoard();
     for (auto it = board.begin(); it != board.end(); ++it) {
       std:: cout << *it;
     }
@@ -53,15 +53,21 @@ LoggerEventListener::onDeal(STREET street) {
 void
 LoggerEventListener::onPlayerAction(Action action) {
   std::cout << action << std::endl;
-  std::cout << "pot: " << game_->getPot() << std::endl;
+  std::cout << "pot: " << view_->getPot() << std::endl;
 }
 
 void
-LoggerEventListener::onShowdown(Hand bestHand, std::string playerName) {
-  std::cout << playerName << " wins with " << bestHand.str() << std::endl;
+LoggerEventListener::onShowCards(std::pair<Card, Card> cards,
+                                 std::string name) {
+  std::cout << name << " shows " << cards.first << cards.second << std::endl;
 }
 
 void
-LoggerEventListener::onPotWin(int pot, std::string playerName) {
-  std::cout << playerName << " wins " << pot << std::endl;;
+LoggerEventListener::onShowdown(Hand best_hand, std::string name) {
+  std::cout << name << " wins with " << best_hand.str() << std::endl;
+}
+
+void
+LoggerEventListener::onPotWin(int pot, std::string name) {
+  std::cout << name << " wins " << pot << std::endl;
 }
