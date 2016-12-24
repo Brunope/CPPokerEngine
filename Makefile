@@ -292,7 +292,7 @@ $(BIN_DIR)/game_unittest : $(Card_o) $(Hand_o) $(HandEvaluator_o) $(Deck_o) \
 
 # Main
 Main_o = $(OBJ_DIR)/Main.o
-$(Main_o) : $(Game_o) $(HumanActor_o) $(RandomActor_o)
+$(Main_o) : $(Game_o) $(HumanActor_o) $(RandomActor_o) $(SRC_DIR)/Main.cc
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(SRC_DIR)/Main.cc -o $@
 
 $(BIN_DIR)/main : $(Card_o) $(Hand_o) $(HandEvaluator_o) $(Deck_o) \
