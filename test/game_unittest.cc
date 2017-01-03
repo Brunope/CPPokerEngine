@@ -550,7 +550,31 @@ TEST(GameTest, TwoRandomActorFullGame) {
   EXPECT_EQ(players.size(), 1);
   EXPECT_EQ(players.begin()->second.getChips(), 1000);
 }
-  
+
+// 3 players all in, one folds, and two players continue on the next hand.
+// Trying to find the seg fault that happens between the two hands
+TEST(GameTest, TwoPlayersRemain) {
+  Game game(5, 10);
+  const GameView &view = game.getView();
+  TestActor a0, a1, a2, a3;
+  game.addPlayer(&a0, "p0", 100);
+  game.addPlayer(&a1, "p1", 100);
+  game.addPlayer(&a2, "p2", 100);
+  game.addPlayer(&a3, "p3", 100);
+
+  a2.queueAction(Action(RAISE, 100));
+  a0.queueAction(Action(CALL));
+  a1.queueAction(Action(FOLD));
+  a3.queueAction(Action(CALL, 90));
+
+  // hand goes to showdown, either a0, a2, or a3 wins
+  // doesn't matter who, just queue fold for everyone
+  a0.queueAction(Action(FOLD));
+  a1.queueAction(Action(FOLD));
+  a2.queueAction(Action(FOLD));
+  a3.queueAction(Action(FOLD));
+}
+
 // TODO:
 TEST(GameTest, LegalActions) {
   // raise amounts
@@ -561,6 +585,7 @@ TEST(GameTest, LegalActions) {
 
 // TODO:
 // Case second player to act is all in, first player still prompted to act
+// I think this is fixed now, but need the test case anyway
 TEST(GameTest, AllInNoAction) {
 
 }

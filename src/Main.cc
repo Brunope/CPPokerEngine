@@ -20,8 +20,8 @@ int main(void) {
   RandomActor bot0, bot1, bot2;
   game.addPlayer(&human, "human", 1000);
   game.addPlayer(&bot0, "bot0", 1000);
-  //game.addPlayer(&bot1, "bot1", 1000);
-  //game.addPlayer(&bot2, "bot2", 1000);
+  game.addPlayer(&bot1, "bot1", 1000);
+  // game.addPlayer(&bot2, "bot2", 1000);
 
   // play until one player wins all the chips
   game.play();

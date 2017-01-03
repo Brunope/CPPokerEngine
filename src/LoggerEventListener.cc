@@ -32,7 +32,8 @@ LoggerEventListener::onHandStart(long hand_num, const GameView *view) {
   view_ = view;  // update just in case
   std::map<size_t, Player> players = view->getPlayers();
   for (auto it = players.begin(); it != players.end(); ++it) {
-    std::cout << it->second.getName() << ": " << it->second.getChips() \
+    std::cout << "Seat " << it->second.getSeat() << ": " \
+              << it->second.getName() << ", " << it->second.getChips() \
               << std::endl;
   }
 }

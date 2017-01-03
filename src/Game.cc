@@ -313,12 +313,12 @@ Game::postBlinds() {
 void
 Game::dealHoleCards() {
   assert(street_ == PREFLOP);
-  for (size_t seat = 0; seat < players_.size(); seat++) {
-    players_[seat].hc_ = deck_.dealHoleCards();
-    actors_[seat]->receiveHoleCards(players_[seat].hc_);
-    FILE_LOG(logDEBUG1) << "Dealt " << players_[seat].name_ << " " \
-                        << players_[seat].hc_.first \
-                        << players_[seat].hc_.second;
+  for (auto it = players_.begin(); it != players_.end(); ++it) {
+    it->second.hc_ = deck_.dealHoleCards();
+    actors_[it->first]->receiveHoleCards(it->second.hc_);
+    FILE_LOG(logDEBUG1) << "Dealt " << it->second.name_ << " " \
+                        << it->second.hc_.first \
+                        << it->second.hc_.second;
   }
   event_manager_.fireDealEvent(PREFLOP);
 }
@@ -503,12 +503,13 @@ Game::handleAction(Action action, Player *source) {
   }
 
   history_.hand_action_[street_].push_back(action);
+  FILE_LOG(logDEBUG3) << "Current actor in seat " << acting_player_seat_;
   acting_player_seat_ = getNextLivePlayerSeat(acting_player_seat_);
+  FILE_LOG(logDEBUG2) << "Next actor in seat " << acting_player_seat_;
   updateLegalActions();  // todo: figure out if this should be in setup or end
   updateView();
   event_manager_.firePlayerActionEvent(action);
 
-  FILE_LOG(logDEBUG2) << "Next actor in seat " << acting_player_seat_;
   FILE_LOG(logDEBUG3) << num_callers_ << " callers";
   FILE_LOG(logDEBUG3) << history_.hand_action_[street_].size() \
                       << " actions for street " << street_;
@@ -528,10 +529,12 @@ Game::getNextPlayerSeat(size_t seat) {
 
 size_t
 Game::getNextLivePlayerSeat(size_t seat) {
+  FILE_LOG(logDEBUG3) << "getNextLivePlayerSeat " << seat;
   size_t next_seat = (seat + 1) % MAX_NUM_PLAYERS;
   while (!live_players_.count(next_seat)) {
     next_seat = (next_seat + 1) % MAX_NUM_PLAYERS;
   }
+  FILE_LOG(logDEBUG3) << "return " << next_seat;
   return next_seat;
 }
 
