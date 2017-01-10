@@ -30,7 +30,7 @@ CXXFLAGS += -g -std=c++11 -I $(INC_DIR)
 # Object files
 OBJS = $(addprefix $(OBJ_DIR)/, Card.o Deck.o Hand.o HandEvaluator.o \
  GameView.o Action.o HandHistory.o EventManager.o SimpleActor.o \
- RandomActor.o LoggerEventListener.o Game.o)
+ HumanActor.o RandomActor.o LoggerEventListener.o Game.o)
 TEST_OBJS = $(addprefix $(OBJ_DIR)/, card_unittest.o deck_unittest.o \
  hand_unittest.o handevaluator_unittest.o action_unittest.o \
  gameview_unittest.o loggereventlistener_unittest.o \
@@ -50,7 +50,7 @@ GTEST_HEADERS = $(GTEST_DIR)/include/gtest/*.h \
 
 # House-keeping build targets.
 
-all : setup $(OBJS) $(TESTS) $(BIN_DIR)/test_suite $(BIN_DIR)/main
+all : setup $(OBJS) $(TESTS) $(BIN_DIR)/test_suite $(BIN_DIR)/main poker.a
 
 HandRanksDat_Fpath = "resources/HandRanks.dat"
 HandRanksDat_Url = "https://www.dropbox.com/s/iw6yuk8naanppn0/HandRanks.dat?dl=0"
@@ -62,6 +62,11 @@ setup :
 
 test : $(BIN_DIR)/test_suite
 	./$(BIN_DIR)/test_suite
+
+
+# build the static lib
+poker.a : $(OBJS)
+	$(AR) $(ARFLAGS) $@ $^
 
 clean :
 	rm -rf $(TESTS) $(OBJS) $(TEST_OBJS) gtest.a gtest_main.a \
