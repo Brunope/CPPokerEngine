@@ -71,7 +71,7 @@ poker.a : $(OBJS)
 	$(AR) $(ARFLAGS) $@ $^
 
 clean :
-	rm -rf $(TESTS) $(OBJ_DIR) $(BIN_DIR) $(TEST_OBJS) *.a *.o \
+	rm -rf $(TESTS) $(OBJ_DIR) $(BIN_DIR) $(TEST_OBJS) *.a *.o *.log \
  .DS_STORE
 
 
