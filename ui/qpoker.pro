@@ -1,7 +1,7 @@
 TARGET = qpoker
 TEMPLATE = app
 CONFIG -= app_bundle
-QMAKE_CXX = g++
+QMAKE_CXX = clang++
 QMAKE_CXXFLAGS += -std=c++11
 QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.12
 QT += core gui
