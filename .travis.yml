@@ -1,4 +1,4 @@
 language: cpp
-compiler: clang
+compiler: gcc
 install: mkdir -p core/resources && wget https://www.dropbox.com/s/iw6yuk8naanppn0/HandRanks.dat?dl=0 -O core/resources/HandRanks.dat
 script: make && make test
