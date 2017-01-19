@@ -2,9 +2,10 @@ TARGET = qpoker
 TEMPLATE = app
 CONFIG -= app_bundle
 QMAKE_CXX = clang++
-QMAKE_CXXFLAGS += -std=c++11
+QMAKE_CXXFLAGS += -std=c++11 -g
 QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.12
-QT += core gui
+
+QT += core gui qml quick widgets
 
 # bye compiler warnings
 DEFINES += QT_DEPRECATED_WARNINGS
@@ -25,6 +26,13 @@ poker_core.depends = FORCE
 qpoker.depends = poker_core
 
 # do the thing
-SOURCES += "Main.cc"
+SOURCES += "Main.cc" "QtEventListener.cc" "QtGameDriver.cc"
+
+HEADERS += "QtEventListener.h" "QtGameDriver.h"
 
 QMAKE_EXTRA_TARGETS += poker_core
+
+DISTFILES += \
+    Gui.qml
+
+QML += Gui.qml
