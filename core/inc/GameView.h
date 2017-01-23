@@ -12,7 +12,7 @@
 #include "Hand.h"
 #include "Player.h"
 #include "Action.h"
-#include "Actor.h"
+#include "Agent.h"
 #include "GameDefs.h"
 #include "HandHistory.h"
 
@@ -21,7 +21,7 @@
 // This means you should get values from the view as late as possible
 // before use. In a single threaded application (current model), it's
 // safe to save values over a duration where the Game is guaranteed
-// to be unchanged (ie waiting for action from an Actor). 
+// to be unchanged (ie waiting for action from an Agent). 
 class GameView {
 public:
   // implicit constructors/destructor fine, all members saved to stack
@@ -42,8 +42,8 @@ public:
   // return a boolean array of size NUM_ACTIONS, the value at index
   // ACTION_T indicates the legality of that action, ie if
   // getLegalActions()[CHECK] is true, a CHECK is legal. This array
-  // is dependent on the state of the current actor. For example, A raise
-  // may be legal for the current actor, but not for the next actor if
+  // is dependent on the state of the current agent. For example, A raise
+  // may be legal for the current agent, but not for the next agent if
   // they do not have enough chips.
   const bool *getLegalActions() const;
   
@@ -72,7 +72,7 @@ public:
   friend class Game;
   friend class GameViewTest_Simple_Test;
 private:
-  std::map<size_t, Actor *> actors_;
+  std::map<size_t, Agent *> agents_;
   std::map<size_t, Player> players_;
   std::map<size_t, Player *> live_players_;
   std::map<size_t, Player *> allin_players_;

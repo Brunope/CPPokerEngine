@@ -4,7 +4,7 @@
 
 #include "log.h"
 #include "Player.h"
-#include "Actor.h"
+#include "Agent.h"
 #include "Card.h"
 #include "Hand.h"
 #include "Observer.h"
@@ -25,9 +25,9 @@
  * - Each Player in 'players_' is located at the index equal to their seat
  *   number, Player::getSeat().
  *
- * actors_
- * - Each Actor * in 'actors_' is associated with the Player in 'players_'
- *   with the same key, ie actors_[0] is the Actor for players_[0].
+ * agents_
+ * - Each Agent * in 'agents_' is associated with the Player in 'players_'
+ *   with the same key, ie agents_[0] is the Agent for players_[0].
  */
 Game::Game(uint32_t small_blind, uint32_t big_blind) {
   FILELog::ReportingLevel() = logDEBUG3;
@@ -48,12 +48,12 @@ Game::~Game() {
 }
 
 void
-Game::addPlayer(Actor *actor, std::string name, size_t chips) {
+Game::addPlayer(Agent *agent, std::string name, size_t chips) {
   assert(players_.size() <= MAX_NUM_PLAYERS);
   Player p(name);
   p.chips_ = chips;
   p.seat_ = players_.size();
-  actors_[p.seat_] = actor;
+  agents_[p.seat_] = agent;
   players_[p.seat_] = p;
 
   updateView();
@@ -64,11 +64,11 @@ Game::addPlayer(Actor *actor, std::string name, size_t chips) {
 }
 
 // Remove the Player at player.getSeat() from players_ and live_players_, and
-// remove its Actor from actors_. You shouldn't call this method directly,
+// remove its Agent from agents_. You shouldn't call this method directly,
 // rather call removePlayer(seat) which calls this.
 void
 Game::removePlayer(const Player player) {
-  actors_.erase(player.getSeat());
+  agents_.erase(player.getSeat());
   players_.erase(player.getSeat());
   if (live_players_.count(player.getSeat())) {
     live_players_.erase(player.getSeat());
@@ -129,9 +129,9 @@ Game::updateView() {
     view_.legal_actions_[type] = legal_actions_[type];
   }
 
-  // give all actors pointers to their copy of player stored in the view
+  // give all agents pointers to their copy of player stored in the view
   // shouldn't have to do this so often...
-  for (auto it = actors_.begin(); it != actors_.end(); ++it) {
+  for (auto it = agents_.begin(); it != agents_.end(); ++it) {
     it->second->setPlayer(&(view_.players_.at(it->first)));
   }
 
@@ -256,7 +256,7 @@ Game::setupHand() {
   FILE_LOG(logDEBUG2) << "Set up hand, button in seat " << button_seat_;
 }
 
-// Give each actor the hand history of the hand that just ended,
+// Give each agent the hand history of the hand that just ended,
 // and remove any player with no more chips
 void
 Game::endHand() {
@@ -268,7 +268,7 @@ Game::endHand() {
       it = players_.erase(it);
       removePlayer(to_remove);
     } else {
-      actors_[it->first]->receiveHandHistory(view_.history_);
+      agents_[it->first]->receiveHandHistory(view_.history_);
       ++it;
     }
   }
@@ -315,7 +315,7 @@ Game::dealHoleCards() {
   assert(street_ == PREFLOP);
   for (auto it = players_.begin(); it != players_.end(); ++it) {
     it->second.hc_ = deck_.dealHoleCards();
-    actors_[it->first]->receiveHoleCards(it->second.hc_);
+    agents_[it->first]->receiveHoleCards(it->second.hc_);
     FILE_LOG(logDEBUG1) << "Dealt " << it->second.name_ << " " \
                         << it->second.hc_.first \
                         << it->second.hc_.second;
@@ -354,12 +354,12 @@ Game::dealNextStreet() {
 // return true if the hand is over because everyone folded but the winner
 bool
 Game::playRound() {
-  // start actor to the left of the button, clear any outstanding bets,
+  // start agent to the left of the button, clear any outstanding bets,
   // zero out chips in play of all players, including those who have folded
   setupRound();
   
   Player *current_player;
-  Actor *current_actor;
+  Agent *current_agent;
   Action current_action;
 
   // preflop, blinds set num_callers_
@@ -387,12 +387,12 @@ Game::playRound() {
       FILE_LOG(logDEBUG2) << "Skipping all in player " << current_player->name_;
       continue;
     }
-    current_actor = actors_[acting_player_seat_];
+    current_agent = agents_[acting_player_seat_];
     
     FILE_LOG(logDEBUG2) << "Asking " << current_player->name_ \
                         << " for action";
     
-    current_action = current_actor->act(view_);
+    current_action = current_agent->act(view_);
     handleAction(current_action, current_player);
   }
 
@@ -412,7 +412,7 @@ Game::playRound() {
 void
 Game::setupRound() {
   // preflop, the blinds have already been posted before the round starts,
-  // so the current actor is already initialized to the player after the
+  // so the current agent is already initialized to the player after the
   // big blind.
   if (street_ > PREFLOP) {
     acting_player_seat_ = getNextLivePlayerSeat(button_seat_);
@@ -503,9 +503,9 @@ Game::handleAction(Action action, Player *source) {
   }
 
   history_.hand_action_[street_].push_back(action);
-  FILE_LOG(logDEBUG3) << "Current actor in seat " << acting_player_seat_;
+  FILE_LOG(logDEBUG3) << "Current agent in seat " << acting_player_seat_;
   acting_player_seat_ = getNextLivePlayerSeat(acting_player_seat_);
-  FILE_LOG(logDEBUG2) << "Next actor in seat " << acting_player_seat_;
+  FILE_LOG(logDEBUG2) << "Next agent in seat " << acting_player_seat_;
   updateLegalActions();  // todo: figure out if this should be in setup or end
   updateView();
   event_manager_.firePlayerActionEvent(action);

@@ -1,11 +1,11 @@
 #include "Player.h"
 #include "Action.h"
 #include "Game.h"
-#include "SimpleActor.h"
+#include "SimpleAgent.h"
 #include "GameView.h"
 #include "HandHistory.h"
-#include "TestActor.h"
-#include "RandomActor.h"
+#include "TestAgent.h"
+#include "RandomAgent.h"
 #include "gtest/gtest.h"
 
 #include <cstdio>
@@ -16,8 +16,8 @@ TEST(GameTest, Constructor) {
   uint32_t sb = 5;
   uint32_t bb = 10;
   Game game(sb, bb);
-  SimpleActor actor1, actor2;
-  game.addPlayer(&actor1, "actor");
+  SimpleAgent agent1, agent2;
+  game.addPlayer(&agent1, "agent");
   const GameView &view = game.getView();
   EXPECT_EQ(view.getBigBlind(), bb);
   EXPECT_EQ(view.getSmallBlind(), sb);
@@ -26,25 +26,25 @@ TEST(GameTest, Constructor) {
   
 TEST(GameTest, AddRemovePlayer) {
   Game game(5, 10);
-  SimpleActor actor1, actor2;
+  SimpleAgent agent1, agent2;
   const GameView &view = game.getView();
   EXPECT_EQ(view.getNumPlayers(), 0);
   
-  game.addPlayer(&actor1, "actor1");
+  game.addPlayer(&agent1, "agent1");
   EXPECT_EQ(view.getNumPlayers(), 1);
   Player player1;
-  EXPECT_EQ(view.getPlayerByName("actor1", &player1), 0);
-  EXPECT_EQ(player1.getName(), "actor1");
+  EXPECT_EQ(view.getPlayerByName("agent1", &player1), 0);
+  EXPECT_EQ(player1.getName(), "agent1");
   
-  game.addPlayer(&actor2, "actor2");
+  game.addPlayer(&agent2, "agent2");
   EXPECT_EQ(view.getNumPlayers(), 2);
   Player player2;
-  EXPECT_EQ(view.getPlayerByName("actor2", &player2), 0);
-  EXPECT_EQ(player2.getName(), "actor2");
+  EXPECT_EQ(view.getPlayerByName("agent2", &player2), 0);
+  EXPECT_EQ(player2.getName(), "agent2");
 
   game.removePlayer(player1.getSeat());
   EXPECT_EQ(view.getNumPlayers(), 1);
-  EXPECT_EQ(view.getPlayerByName("actor1", &player1), 1);
+  EXPECT_EQ(view.getPlayerByName("agent1", &player1), 1);
   EXPECT_EQ(view.getPlayerBySeat(player1.getSeat(), &player1), 1);
 }
 
@@ -53,13 +53,13 @@ TEST(GameTest, AddRemovePlayer) {
 TEST(GameTest, TwoPlayerBlinds) {
   Game game(5, 10);
   const GameView &view = game.getView();
-  TestActor actor0, actor1;
+  TestAgent agent0, agent1;
 
   size_t button_seat = view.getButtonPosition();
-  game.addPlayer(&actor0, "p0", 100);
-  game.addPlayer(&actor1, "p1", 100);
-  actor0.queueAction(Action(FOLD));
-  actor1.queueAction(Action(FOLD));
+  game.addPlayer(&agent0, "p0", 100);
+  game.addPlayer(&agent1, "p1", 100);
+  agent0.queueAction(Action(FOLD));
+  agent1.queueAction(Action(FOLD));
 
   game.play(1);
 
@@ -95,14 +95,14 @@ TEST(GameTest, TwoPlayerBlinds) {
 TEST(GameTest, ThreePlayerInstaFold) {
   Game game(5, 10);
   const GameView &view = game.getView();
-  TestActor actor0, actor1, actor2;
-  game.addPlayer(&actor0, "p0", 100);
-  game.addPlayer(&actor1, "p1", 100);
-  game.addPlayer(&actor2, "p2", 100);
+  TestAgent agent0, agent1, agent2;
+  game.addPlayer(&agent0, "p0", 100);
+  game.addPlayer(&agent1, "p1", 100);
+  game.addPlayer(&agent2, "p2", 100);
   size_t button_seat = view.getButtonPosition();
-  actor0.queueAction(Action(FOLD));
-  actor1.queueAction(Action(FOLD));
-  actor2.queueAction(Action(FOLD));
+  agent0.queueAction(Action(FOLD));
+  agent1.queueAction(Action(FOLD));
+  agent2.queueAction(Action(FOLD));
   
   // play 1 hand
   game.play(1);
@@ -132,7 +132,7 @@ TEST(GameTest, ThreePlayerInstaFold) {
 TEST(GameTest, FourPlayerFlopFold) {
   Game game(5, 10);
   const GameView &view = game.getView();
-  TestActor a0, a1, a2, a3;
+  TestAgent a0, a1, a2, a3;
   game.addPlayer(&a0, "p0", 100);  // assume a0/p0 at seat 0, button
   game.addPlayer(&a1, "p1", 100);
   game.addPlayer(&a2, "p2", 100);
@@ -197,7 +197,7 @@ TEST(GameTest, FourPlayerFlopFold) {
 TEST(GameTest, BigBlindRaiseOptionCheckToShowdown) {
   Game game(5, 10);
   const GameView &view = game.getView();
-  TestActor a0, a1, a2, a3;
+  TestAgent a0, a1, a2, a3;
   game.addPlayer(&a0, "p0", 100);
   game.addPlayer(&a1, "p1", 100);
   game.addPlayer(&a2, "p2", 100);
@@ -261,7 +261,7 @@ TEST(GameTest, BigBlindRaiseOptionCheckToShowdown) {
 TEST(GameTest, FivePlayerBetRaiseCallToShowdown) {
   Game game(5, 10);
   const GameView &view = game.getView();
-  TestActor a0, a1, a2, a3, a4;
+  TestAgent a0, a1, a2, a3, a4;
   game.addPlayer(&a0, "p0", 1000);  // lil extra chips
   game.addPlayer(&a1, "p1", 1000);
   game.addPlayer(&a2, "p2", 1000);
@@ -337,7 +337,7 @@ TEST(GameTest, FivePlayerBetRaiseCallToShowdown) {
 TEST(GameTest, TwoPlayerSingleAllIn) {
   Game game(5, 10);
   const GameView &view = game.getView();
-  TestActor a0, a1;
+  TestAgent a0, a1;
   game.addPlayer(&a0, "p0", 100);
   game.addPlayer(&a1, "p1", 100);
 
@@ -379,7 +379,7 @@ TEST(GameTest, TwoPlayerSingleAllIn) {
 TEST(GameTest, ThreePlayerSingleAllInSidePot) {
   Game game(5, 10);
   const GameView &view = game.getView();
-  TestActor a0, a1, a2;
+  TestAgent a0, a1, a2;
 
   // play 10 hands, try to hit the case where short stack wins, then a
   // big stack wins the remaining side pot - 1/3 prob so 10 tries gives
@@ -482,7 +482,7 @@ TEST(GameTest, ThreePlayerSingleAllInSidePot) {
 TEST(GameTest, EveryoneAllIn) {
   Game game(5, 10);
   const GameView &view = game.getView();
-  TestActor a0, a1, a2, a3, a4, a5, a6, a7, a8;
+  TestAgent a0, a1, a2, a3, a4, a5, a6, a7, a8;
   
   game.addPlayer(&a0, "p0", 100);
   game.addPlayer(&a1, "p1", 200);
@@ -535,10 +535,10 @@ TEST(GameTest, EveryoneAllIn) {
 
 // Play a full game between two players choosing random actions,
 // one of em should win
-TEST(GameTest, TwoRandomActorFullGame) {
+TEST(GameTest, TwoRandomAgentFullGame) {
   Game game(5, 10);
   const GameView &view = game.getView();
-  RandomActor a0, a1;
+  RandomAgent a0, a1;
 
   game.addPlayer(&a0, "p0", 500);
   game.addPlayer(&a1, "p1", 500);
@@ -556,7 +556,7 @@ TEST(GameTest, TwoRandomActorFullGame) {
 TEST(GameTest, TwoPlayersRemain) {
   Game game(5, 10);
   const GameView &view = game.getView();
-  TestActor a0, a1, a2, a3;
+  TestAgent a0, a1, a2, a3;
   game.addPlayer(&a0, "p0", 100);
   game.addPlayer(&a1, "p1", 100);
   game.addPlayer(&a2, "p2", 100);

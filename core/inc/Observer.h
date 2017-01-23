@@ -13,7 +13,7 @@ public:
   Observer(const Game &game) : game_(game) {}
 
   // Called each time the observed Game's externally visible state changes.
-  // Usually the state change is a new Actor event, aka Action. The most recent
+  // Usually the state change is a new Agent event, aka Action. The most recent
   // Action can be accessed with Game.getLastAction().
   virtual void notify() = 0;
 protected:

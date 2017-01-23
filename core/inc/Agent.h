@@ -1,5 +1,5 @@
-#ifndef ACTOR_H_
-#define ACTOR_H_
+#ifndef AGENT_H_
+#define AGENT_H_
 
 #include <cstdlib>
 #include <utility>
@@ -13,16 +13,16 @@
 class GameView;
 
 /**
- * Actor is the class that makes decisions in the Game. If you're writing
- * a poker agent, you'll subclass Actor and override its methods.
+ * Agent is the class that makes decisions in the Game. If you're writing
+ * a poker agent, you'll subclass Agent and override its methods.
  */
-class Actor {
+class Agent {
 public:
-  // Called once at the beginning of each Hand in which this Actor is
+  // Called once at the beginning of each Hand in which this Agent is
   // participating.
   virtual void receiveHoleCards(const std::pair<Card, Card> hc) = 0;
 
-  // Called every time it's this Actor's turn to act. Return an Action,
+  // Called every time it's this Agent's turn to act. Return an Action,
   // which contains the type of action and an amount.
   virtual Action act(const GameView &view) = 0;
 
@@ -31,7 +31,7 @@ public:
   // most recent Action at the back. 
   virtual void receiveHandHistory(const HandHistory &history) = 0;
 
-  // Called once by Game when a new Player / Actor is added. Gives the Actor
+  // Called once by Game when a new Player / Agent is added. Gives the Agent
   // a reference to its own Player object that stores data on stack size,
   // seat position, name, etc.
   void setPlayer(const Player *self) { self_ = self; }
@@ -40,4 +40,4 @@ protected:
   const Player *self_;
   std::pair<Card, Card> hc_;
 };
-#endif  // ACTOR_H_
+#endif  // AGENT_H_

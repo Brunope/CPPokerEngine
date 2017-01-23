@@ -7,7 +7,7 @@
 
 /**
  * Player stores all the information associated with a participant in the Game.
- * It is immutable, because any Actor should be able to view any
+ * It is immutable, because any Agent should be able to view any
  * Player in the Game, but should not be able to mutate any of the information
  * (Game takes sole responsibility).
  */

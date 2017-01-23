@@ -1,5 +1,5 @@
-#ifndef RANDOMACTOR_H_
-#define RANDOMACTOR_H_
+#ifndef RANDOMAGENT_H_
+#define RANDOMAGENT_H_
 
 #include <random>
 
@@ -7,14 +7,14 @@
 #include "HandHistory.h"
 #include "Card.h"
 #include "GameView.h"
-#include "Actor.h"
+#include "Agent.h"
 
 /**
  * Always returns a random legal Action from act().
  */
-class RandomActor : public Actor {
+class RandomAgent : public Agent {
 public:
-  RandomActor();
+  RandomAgent();
   void receiveHoleCards(const std::pair<Card, Card> hc);
   Action act(const GameView &view);
   void receiveHandHistory(const HandHistory &history);
@@ -23,4 +23,4 @@ private:
   std::uniform_int_distribution<int> dist_;
 };
 
-#endif  // RANDOMACTOR_H_
+#endif  // RANDOMAGENT_H_

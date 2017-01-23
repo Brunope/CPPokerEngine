@@ -10,7 +10,7 @@
 #include "Deck.h"
 #include "Hand.h"
 #include "Player.h"
-#include "Actor.h"
+#include "Agent.h"
 #include "IEventListener.h"
 #include "EventManager.h"
 #include "Action.h"
@@ -22,8 +22,8 @@ public:
   Game(uint32_t small_blind, uint32_t big_blind);
   ~Game();
 
-  // Caller retains ownership of 'actor'
-  void addPlayer(Actor *actor, std::string name, size_t chips = STARTING_STACK);
+  // Caller retains ownership of 'agent'
+  void addPlayer(Agent *agent, std::string name, size_t chips = STARTING_STACK);
   void removePlayer(size_t seat);
 
   // Caller retains ownership of 'listener'
@@ -67,7 +67,7 @@ private:
   static size_t getBestHand(std::map<size_t, Hand> player_hands);
 
   GameView view_;
-  std::map<size_t, Actor *> actors_;
+  std::map<size_t, Agent *> agents_;
   std::map<size_t, Player> players_;
   std::map<size_t, Player *> live_players_;
   std::map<size_t, Player *> allin_players_;

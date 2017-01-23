@@ -1,15 +1,15 @@
 #include <cassert>
 
 #include "HandHistory.h"
-#include "TestActor.h"
+#include "TestAgent.h"
 
 void
-TestActor::receiveHoleCards(const std::pair<Card, Card> hc) {
+TestAgent::receiveHoleCards(const std::pair<Card, Card> hc) {
   hc_ = hc;
 }
 
 Action
-TestActor::act(const GameView &view) {
+TestAgent::act(const GameView &view) {
   assert(action_queue_.size() > 0);
   // no pop_front :(
   Action action = action_queue_.front();
@@ -18,9 +18,9 @@ TestActor::act(const GameView &view) {
 }
 
 void
-TestActor::receiveHandHistory(const HandHistory &history) {}
+TestAgent::receiveHandHistory(const HandHistory &history) {}
 
 void
-TestActor::queueAction(Action action) {
+TestAgent::queueAction(Action action) {
   action_queue_.push_back(action);
 }

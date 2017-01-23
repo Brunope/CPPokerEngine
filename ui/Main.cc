@@ -1,11 +1,11 @@
 #include <QGuiApplication>
 #include <QQmlContext>
 #include <QQmlApplicationEngine>
-#include "HumanActor.h"
-#include "RandomActor.h"
+#include "HumanAgent.h"
+#include "RandomAgent.h"
 #include "QtGameDriver.h"
-#include "HumanActor.h"
-#include "RandomActor.h"
+#include "HumanAgent.h"
+#include "RandomAgent.h"
 #include "Game.h"
 
 int main(int argc, char *argv[])
@@ -13,8 +13,8 @@ int main(int argc, char *argv[])
   QGuiApplication app(argc, argv);
   
   // set up the game
-  HumanActor human;
-  RandomActor bot;
+  HumanAgent human;
+  RandomAgent bot;
   Game game(5, 10);
   game.addPlayer(&human, "human", 1000);
   game.addPlayer(&bot, "bot", 1000);

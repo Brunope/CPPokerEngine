@@ -1,10 +1,10 @@
 #include "GameView.h"
 #include "Action.h"
 #include "HandHistory.h"
-#include "SimpleActor.h"
+#include "SimpleAgent.h"
 
 Action
-SimpleActor::act(const GameView &gameView) {
+SimpleAgent::act(const GameView &gameView) {
   double num_bb =
     static_cast<double>(self_->getChips()) / gameView.getBigBlind();
   size_t call_amt = gameView.getCurrentBet() - self_->getChipsInPlay();
@@ -20,11 +20,11 @@ SimpleActor::act(const GameView &gameView) {
 }
 
 void
-SimpleActor::receiveHoleCards(const std::pair<Card, Card> hc) {
+SimpleAgent::receiveHoleCards(const std::pair<Card, Card> hc) {
   hc_ = hc;
 }
 
 void
-SimpleActor::receiveHandHistory(const HandHistory &history) {
+SimpleAgent::receiveHandHistory(const HandHistory &history) {
 
 }

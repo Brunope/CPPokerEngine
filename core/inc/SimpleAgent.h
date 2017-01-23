@@ -1,17 +1,17 @@
-#ifndef SIMPLEACTOR_H_
-#define SIMPLEACTOR_H_
+#ifndef SIMPLEAGENT_H_
+#define SIMPLEAGENT_H_
 
 #include <utility>
 
 #include "GameView.h"
 #include "HandHistory.h"
-#include "Actor.h"
+#include "Agent.h"
 
-class SimpleActor : public Actor {
+class SimpleAgent : public Agent {
 public:
   void receiveHoleCards(const std::pair<Card, Card> hc);
   Action act(const GameView &gameView);
   void receiveHandHistory(const HandHistory &history);
 };
 
-#endif  // SIMPLEACTOR_H_
+#endif  // SIMPLEAGENT_H_

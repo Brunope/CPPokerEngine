@@ -2,8 +2,8 @@
 #include <iostream>
 
 #include "Game.h"
-#include "HumanActor.h"
-#include "RandomActor.h"
+#include "HumanAgent.h"
+#include "RandomAgent.h"
 #include "LoggerEventListener.h"
 
 int main(void) {
@@ -16,8 +16,8 @@ int main(void) {
 
   // Add some players to the game, human vs computer.
   // Each starts with 1000 chips.
-  HumanActor human;
-  RandomActor bot0, bot1, bot2;
+  HumanAgent human;
+  RandomAgent bot0, bot1, bot2;
   game.addPlayer(&human, "human", 1000);
   game.addPlayer(&bot0, "bot0", 1000);
   game.addPlayer(&bot1, "bot1", 1000);

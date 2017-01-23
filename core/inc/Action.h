@@ -11,7 +11,7 @@ enum ACTION_T : uint8_t { RAISE, CALL, FOLD, CHECK, POST, NUM_ACTIONS };
 
 
 /**
- * An Action is an Actor supplied action. If the type of an Action is
+ * An Action is an Agent supplied action. If the type of an Action is
  * FOLD or CHECK, its amount will always be ignored.
  */
 class Action {

@@ -39,7 +39,7 @@ CXXFLAGS += -g -std=c++11 -I $(INC_DIR)
 # Game library source files
 ############################################################
 UNITS = Card Deck Action Hand HandEvaluator HandRanks HandHistory GameView \
- EventManager LoggerEventListener SimpleActor RandomActor TestActor HumanActor \
+ EventManager LoggerEventListener SimpleAgent RandomAgent TestAgent HumanAgent \
  Game
 
 SRCS = $(wildcard, $(SRC_DIR)/*)
@@ -206,15 +206,15 @@ $(BIN_DIR)/eventmanager_unittest : $(addprefix $(OBJ_DIR)/, Card.o Action.o \
 
 $(BIN_DIR)/game_unittest : $(addprefix $(OBJ_DIR)/, Card.o Deck.o Action.o \
  HandEvaluator.o HandRanks.o HandHistory.o Hand.o GameView.o \
- LoggerEventListener.o EventManager.o TestActor.o SimpleActor.o RandomActor.o \
+ LoggerEventListener.o EventManager.o TestAgent.o SimpleAgent.o RandomAgent.o \
  Game.o) \
  gtest_main.a
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lpthread $^ -o $@
 
 $(BIN_DIR)/main : $(addprefix $(OBJ_DIR)/, Card.o Deck.o Action.o \
  HandEvaluator.o HandRanks.o HandHistory.o Hand.o GameView.o \
- LoggerEventListener.o EventManager.o TestActor.o SimpleActor.o RandomActor.o \
- HumanActor.o Game.o Main.o)
+ LoggerEventListener.o EventManager.o TestAgent.o SimpleAgent.o RandomAgent.o \
+ HumanAgent.o Game.o Main.o)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $^ -o $@
 
 

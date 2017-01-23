@@ -3,9 +3,9 @@
 #include <algorithm>
 
 #include "Action.h"
-#include "RandomActor.h"
+#include "RandomAgent.h"
 
-RandomActor::RandomActor()
+RandomAgent::RandomAgent()
 {
   mt_ = std::mt19937(std::random_device{}());
   dist_ = std::uniform_int_distribution<int>
@@ -13,12 +13,12 @@ RandomActor::RandomActor()
 }
 
 void
-RandomActor::receiveHoleCards(const std::pair<Card, Card> hc)
+RandomAgent::receiveHoleCards(const std::pair<Card, Card> hc)
 {
 }
 
 Action
-RandomActor::act(const GameView &view)
+RandomAgent::act(const GameView &view)
 {
   // generate a random action type until it's legal
   // possibly never halts....
@@ -41,6 +41,6 @@ RandomActor::act(const GameView &view)
 }
 
 void
-RandomActor::receiveHandHistory(const HandHistory &history)
+RandomAgent::receiveHandHistory(const HandHistory &history)
 {
 }

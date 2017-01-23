@@ -7,15 +7,15 @@
 #include "Player.h"
 #include "HandHistory.h"
 #include "Card.h"
-#include "HumanActor.h"
+#include "HumanAgent.h"
 
 void
-HumanActor::receiveHoleCards(const std::pair<Card, Card> hc) {
+HumanAgent::receiveHoleCards(const std::pair<Card, Card> hc) {
   std::cout << "You were dealt " << hc.first << hc.second << std::endl;
 }
 
 Action
-HumanActor::act(const GameView &view) {
+HumanAgent::act(const GameView &view) {
   std::cout << "current bet: " << view.getCurrentBet() << std::endl;
 
   const bool *legal_actions = view.getLegalActions();
@@ -91,5 +91,5 @@ HumanActor::act(const GameView &view) {
 }
 
 void
-HumanActor::receiveHandHistory(const HandHistory &history) {
+HumanAgent::receiveHandHistory(const HandHistory &history) {
 }
