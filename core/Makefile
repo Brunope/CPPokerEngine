@@ -207,7 +207,7 @@ $(BIN_DIR)/eventmanager_unittest : $(addprefix $(OBJ_DIR)/, Card.o Action.o \
 $(BIN_DIR)/game_unittest : $(addprefix $(OBJ_DIR)/, Card.o Deck.o Action.o \
  HandEvaluator.o HandRanks.o HandHistory.o Hand.o GameView.o \
  LoggerEventListener.o EventManager.o TestAgent.o SimpleAgent.o RandomAgent.o \
- Game.o) \
+ Game.o game_unittest.o) \
  gtest_main.a
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lpthread $^ -o $@
 
