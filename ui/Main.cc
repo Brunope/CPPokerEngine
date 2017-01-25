@@ -30,7 +30,11 @@ int main(int argc, char *argv[])
   // let qml reference the event listener to received its signals
   engine.rootContext()->setContextProperty("listener", listener);
   
-  engine.load(QUrl::fromLocalFile("Gui.qml"));
+  // engine.load(QUrl::fromLocalFile("Gui.qml"));
+  // Instead of loading from local file, compile the qml into the qrc before
+  // loading. Now you must recompile after qml changes, but the app can be
+  // run from any directory.
+  engine.load(QUrl(QStringLiteral("qrc:/Gui.qml")));
 
   // connect the startGame signal from qml to the QtGameDriver
   QObject *root = engine.rootObjects()[0];

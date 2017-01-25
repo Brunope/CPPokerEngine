@@ -30,9 +30,11 @@ SOURCES += "Main.cc" "QtEventListener.cc" "QtGameDriver.cc"
 
 HEADERS += "QtEventListener.h" "QtGameDriver.h"
 
+RESOURCES += qml.qrc
+QML += Gui.qml
+
 QMAKE_EXTRA_TARGETS += poker_core
 
 DISTFILES += \
     Gui.qml
 
-QML += Gui.qml
