@@ -72,6 +72,7 @@ private:
   std::map<size_t, Player *> live_players_;
   std::map<size_t, Player *> allin_players_;
   std::map<size_t, uint32_t> player_chips_in_pot_per_hand_;
+  std::map<size_t, std::pair<Card, Card>> hole_cards_;
   std::vector<Card> board_;
   std::vector<Action> hand_action_[NUM_STREETS];
   HandHistory history_;

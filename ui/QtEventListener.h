@@ -15,17 +15,19 @@ class QtEventListener : public QObject, public IEventListener {
 public:
   QtEventListener();
   void onGameStart(const GameView *view);
-  void onPlayerJoin(std::string name);
-  void onPlayerLeave(std::string name);
+  void onGameEnd();
+  void onPlayerJoin(Player player);
+  void onPlayerLeave(Player player);
   void onHandStart(long handNum, const GameView *view);
   void onDeal(STREET street);
   void onPlayerAction(Action action);
-  void onShowCards(std::pair<Card, Card> cards, std::string name);
-  void onShowdown(Hand best_hand, std::string name);
-  void onPotWin(int pot, std::string name);
+  void onShowCards(std::pair<Card, Card> cards, Player player);
+  void onShowdown(Hand best_hand, Player player);
+  void onPotWin(uint32_t pot, Player player);
 
 signals:
   void gameStart(const QString &sig_text);
+  void gameEnd(const QString &sig_text);
   void playerJoin(const QString &sig_text);
   void playerLeave(const QString &sig_text);
   void handStart(const QString &sig_text);

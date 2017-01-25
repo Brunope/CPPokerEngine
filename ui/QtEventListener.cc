@@ -14,13 +14,18 @@ QtEventListener::onGameStart(const GameView *view) {
 }
 
 void
-QtEventListener::onPlayerJoin(std::string name) {
+QtEventListener::onGameEnd() {
+  emit gameEnd("game end");
+}
+
+void
+QtEventListener::onPlayerJoin(Player player) {
   QString s = "player join";
   emit playerJoin(s);
 }
 
 void
-QtEventListener::onPlayerLeave(std::string name) {
+QtEventListener::onPlayerLeave(Player player) {
   QString s = "player leave";
   emit playerLeave(s);
 }
@@ -45,19 +50,19 @@ QtEventListener::onPlayerAction(Action action) {
 
 void
 QtEventListener::onShowCards(std::pair<Card, Card> cards,
-                                   std::string name) {
+                                   Player player) {
   QString s = "show cards";
   emit showCards(s);
 }
 
 void
-QtEventListener::onShowdown(Hand best_hand, std::string name) {
+QtEventListener::onShowdown(Hand best_hand, Player player) {
   QString s = "showdown";
   emit showdown(s);
 }
 
 void
-QtEventListener::onPotWin(int pot, std::string name) {
+QtEventListener::onPotWin(uint32_t pot, Player player) {
   QString s = "pot win";
   emit potWin(s);
 }

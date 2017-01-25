@@ -24,15 +24,13 @@ public:
   // that have lost all their chips as soon as possible.
   inline bool isAllIn() const { return chips_ == 0; }
 
-  // Game modifies the chips, hole cards, etc. Shuld be the only friend (sad)
+  // Game modifies the chips. Shuld be the only friend (sad)
   friend class Game;
 private:
   std::string name_;
   uint32_t chips_;
   uint32_t chips_in_play_;
   size_t seat_;
-
-  std::pair<Card, Card> hc_;
 };
 
 #endif  // PLAYER_H_

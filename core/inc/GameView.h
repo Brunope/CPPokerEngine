@@ -8,7 +8,6 @@
 #include <map>
 
 #include "Card.h"
-#include "Deck.h"
 #include "Hand.h"
 #include "Player.h"
 #include "Action.h"
@@ -42,7 +41,7 @@ public:
   // return a boolean array of size NUM_ACTIONS, the value at index
   // ACTION_T indicates the legality of that action, ie if
   // getLegalActions()[CHECK] is true, a CHECK is legal. This array
-  // is dependent on the state of the current agent. For example, A raise
+  // is dependent on the state of the current agent. For example, a raise
   // may be legal for the current agent, but not for the next agent if
   // they do not have enough chips.
   const bool *getLegalActions() const;
@@ -72,7 +71,6 @@ public:
   friend class Game;
   friend class GameViewTest_Simple_Test;
 private:
-  std::map<size_t, Agent *> agents_;
   std::map<size_t, Player> players_;
   std::map<size_t, Player *> live_players_;
   std::map<size_t, Player *> allin_players_;

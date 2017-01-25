@@ -19,11 +19,11 @@ TEST(LoggerEventListenerTest, Comprehensive) {
   EXPECT_EQ(buffer.str(), "Starting game\n");
   buffer.str("");  // clear buffer
   
-  listener.onPlayerJoin(p1.getName());
+  listener.onPlayerJoin(p1);
   EXPECT_EQ(buffer.str(), "p1 joined\n");
   buffer.str("");
   
-  listener.onPlayerLeave(p2.getName());
+  listener.onPlayerLeave(p2);
   EXPECT_EQ(buffer.str(), "p2 left\n");
   buffer.str("");
   
@@ -41,11 +41,11 @@ TEST(LoggerEventListenerTest, Comprehensive) {
   EXPECT_EQ(buffer.str().substr(0, 17), "p1 raises 10\npot:");
   buffer.str("");
   
-  listener.onShowdown(h, p1.getName());
+  listener.onShowdown(h, p1);
   EXPECT_EQ(buffer.str(), "p1 wins with AhAcAsAdKc\n");
   buffer.str("");
   
-  listener.onPotWin(20, p1.getName());
+  listener.onPotWin(20, p1);
   EXPECT_EQ(buffer.str(), "p1 wins 20\n");
   buffer.str("");
 

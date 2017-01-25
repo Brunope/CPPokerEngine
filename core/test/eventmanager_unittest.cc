@@ -29,11 +29,11 @@ TEST(EventManagerTest, LoggerEventListenerIntegration) {
   EXPECT_EQ(buffer.str(), "Starting game\n");
   buffer.str("");  // clear buffer
   
-  e.firePlayerJoinEvent(p1.getName());
+  e.firePlayerJoinEvent(p1);
   EXPECT_EQ(buffer.str(), "p1 joined\n");
   buffer.str("");
   
-  e.firePlayerLeaveEvent(p2.getName());
+  e.firePlayerLeaveEvent(p2);
   EXPECT_EQ(buffer.str(), "p2 left\n");
   buffer.str("");
 
@@ -55,11 +55,11 @@ TEST(EventManagerTest, LoggerEventListenerIntegration) {
   EXPECT_EQ(buffer.str().substr(0, 17), "p1 raises 10\npot:");
   buffer.str("");
   
-  e.fireShowdownEvent(h, p1.getName());
+  e.fireShowdownEvent(h, p1);
   EXPECT_EQ(buffer.str(), "p1 wins with AhAcAsAdKc\n");
   buffer.str("");
 
-  e.firePotWinEvent(20, p1.getName());
+  e.firePotWinEvent(20, p1);
   EXPECT_EQ(buffer.str(), "p1 wins 20\n");
   buffer.str("");
 

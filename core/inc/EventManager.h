@@ -26,11 +26,11 @@ public:
   void removeEventListener(IEventListener *listener);
   
   void fireGameStartEvent(const GameView &view);
-  void fireGameOverEvent(const GameView &view);
+  void fireGameEndEvent();
 
   // todo: change params to const player &
-  void firePlayerJoinEvent(std::string name);
-  void firePlayerLeaveEvent(std::string name);
+  void firePlayerJoinEvent(Player player);
+  void firePlayerLeaveEvent(Player player);
 
   void fireHandStartEvent(long handNum, const GameView &view);
 
@@ -40,13 +40,13 @@ public:
   void firePlayerActionEvent(Action action);
 
   // when a player shows their cards (by going to showdown)
-  void fireShowCardsEvent(std::pair<Card, Card> cards, std::string name);
+  void fireShowCardsEvent(std::pair<Card, Card> cards, Player player);
   
   // when a player wins a hand at showdown
-  void fireShowdownEvent(Hand best_hand, std::string name);
+  void fireShowdownEvent(Hand best_hand, Player player);
 
   // when a player wins a pot
-  void firePotWinEvent(int pot, std::string name);
+  void firePotWinEvent(uint32_t pot, Player player);
 private:
   std::vector<IEventListener *> eventListeners_;
 };

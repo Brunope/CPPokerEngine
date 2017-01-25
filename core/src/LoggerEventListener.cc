@@ -6,8 +6,9 @@
 #include "IEventListener.h"
 #include "LoggerEventListener.h"
 
-LoggerEventListener::LoggerEventListener() {
-}
+// LoggerEventListener::LoggerEventListener() {
+
+// }
 
 void
 LoggerEventListener::onGameStart(const GameView *view) {
@@ -16,13 +17,18 @@ LoggerEventListener::onGameStart(const GameView *view) {
 }
 
 void
-LoggerEventListener::onPlayerJoin(std::string name) {
-  std::cout << name << " joined" << std::endl;
+LoggerEventListener::onGameEnd() {
+  view_ = nullptr;
 }
 
 void
-LoggerEventListener::onPlayerLeave(std::string name) {
-  std::cout << name << " left" << std::endl;
+LoggerEventListener::onPlayerJoin(Player player) {
+  std::cout << player.getName() << " joined" << std::endl;
+}
+
+void
+LoggerEventListener::onPlayerLeave(Player player) {
+  std::cout << player.getName() << " left" << std::endl;
 }
 
 void
@@ -58,17 +64,17 @@ LoggerEventListener::onPlayerAction(Action action) {
 }
 
 void
-LoggerEventListener::onShowCards(std::pair<Card, Card> cards,
-                                 std::string name) {
-  std::cout << name << " shows " << cards.first << cards.second << std::endl;
+LoggerEventListener::onShowCards(std::pair<Card, Card> cards, Player player) {
+  std::cout << player.getName() << " shows " << cards.first << cards.second \
+            << std::endl;
 }
 
 void
-LoggerEventListener::onShowdown(Hand best_hand, std::string name) {
-  std::cout << name << " wins with " << best_hand.str() << std::endl;
+LoggerEventListener::onShowdown(Hand best_hand, Player player) {
+  std::cout << player.getName() << " wins with " << best_hand.str() << std::endl;
 }
 
 void
-LoggerEventListener::onPotWin(int pot, std::string name) {
-  std::cout << name << " wins " << pot << std::endl;
+LoggerEventListener::onPotWin(uint32_t pot, Player player) {
+  std::cout << player.getName() << " wins " << pot << std::endl;
 }

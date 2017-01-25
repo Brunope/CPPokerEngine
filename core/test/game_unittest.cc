@@ -1,3 +1,7 @@
+#include <cstdio>
+#include <map>
+#include <vector>
+
 #include "Player.h"
 #include "Action.h"
 #include "Game.h"
@@ -7,10 +11,6 @@
 #include "TestAgent.h"
 #include "RandomAgent.h"
 #include "gtest/gtest.h"
-
-#include <cstdio>
-#include <map>
-#include <vector>
 
 TEST(GameTest, Constructor) {
   uint32_t sb = 5;

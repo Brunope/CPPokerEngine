@@ -57,7 +57,7 @@ Game::addPlayer(Agent *agent, std::string name, size_t chips) {
   players_[p.seat_] = p;
 
   updateView();
-  event_manager_.firePlayerJoinEvent(name);
+  event_manager_.firePlayerJoinEvent(p);
 
   FILE_LOG(logDEBUG) << "Added " << p.name_ << " in seat " << p.seat_ \
                      << " with " << chips << " chips.";
@@ -78,7 +78,7 @@ Game::removePlayer(const Player player) {
   }
 
   updateView();
-  event_manager_.firePlayerLeaveEvent(player.getName());
+  event_manager_.firePlayerLeaveEvent(player);
 
   FILE_LOG(logDEBUG) << "Removed " << player.name_ << " from seat " \
                      << player.seat_;
@@ -108,7 +108,7 @@ Game::getView() const {
 
 void
 Game::updateView() {
-  // TODO: make a million times faster
+  // TODO: incremental view updates
   view_.small_blind_ = small_blind_;
   view_.big_blind_ = big_blind_;
   view_.button_pos_ = button_seat_;  // todo
@@ -165,7 +165,7 @@ Game::play(int num_hands) {
     playHand();
   }
   
-  event_manager_.fireGameOverEvent(view_);
+  event_manager_.fireGameEndEvent();
 }
 
 void
@@ -313,12 +313,13 @@ Game::postBlinds() {
 void
 Game::dealHoleCards() {
   assert(street_ == PREFLOP);
+  hole_cards_.clear();
   for (auto it = players_.begin(); it != players_.end(); ++it) {
-    it->second.hc_ = deck_.dealHoleCards();
-    agents_[it->first]->receiveHoleCards(it->second.hc_);
+    std::pair<Card, Card> hc = deck_.dealHoleCards();
+    hole_cards_[it->first] = hc;
+    agents_[it->first]->receiveHoleCards(hc);
     FILE_LOG(logDEBUG1) << "Dealt " << it->second.name_ << " " \
-                        << it->second.hc_.first \
-                        << it->second.hc_.second;
+                        << hc.first << hc.second;
   }
   event_manager_.fireDealEvent(PREFLOP);
 }
@@ -684,7 +685,7 @@ void
 Game::showdown() {
   // show hole cards of all remaining live players
   for (auto it = live_players_.begin(); it != live_players_.end(); ++it) {
-    event_manager_.fireShowCardsEvent(it->second->hc_, it->second->name_);
+    event_manager_.fireShowCardsEvent(hole_cards_[it->first], *(it->second));
   }
   
   if (allin_players_.empty()) {
@@ -769,7 +770,7 @@ Game::showdownAllIn() {
 
 void 
 Game::showdownWin(const Hand &hand, uint32_t pot, Player *player) {
-  event_manager_.fireShowdownEvent(hand, player->getName());
+  event_manager_.fireShowdownEvent(hand, *player);
   FILE_LOG(logDEBUG1) << player->name_ << " wins with " << hand.str();
   potWin(pot, player);
 }
@@ -780,7 +781,7 @@ Game::potWin(uint32_t pot, Player *player) {
   history_.winner_ = *player;
   history_.player_winnings_[player->seat_] = pot;
   updateView();
-  event_manager_.firePotWinEvent(pot, player->name_);
+  event_manager_.firePotWinEvent(pot, *player);
   FILE_LOG(logDEBUG1) << player->name_ << " wins " << pot;
 }
 
@@ -791,9 +792,9 @@ Game::getPlayerHands() {
   player_cards.resize(board_.size() + 2);  // make space for 2 hole cards
   for (auto it = live_players_.begin(); it != live_players_.end(); ++it) {
     // add player's first hole card
-    player_cards[board_.size()] = it->second->hc_.first;
+    player_cards[board_.size()] = hole_cards_[it->first].first;
     // second hole card
-    player_cards[board_.size() + 1] = it->second->hc_.second;
+    player_cards[board_.size() + 1] = hole_cards_[it->first].second;
     player_hands[it->first] = Hand(player_cards);
   }
   return player_hands;
