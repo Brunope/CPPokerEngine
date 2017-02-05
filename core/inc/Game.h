@@ -22,6 +22,8 @@ public:
   Game(uint32_t small_blind, uint32_t big_blind);
   ~Game();
 
+  const GameView &getView() const;
+
   // Caller retains ownership of 'agent'
   void addPlayer(Agent *agent, std::string name, size_t chips = STARTING_STACK);
   void removePlayer(size_t seat);
@@ -36,7 +38,6 @@ public:
   // remain.
   void play(int num_hands = -1);
 
-  const GameView &getView() const;
 private:
   void updateView();
   void removePlayer(const Player player);

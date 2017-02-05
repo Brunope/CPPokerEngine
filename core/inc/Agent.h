@@ -31,9 +31,9 @@ public:
   // most recent Action at the back. 
   virtual void receiveHandHistory(const HandHistory &history) = 0;
 
-  // Called once by Game when a new Player / Agent is added. Gives the Agent
+  // Called once by Game when this new Player / Agent is added. Gives the Agent
   // a reference to its own Player object that stores data on stack size,
-  // seat position, name, etc.
+  // seat position, and name.
   void setPlayer(const Player *self) { self_ = self; }
 
 protected:

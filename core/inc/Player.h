@@ -2,8 +2,7 @@
 #define PLAYER_H_
 
 #include <cstdint>
-
-#include "Card.h"
+#include <string>
 
 /**
  * Player stores all the information associated with a participant in the Game.
