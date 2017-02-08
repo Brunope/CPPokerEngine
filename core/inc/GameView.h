@@ -66,6 +66,7 @@ public:
   // Return hand history of current hand. Cleared as soon as a new hand
   // is started
   const HandHistory& getHandHistory() const;
+  uint32_t getHandNum() const;
 
   // Rely on Game to set all these fields
   friend class Game;

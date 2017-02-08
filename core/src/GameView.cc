@@ -120,3 +120,8 @@ const HandHistory &
 GameView::getHandHistory() const {
   return history_;
 }
+
+uint32_t
+GameView::getHandNum() const {
+  return hand_num_;
+}

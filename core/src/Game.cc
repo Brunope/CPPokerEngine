@@ -44,6 +44,7 @@ Game::Game(uint32_t small_blind, uint32_t big_blind) {
 }
 
 Game::~Game() {
+  FILE_LOG(logDEBUG) << "Destructing Game";
   fclose(log_fd_);
 }
 
@@ -118,6 +119,7 @@ Game::updateView() {
   view_.current_raise_by_ = current_raise_by_;
   view_.pot_ = pot_;
   view_.acting_player_seat_ = acting_player_seat_;
+  view_.hand_num_ = hand_num_;
 
   view_.players_ = players_;
 
