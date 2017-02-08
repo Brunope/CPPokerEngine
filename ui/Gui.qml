@@ -1,6 +1,7 @@
 import QtQuick 2.7
 import QtQuick.Controls 2.0
 import QtQuick.Window 2.0
+//import poker 1.0
 
 Window {
   id: root
@@ -13,14 +14,14 @@ Window {
 
   Text {
     id: recvSigText
-    text: qsTr("received signal text")
+    text: "received signal text"
     font.pointSize: 20
     anchors.centerIn: parent
   }
 
   Button {
     id: startGameButton    
-    text: qsTr("start game")
+    text: "start game"
 
     anchors.bottom: recvSigText.top
     anchors.horizontalCenter: parent.horizontalCenter
@@ -30,15 +31,44 @@ Window {
     }
   }
 
+  Player {
+    id: player0
+    seat: 0
+    anchors.top: parent.top
+  }
+
+  Player {
+    id: player1
+    seat: 1
+    anchors.left: player0.right
+  }
+
+  Player {
+    id: player5
+    anchors.left: player1.right
+    seat: 5
+  }
+
+  Rectangle {
+    id: numHandsContainer
+    anchors.top: recvSigText.bottom
+    anchors.horizontalCenter: parent.horizontalCenter
+    width: 100
+    height: 20
+    Text {
+      text: "hand # " + view.numHands
+    }
+  }
+
   Connections {
     id: cppConnection
-    target:listener
+    target: listener
     ignoreUnknownSignals: true
     onGameStart: {
       recvSigText.text = sig_text
     }
     onPlayerJoin: {
-      recvSigText.text = sig_text
+      recvSigText.text = sig_player.getName()
     }
     onPlayerLeave: {
       recvSigText.text = sig_text

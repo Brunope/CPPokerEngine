@@ -1,19 +1,22 @@
-#ifndef QTEVENTLISTENER_H_
-#define QTEVENTLISTENER_H_
+#ifndef QEVENTLISTENER_H_
+#define QEVENTLISTENER_H_
 
 #include <QObject>
 #include <QString>
+#include <QMap>
+#include "QPlayer.h"
+#include "QGameView.h"
 #include "IEventListener.h"
 
 /**
  * Once registered in a Game via Game::addEventListener, QtEventListener
  * emits signals as the Game's state changes.
  */
-class QtEventListener : public QObject, public IEventListener {
+class QEventListener : public QObject, public IEventListener {
   Q_OBJECT
 
 public:
-  QtEventListener();
+  QEventListener();
   void onGameStart(const GameView *view);
   void onGameEnd();
   void onPlayerJoin(Player player);
@@ -28,7 +31,7 @@ public:
 signals:
   void gameStart(const QString &sig_text);
   void gameEnd(const QString &sig_text);
-  void playerJoin(const QString &sig_text);
+  void playerJoin(const QString &sig_player);
   void playerLeave(const QString &sig_text);
   void handStart(const QString &sig_text);
   void deal(const QString &sig_text);
@@ -37,8 +40,12 @@ signals:
   void showdown(const QString &sig_text);
   void potWin(const QString &sig_text);
 
+  void viewChanged(const QGameView &sig_view);
+
 private:
+  void updateView();
   const GameView *view_;
+  QGameView updateableView_;
 };
 
 #endif  // QTEVENTLISTENER_H_

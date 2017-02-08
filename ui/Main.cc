@@ -1,11 +1,15 @@
 #include <QGuiApplication>
 #include <QQmlContext>
 #include <QQmlApplicationEngine>
+#include <QObject>
 #include "HumanAgent.h"
 #include "RandomAgent.h"
-#include "QtGameDriver.h"
+#include "QGameDriver.h"
+#include "QEventListener.h"
+#include "QGameView.h"
 #include "HumanAgent.h"
 #include "RandomAgent.h"
+#include "LoggerEventListener.h"
 #include "Game.h"
 
 int main(int argc, char *argv[])
@@ -19,17 +23,28 @@ int main(int argc, char *argv[])
   game.addPlayer(&human, "human", 1000);
   game.addPlayer(&bot, "bot", 1000);
 
+  // logs game events to stdout, since the ui doesn't quite show
+  // everything yet
+  LoggerEventListener logListener;
+  game.addEventListener(&logListener);
+
   // manipulates the game from qml signals
-  QtGameDriver driver(&game);
+  QGameDriver driver(&game);
+  
+  // contains a snapshot of the game's state, lives in this main thread,
+  // still owned by driver. QML binds properties to this
+  QGameView *view = driver.getView();
 
   // emits signals from the game on state changes
-  QtEventListener *listener = driver.getListener();
-
+  // and manipulates the view.
+  QEventListener *QListener = driver.getListener();
+  
   QQmlApplicationEngine engine;
 
-  // let qml reference the event listener to received its signals
-  engine.rootContext()->setContextProperty("listener", listener);
-  
+  qmlRegisterType<QPlayer>("poker", 1, 0, "QPlayer");
+  engine.rootContext()->setContextProperty("view", view);
+  engine.rootContext()->setContextProperty("listener", QListener);
+
   // engine.load(QUrl::fromLocalFile("Gui.qml"));
   // Instead of loading from local file, compile the qml into the qrc before
   // loading. Now you must recompile after qml changes, but the app can be

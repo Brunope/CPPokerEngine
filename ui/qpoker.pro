@@ -26,15 +26,16 @@ poker_core.depends = FORCE
 qpoker.depends = poker_core
 
 # do the thing
-SOURCES += "Main.cc" "QtEventListener.cc" "QtGameDriver.cc"
+SOURCES += "Main.cc" "QEventListener.cc" "QGameDriver.cc" "QPlayer.cc" \
+ "QGameView.cc"
 
-HEADERS += "QtEventListener.h" "QtGameDriver.h"
+HEADERS += "QEventListener.h" "QGameDriver.h" "QPlayer.h" "QGameView.h"
 
 RESOURCES += qml.qrc
-QML += Gui.qml
+QML += Gui.qml Player.qml
 
 QMAKE_EXTRA_TARGETS += poker_core
 
 DISTFILES += \
-    Gui.qml
+    Gui.qml Player.qml
 
