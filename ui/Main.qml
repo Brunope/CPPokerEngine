@@ -8,24 +8,28 @@ Window {
   visible: true
   width: 640
   height: 480
-  color: "gray"
+  Image {
+    id: bgImage
+    source: "background.png"
+  }
 
   signal startGame(string msg)
 
   Rectangle {
     id: recvSigContainer
-    width: 202
-    height: 102
-    border.color: "black"
-    border.width: 1
-
+    width: 200
+    height: 100
     anchors.bottom: parent.bottom
     anchors.left: parent.left
 
+    border.color: "white"
+    border.width: 1
+    color: "transparent"
+    
     Flickable {
       id: recvSigScroll
-      width: 200
-      height: 100
+      width: parent.width
+      height: parent.width
       contentWidth: recvSigText.width
       contentHeight: recvSigText.height
       contentY: contentHeight - height
@@ -41,6 +45,7 @@ Window {
       Text {
         id: recvSigText
         text: ""
+        color: "white"
         font.pointSize: 12
       }
     }
@@ -62,13 +67,17 @@ Window {
   Player {
     id: player0
     seat: 0
-    anchors.top: parent.top
+    x: root.width / 5
+    y: root.height / 6
   }
 
   Player {
     id: player1
     seat: 1
     anchors.left: player0.right
+    anchors.margins: 50
+    x: 2 * root.width / 5
+    y: root.height / 6
   }
 
   Player {
@@ -82,10 +91,9 @@ Window {
     anchors.left: parent.left
     anchors.bottom: recvSigContainer.top
     height: 20
-    border.color: "black"
-    border.width: 1
     Text {
       text: "hand # " + view.numHands
+      color: "white"
       leftPadding: 10
     }
   }

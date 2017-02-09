@@ -36,7 +36,7 @@ int main(int argc, char *argv[])
   QGameView *view = driver.getView();
 
   // emits signals from the game on state changes
-  // and manipulates the view.
+  // and manipulates the QGameView.
   QEventListener *QListener = driver.getListener();
   
   QQmlApplicationEngine engine;
@@ -49,7 +49,7 @@ int main(int argc, char *argv[])
   // Instead of loading from local file, compile the qml into the qrc before
   // loading. Now you must recompile after qml changes, but the app can be
   // run from any directory.
-  engine.load(QUrl(QStringLiteral("qrc:/Gui.qml")));
+  engine.load(QUrl(QStringLiteral("qrc:/Main.qml")));
 
   // connect the startGame signal from qml to the QtGameDriver
   QObject *root = engine.rootObjects()[0];

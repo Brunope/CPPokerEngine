@@ -32,10 +32,11 @@ SOURCES += "Main.cc" "QEventListener.cc" "QGameDriver.cc" "QPlayer.cc" \
 HEADERS += "QEventListener.h" "QGameDriver.h" "QPlayer.h" "QGameView.h"
 
 RESOURCES += qml.qrc
-QML += Gui.qml Player.qml
+QML += Main.qml Player.qml
 
 QMAKE_EXTRA_TARGETS += poker_core
 
+# do i need this?
 DISTFILES += \
-    Gui.qml Player.qml
+    Main.qml Player.qml background.png
 
