@@ -38,6 +38,12 @@ public:
   // bet, ie the amount raised BY in the most recent raise.
   uint32_t getCurrentRaiseBy() const;
 
+  // return the seat of the Player about to act or in the process of acting
+  size_t getActingPlayerSeat() const;
+
+  // return the Player about to act or in the process of acting
+  Player getActingPlayer() const;
+
   // return a boolean array of size NUM_ACTIONS, the value at index
   // ACTION_T indicates the legality of that action, ie if
   // getLegalActions()[CHECK] is true, a CHECK is legal. This array
@@ -61,7 +67,7 @@ public:
   // Unspecified behavior if not called during the middle of a hand.
   Player getNextLivePlayer(const Player &player) const;
   std::map<size_t, Player> getPlayers() const;
-  std::map<size_t, Player> getPlayersInHand() const;
+  std::map<size_t, Player> getLivePlayers() const;
   std::vector<Card> getBoard() const;
   // Return hand history of current hand. Cleared as soon as a new hand
   // is started
@@ -73,11 +79,8 @@ public:
   friend class GameViewTest_Simple_Test;
 private:
   std::map<size_t, Player> players_;
-  std::map<size_t, Player *> live_players_;
-  std::map<size_t, Player *> allin_players_;
   
   std::vector<Card> board_;
-  std::vector<Action> hand_action_[NUM_STREETS];
   bool legal_actions_[NUM_ACTIONS];
   HandHistory history_;
 

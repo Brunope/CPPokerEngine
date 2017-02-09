@@ -44,6 +44,16 @@ GameView::getCurrentRaiseBy() const {
   return current_raise_by_;
 }
 
+size_t
+GameView::getActingPlayerSeat() const {
+  return acting_player_seat_;
+}
+
+Player
+GameView::getActingPlayer() const {
+  return players_.at(acting_player_seat_);
+}
+
 const bool *
 GameView::getLegalActions() const {
   return legal_actions_;
@@ -87,11 +97,12 @@ GameView::getNextPlayer(const Player &player) const {
 Player
 GameView::getNextLivePlayer(const Player &player) const {
   size_t seat = (player.getSeat() + 1) % MAX_NUM_PLAYERS;
-  while (seat != player.getSeat()) {
-    if (live_players_.count(seat)) {
-      return *(live_players_.at(seat));
+  Player current = getNextPlayer(player);
+  while (current.getSeat() != player.getSeat()) {
+    if (current.isLive()) {
+      return current;
     }
-    seat = (seat + 1) % MAX_NUM_PLAYERS;
+    current = getNextPlayer(current);
   }
   return player;
 }
@@ -102,11 +113,12 @@ GameView::getPlayers() const {
 }
 
 std::map<size_t, Player>
-GameView::getPlayersInHand() const {
-  // dereference our live_players_ for em
+GameView::getLivePlayers() const {
   std::map<size_t, Player> live;
-  for (auto it = live_players_.begin(); it != live_players_.end(); ++it) {
-    live[it->first] = *(it->second);
+  for (auto it = players_.begin(); it != players_.end(); ++it) {
+    if (it->second.isLive()) {
+      live[it->first] = it->second;
+    }
   }
   return live;
 }

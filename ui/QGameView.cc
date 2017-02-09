@@ -17,19 +17,22 @@ QGameView::~QGameView() {
 
 // todo: incremental updates over mass clobbering everything
 void
-QGameView::copyFrom(const GameView *view) {
+QGameView::copyFrom(const GameView *other) {
   // copy players, reset them all first, eugh
   for (size_t i = 0; i < MAX_NUM_PLAYERS; i++) {
     players_.at(i)->copyFrom(QPlayer());
   }
-  std::map<size_t, Player> other_players = view->getPlayers();
+  std::map<size_t, Player> other_players = other->getPlayers();
   for (auto it = other_players.begin(); it != other_players.end(); ++it) {
     players_.at(it->first)->copyFrom(it->second);
   }
   emit playersChanged();
 
-  num_hands_ = view->getHandNum();
+  num_hands_ = other->getHandNum();
   emit numHandsChanged();
+
+  acting_player_seat_ = other->getActingPlayerSeat();
+  emit actingPlayerSeatChanged();
 }
 
 void
@@ -62,13 +65,9 @@ QGameView::playerCount() const {
 void
 QGameView::setPlayer(size_t seat, QPlayer player) {
   assert(seat < MAX_NUM_PLAYERS);
-  // if (*(players_[seat]) != player) {
-  //   *(players_[seat]) = player;
-  //   emit playersChanged();
-  // }
-  // TODO: provide an operator== for QPlayer (dunno why it cant use the default)
   QPlayer *newPlayer = new QPlayer();
   newPlayer->copyFrom(player);
+  delete players_[seat];
   players_[seat] = newPlayer;
   emit playersChanged();
 }
@@ -76,6 +75,11 @@ QGameView::setPlayer(size_t seat, QPlayer player) {
 int
 QGameView::numHands() const {
   return num_hands_;
+}
+
+int
+QGameView::actingPlayerSeat() const {
+  return acting_player_seat_;
 }
 
 void

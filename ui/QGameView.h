@@ -13,6 +13,7 @@ class QGameView : public QObject {
   Q_OBJECT
   Q_PROPERTY(QQmlListProperty<QPlayer> players READ players NOTIFY playersChanged)
   Q_PROPERTY(int numHands READ numHands NOTIFY numHandsChanged)
+  Q_PROPERTY(int actingPlayerSeat READ actingPlayerSeat NOTIFY actingPlayerSeatChanged)
 
 public:
   QGameView();
@@ -28,15 +29,18 @@ public:
   void setPlayer(size_t seat, QPlayer player);
 
   int numHands() const;
+  int actingPlayerSeat() const;
 
 signals:
   void playersChanged();
   void numHandsChanged();
+  void actingPlayerSeatChanged();
 
 private:
   void initQPlayers();
   QList<QPlayer *> players_;
   int num_hands_;
+  int acting_player_seat_;
 };
 
 //Q_DECLARE_METATYPE(QGameView);

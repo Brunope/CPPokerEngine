@@ -31,7 +31,7 @@ public:
 signals:
   void gameStart(const QString &sig_text);
   void gameEnd(const QString &sig_text);
-  void playerJoin(const QString &sig_player);
+  void playerJoin(const QString &sig_text);
   void playerLeave(const QString &sig_text);
   void handStart(const QString &sig_text);
   void deal(const QString &sig_text);

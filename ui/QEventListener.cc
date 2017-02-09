@@ -29,7 +29,6 @@ QEventListener::onGameEnd() {
 
 void
 QEventListener::onPlayerJoin(Player player) {
-  const QPlayer &p(player);
   QString s = QString::fromStdString(player.getName() + " joined");
   updateView();
   emit playerJoin(s);
@@ -72,21 +71,24 @@ QEventListener::onPlayerAction(Action action) {
 void
 QEventListener::onShowCards(std::pair<Card, Card> cards,
                                    Player player) {
-  QString s = "show cards";
+  QString s = QString::fromStdString(player.getName() + " shows " +
+                                     cards.first.str() + cards.second.str());
   updateView();
   emit showCards(s);
 }
 
 void
 QEventListener::onShowdown(Hand best_hand, Player player) {
-  QString s = "showdown";
+  QString s = QString::fromStdString(player.getName() + " wins with " +
+                                     best_hand.str());
   updateView();
   emit showdown(s);
 }
 
 void
 QEventListener::onPotWin(uint32_t pot, Player player) {
-  QString s = "pot win";
+  QString s = QString::fromStdString(player.getName() + " wins " +
+                                     std::to_string(pot));
   updateView();
   emit potWin(s);
 }

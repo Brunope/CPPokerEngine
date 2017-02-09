@@ -17,16 +17,20 @@
  * Whole bunch of invariants
  *
  * players_
- * - Every Player in 'players_' is a current participant in the Game. There
+ * - Each Player in players_ is a current participant in the Game. There
  *   is no such thing as an inactive Player; it is impossible for players to
  *   sit out hands. 
- * - Each Player in 'players_' has a nonzero chip count. As soon as a Player
- *   loses all their chips, they are removed from 'players_'.
- * - Each Player in 'players_' is located at the index equal to their seat
+ * - Each Player in players_ has a nonzero chip count. As soon as a Player
+ *   loses all their chips, they are removed from players_.
+ * - Each Player in players_ is located at the index equal to their seat
  *   number, Player::getSeat().
+ * - live_players_ holds 1 pointer to each Player in players_ with 
+ *   player::isLive == true.
+ * - allin_players holds 1 pointer to each Players in players_ with
+ *   player::isAllIn() == true.
  *
  * agents_
- * - Each Agent * in 'agents_' is associated with the Player in 'players_'
+ * - Each Agent * in agents_ is associated with the Player in players_
  *   with the same key, ie agents_[0] is the Agent for players_[0].
  */
 Game::Game(uint32_t small_blind, uint32_t big_blind) {
@@ -88,7 +92,7 @@ Game::removePlayer(const Player player) {
 void
 Game::removePlayer(size_t seat) {
   if (players_.count(seat)) {
-    removePlayer(players_.at(seat));
+    removePlayer(players_.at(seat)); 
   }
 }
 
@@ -140,20 +144,6 @@ Game::updateView() {
   FILE_LOG(logDEBUG3) << "current_bet_: " << view_.current_bet_;
   FILE_LOG(logDEBUG3) << "current_raise_by_: " << view_.current_raise_by_;
   FILE_LOG(logDEBUG3) << "Updated view";
-
-  // copy live_players_ but point into view_.players_ instead
-  // view_.live_players_ = live_players_;
-  // for (auto it = view_.live_players_.begin();
-  //      it != view_.live_players_.end(); ++it) {
-  //   it->second = &view_.players_[it->second->getSeat()];
-  // }
-
-  // // copy allin_players_ but point into view_.players_
-  // view_.allin_players_ = allin_players_;
-  // for (auto it = view_.allin_players_.begin();
-  //      it != view_.allin_players_.end(); ++it) {
-  //   it->second = &view_.players_[it->second->getSeat()];
-  // }
 }
 
 void
@@ -228,6 +218,7 @@ Game::setupHand() {
     player = &(it->second);
     assert(player->getChips() > 0);
     player->chips_in_play_ = 0;
+    player->live_ = true;
     live_players_[it->first] = player;
     player_chips_in_pot_per_hand_[it->first] = 0;
   }
@@ -394,7 +385,6 @@ Game::playRound() {
     
     FILE_LOG(logDEBUG2) << "Asking " << current_player->name_ \
                         << " for action";
-    
     current_action = current_agent->act(view_);
     handleAction(current_action, current_player);
   }
@@ -454,6 +444,7 @@ Game::handleAction(Action action, Player *source) {
 
   switch (action.getType()) {
   case FOLD:
+    source->live_ = false;
     live_players_.erase(acting_player_seat_);
     FILE_LOG(logDEBUG2) << source->name_ << " folded, no longer live";
     break;
