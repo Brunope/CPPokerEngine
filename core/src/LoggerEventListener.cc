@@ -6,12 +6,13 @@
 #include "IEventListener.h"
 #include "LoggerEventListener.h"
 
-// LoggerEventListener::LoggerEventListener() {
-
-// }
+void
+LoggerEventListener::onViewChanged(std::shared_ptr<const GameView> view) {
+  view_ = view;
+}
 
 void
-LoggerEventListener::onGameStart(const GameView *view) {
+LoggerEventListener::onGameStart(std::shared_ptr<const GameView> view) {
   view_ = view;
   std::cout << "Starting game" << std::endl;
 }
@@ -32,7 +33,8 @@ LoggerEventListener::onPlayerLeave(Player player) {
 }
 
 void
-LoggerEventListener::onHandStart(long hand_num, const GameView *view) {
+LoggerEventListener::onHandStart(long hand_num,
+                                 std::shared_ptr<const GameView> view) {
   std::cout << std::endl;
   std::cout << "Starting hand #" << hand_num << std::endl;
   view_ = view;  // update just in case

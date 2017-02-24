@@ -8,18 +8,19 @@ public:
   //LoggerEventListener();
 
   // seems redundant to redefine these, can I not?
-  void onGameStart(const GameView *view);
+  void onViewChanged(std::shared_ptr<const GameView> view);
+  void onGameStart(std::shared_ptr<const GameView> view);
   void onGameEnd();
   void onPlayerJoin(Player player);
   void onPlayerLeave(Player player);
-  void onHandStart(long handNum, const GameView *view);
+  void onHandStart(long handNum, std::shared_ptr<const GameView> view);
   void onDeal(STREET street);
   void onPlayerAction(Action action);
   void onShowCards(std::pair<Card, Card> cards, Player player);
   void onShowdown(Hand best_hand, Player player);
   void onPotWin(uint32_t pot, Player player);
 private:
-  const GameView *view_;
+  std::shared_ptr<const GameView> view_;
 };
 
 #endif  // LOGGEREVENTLISTENER_H_

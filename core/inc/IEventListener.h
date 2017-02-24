@@ -2,6 +2,7 @@
 #define I_EVENT_LISTENER_H_
 
 #include <string>
+#include <memory>
 
 #include "Action.h"
 #include "GameView.h"
@@ -12,11 +13,18 @@
  */
 class IEventListener {
 public:
+  virtual ~IEventListener() = 0;
+  
+  // Called any time the external state of the GameView changes. Game
+  // keeps ownership of view. Will always be called along with other
+  // notifications.
+  virtual void onViewChanged(std::shared_ptr<const GameView> view) = 0;
+    
   // Called at the same time as Game::play().
   // The view is guaranteed to contain a snapshot of the Game's state
   // at any time before the call to onGameEnd() returns. The Game retains
   // ownership of the view's memory. 
-  virtual void onGameStart(const GameView *view) = 0;
+  virtual void onGameStart(std::shared_ptr<const GameView> view) = 0;
 
   // Called when the Game ends, either because the maximum number of hands
   // have been played, or one player has collected all the chips. The GameView
@@ -35,7 +43,8 @@ public:
   // increments by 1. The view will point to the same object passed
   // in onGameStart(), in case an EventListener is added midway
   // through a game. The Game class retains ownship of the view's memory.
-  virtual void onHandStart(long hand_num, const GameView *view) = 0;
+  virtual void onHandStart(long hand_num,
+                           std::shared_ptr<const GameView> view) = 0;
   
   // Called once each for the pre-flop deal (hole cards), flop, turn, and
   // river. 'street' is the street just dealt. 
@@ -58,4 +67,7 @@ public:
   // all ins and side pots, there may be multiple winners per hand.
   virtual void onPotWin(uint32_t pot, Player player) = 0;
 };
+
+inline IEventListener::~IEventListener() { }
+
 #endif  // I_EVENT_LISTENER_H_

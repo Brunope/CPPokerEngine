@@ -6,7 +6,7 @@
 
 TEST(LoggerEventListenerTest, Comprehensive) {
   LoggerEventListener listener;
-  GameView g;
+  std::shared_ptr<const GameView> g(new const GameView());
   Player p1("p1");
   Player p2("p2");
   Hand h("AhAcAsAdKc");
@@ -15,7 +15,7 @@ TEST(LoggerEventListenerTest, Comprehensive) {
   std::stringstream buffer;
   std::streambuf *old = std::cout.rdbuf(buffer.rdbuf());
   
-  listener.onGameStart(&g);
+  listener.onGameStart(g);
   EXPECT_EQ(buffer.str(), "Starting game\n");
   buffer.str("");  // clear buffer
   
@@ -27,7 +27,7 @@ TEST(LoggerEventListenerTest, Comprehensive) {
   EXPECT_EQ(buffer.str(), "p2 left\n");
   buffer.str("");
   
-  listener.onHandStart(0, &g);
+  listener.onHandStart(0, g);
   EXPECT_EQ(buffer.str(), "\nStarting hand #0\n");
   buffer.str("");
   

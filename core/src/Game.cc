@@ -32,12 +32,22 @@
  * agents_
  * - Each Agent * in agents_ is associated with the Player in players_
  *   with the same key, ie agents_[0] is the Agent for players_[0].
+ *
+ * TODO: timeout on act
+ * TODO: stop()
+ * TODO: config file specify log file name
  */
 Game::Game(uint32_t small_blind, uint32_t big_blind) {
   FILELog::ReportingLevel() = logDEBUG3;
   log_fd_ = fopen("game.log", "w");
+  if (log_fd_ == nullptr) {
+    std::cerr << "Couldn't open Game log file" << std::endl;
+  }
   Output2FILE::Stream() = log_fd_;
 
+  view_ = std::shared_ptr<GameView>(new GameView());
+  const_view_ = std::const_pointer_cast<const GameView>(view_);
+  
   small_blind_ = small_blind;
   big_blind_ = big_blind;
   button_seat_ = 0;
@@ -48,31 +58,34 @@ Game::Game(uint32_t small_blind, uint32_t big_blind) {
 }
 
 Game::~Game() {
-  FILE_LOG(logDEBUG) << "Destructing Game";
-  fclose(log_fd_);
+  FILE_LOG(logDEBUG2) << "Destructing Game";
+  if (log_fd_ != nullptr) {
+    FILE_LOG(logDEBUG3) << "closing log file";
+    fclose(log_fd_);
+  }
 }
 
 void
-Game::addPlayer(Agent *agent, std::string name, size_t chips) {
+Game::addPlayer(std::shared_ptr<Agent> agent, std::string name, size_t chips) {
   assert(players_.size() <= MAX_NUM_PLAYERS);
-  Player p(name);
-  p.chips_ = chips;
-  p.seat_ = players_.size();
-  agents_[p.seat_] = agent;
-  players_[p.seat_] = p;
+  Player player(name);
+  player.chips_ = chips;
+  player.seat_ = players_.size();
+  agents_[player.seat_] = agent;
+  players_[player.seat_] = player;
 
   updateView();
-  event_manager_.firePlayerJoinEvent(p);
+  event_manager_.firePlayerJoinEvent(player);
 
-  FILE_LOG(logDEBUG) << "Added " << p.name_ << " in seat " << p.seat_ \
-                     << " with " << chips << " chips.";
+  FILE_LOG(logDEBUG) << "Added " << player.name_ << " in seat " \
+                     << player.seat_ << " with " << chips << " chips.";
 }
 
 // Remove the Player at player.getSeat() from players_ and live_players_, and
 // remove its Agent from agents_. You shouldn't call this method directly,
 // rather call removePlayer(seat) which calls this.
 void
-Game::removePlayer(const Player player) {
+Game::removePlayer(Player player) {
   agents_.erase(player.getSeat());
   players_.erase(player.getSeat());
   if (live_players_.count(player.getSeat())) {
@@ -97,59 +110,59 @@ Game::removePlayer(size_t seat) {
 }
 
 void
-Game::addEventListener(IEventListener *listener) {
+Game::addEventListener(std::shared_ptr<IEventListener> listener) {
   event_manager_.addEventListener(listener);
 }
 
 void
-Game::removeEventListener(IEventListener *listener) {
+Game::removeEventListener(std::shared_ptr<IEventListener> listener) {
   event_manager_.removeEventListener(listener);
 }
 
-const GameView &
+std::shared_ptr<const GameView>
 Game::getView() const {
-  return view_;
+  return const_view_;
 }
 
 void
 Game::updateView() {
   // TODO: incremental view updates
-  view_.small_blind_ = small_blind_;
-  view_.big_blind_ = big_blind_;
-  view_.button_pos_ = button_seat_;  // todo
-  view_.street_ = street_;
-  view_.board_ = board_;
-  view_.current_bet_ = current_bet_;
-  view_.current_raise_by_ = current_raise_by_;
-  view_.pot_ = pot_;
-  view_.acting_player_seat_ = acting_player_seat_;
-  view_.hand_num_ = hand_num_;
+  view_->small_blind_ = small_blind_;
+  view_->big_blind_ = big_blind_;
+  view_->button_pos_ = button_seat_;  // todo
+  view_->street_ = street_;
+  view_->board_ = board_;
+  view_->current_bet_ = current_bet_;
+  view_->current_raise_by_ = current_raise_by_;
+  view_->pot_ = pot_;
+  view_->acting_player_seat_ = acting_player_seat_;
+  view_->hand_num_ = hand_num_;
 
-  view_.players_ = players_;
+  view_->players_ = players_;
 
   // copy hand history
-  view_.history_ = history_;
+  view_->history_ = history_;
 
   // copy all legal actions
   for (uint8_t type = 0; type < NUM_ACTIONS; type++) {
-    view_.legal_actions_[type] = legal_actions_[type];
+    view_->legal_actions_[type] = legal_actions_[type];
   }
 
   // give all agents pointers to their copy of player stored in the view
   // shouldn't have to do this so often...
   for (auto it = agents_.begin(); it != agents_.end(); ++it) {
-    it->second->setPlayer(&(view_.players_.at(it->first)));
+    it->second->setPlayer(&(view_->players_.at(it->first)));
   }
 
-  FILE_LOG(logDEBUG3) << "current_bet_: " << view_.current_bet_;
-  FILE_LOG(logDEBUG3) << "current_raise_by_: " << view_.current_raise_by_;
+  FILE_LOG(logDEBUG3) << "current_bet_: " << view_->current_bet_;
+  FILE_LOG(logDEBUG3) << "current_raise_by_: " << view_->current_raise_by_;
   FILE_LOG(logDEBUG3) << "Updated view";
 }
 
 void
 Game::play(int num_hands) {
   assert(players_.size() >= 2 && players_.size() <= MAX_NUM_PLAYERS);
-  event_manager_.fireGameStartEvent(view_);
+  event_manager_.fireGameStartEvent(const_view_);
   FILE_LOG(logDEBUG) << "playing " << num_hands << " hands";
 
   hand_num_ = 0;
@@ -165,7 +178,7 @@ Game::playHand() {
   // reset a bunch of variables, and add all player pointers to the live list
   setupHand();
 
-  event_manager_.fireHandStartEvent(hand_num_, view_);
+  event_manager_.fireHandStartEvent(hand_num_, const_view_);
   
   FILE_LOG(logDEBUG) << "starting hand #" << hand_num_;
   for (auto it = players_.begin(); it != players_.end(); ++it) {
@@ -261,7 +274,7 @@ Game::endHand() {
       it = players_.erase(it);
       removePlayer(to_remove);
     } else {
-      agents_[it->first]->receiveHandHistory(view_.history_);
+      agents_[it->first]->receiveHandHistory(view_->history_);
       ++it;
     }
   }
@@ -353,7 +366,7 @@ Game::playRound() {
   setupRound();
   
   Player *current_player;
-  Agent *current_agent;
+  std::shared_ptr<Agent> current_agent;
   Action current_action;
 
   // preflop, blinds set num_callers_
@@ -381,11 +394,14 @@ Game::playRound() {
       FILE_LOG(logDEBUG2) << "Skipping all in player " << current_player->name_;
       continue;
     }
+
     current_agent = agents_[acting_player_seat_];
+    updateView();
+    event_manager_.fireViewChangedEvent(const_view_);
     
     FILE_LOG(logDEBUG2) << "Asking " << current_player->name_ \
                         << " for action";
-    current_action = current_agent->act(view_);
+    current_action = current_agent->act(*view_);
     handleAction(current_action, current_player);
   }
 
@@ -528,7 +544,7 @@ Game::getNextLivePlayerSeat(size_t seat) {
   while (!live_players_.count(next_seat)) {
     next_seat = (next_seat + 1) % MAX_NUM_PLAYERS;
   }
-  FILE_LOG(logDEBUG3) << "return " << next_seat;
+  FILE_LOG(logDEBUG3) << "getNextLivePLayerSeat return " << next_seat;
   return next_seat;
 }
 
@@ -582,19 +598,34 @@ Game::forceLegalAction(Action *action, Player *source) {
                        source);
       FILE_LOG(logDEBUG3) << "New call amount: " << action->getAmount();
     } else if (action->getType() == RAISE) {
+      uint32_t min_raise = current_bet_ + current_raise_by_;
+      FILE_LOG(logDEBUG3) << "force legal raise, min: " << min_raise;
       // player can't raise more their chip count
       if (action->getAmount() > source->chips_ + source->chips_in_play_) {
         *action = Action(RAISE, source->chips_ + source->chips_in_play_,
                          source);
         FILE_LOG(logDEBUG3) << "New raise amount: " << action->getAmount();
       }
-      // todo: catch too low raises
+      // force too low raises to either raise the min or go all in
+      if (action->getAmount() < min_raise) {
+        FILE_LOG(logDEBUG3) << "raise less than min: " << action->getAmount();
+        if (min_raise <= source->getChips() + source->getChipsInPlay()) {
+          *action = Action(RAISE, min_raise, source);
+          FILE_LOG(logDEBUG3) << "forcing min raise: " << action->getAmount();
+        } else {
+          // all in without enough for min raise
+          *action = Action(RAISE, source->chips_ + source->chips_in_play_,
+                           source);
+          FILE_LOG(logDEBUG3) << "forcing all in raise: " << action->getAmount();
+        }
+      }
     }
     FILE_LOG(logDEBUG3) << "Action is legal";
   return false;
   }
 }
 
+// todo: take ACTION_T instead
 bool
 Game::isLegalAction(const Action &action) {
   return legal_actions_[action.getType()];

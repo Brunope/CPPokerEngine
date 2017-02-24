@@ -4,6 +4,7 @@
 #include <vector>
 #include <utility>
 #include <string>
+#include <memory>
 
 #include "Action.h"
 #include "Player.h"
@@ -19,20 +20,21 @@ class GameView;
 class EventManager {
 public:
   // EventManager does NOT take ownership of 'listener'
-  void addEventListener(IEventListener *listener);
+  void addEventListener(std::shared_ptr<IEventListener> listener);
 
   // Remove the first occurrence of 'listener'. Any duplicates
   // will remain.
-  void removeEventListener(IEventListener *listener);
-  
-  void fireGameStartEvent(const GameView &view);
+  void removeEventListener(std::shared_ptr<IEventListener> listener);
+
+  void fireViewChangedEvent(std::shared_ptr<const GameView> view);
+  void fireGameStartEvent(std::shared_ptr<const GameView> view);
   void fireGameEndEvent();
 
   // todo: change params to const player &
   void firePlayerJoinEvent(Player player);
   void firePlayerLeaveEvent(Player player);
 
-  void fireHandStartEvent(long handNum, const GameView &view);
+  void fireHandStartEvent(long handNum, std::shared_ptr<const GameView> view);
 
   // 'street' is the street just dealt
   void fireDealEvent(STREET street);
@@ -48,6 +50,6 @@ public:
   // when a player wins a pot
   void firePotWinEvent(uint32_t pot, Player player);
 private:
-  std::vector<IEventListener *> eventListeners_;
+  std::vector<std::shared_ptr<IEventListener>> eventListeners_;
 };
 #endif  // EVENT_MANAGER_H_

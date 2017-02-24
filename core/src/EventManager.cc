@@ -1,29 +1,34 @@
 #include <vector>
+#include <memory>
 
 #include "EventManager.h"
 
 void
-EventManager::addEventListener(IEventListener *listener) {
+EventManager::addEventListener(std::shared_ptr<IEventListener> listener) {
   eventListeners_.push_back(listener);
 }
 
 void
-EventManager::removeEventListener(IEventListener *listener) {
+EventManager::removeEventListener(std::shared_ptr<IEventListener> listener) {
   for (auto it = eventListeners_.begin(); it != eventListeners_.end(); ++it) {
-    if ((*it) == listener) {
+    if (it->get() == listener.get()) {
       eventListeners_.erase(it);
-      // important: if we don't break here, we'll incorrectly increment the
-      // iterator and either miss an element, or seg fault
-      // if we have to keep going after erasing, decrement 'it' here.
-      break;
+      return;
     }
   }
 }
 
 void
-EventManager::fireGameStartEvent(const GameView &view) {
+EventManager::fireViewChangedEvent(std::shared_ptr<const GameView> view) {
   for (auto it = eventListeners_.begin(); it != eventListeners_.end(); ++it) {
-    (*it)->onGameStart(&view);
+    (*it)->onViewChanged(view);
+  }
+}
+
+void
+EventManager::fireGameStartEvent(std::shared_ptr<const GameView> view) {
+  for (auto it = eventListeners_.begin(); it != eventListeners_.end(); ++it) {
+    (*it)->onGameStart(view);
   }
 }
 
@@ -49,9 +54,9 @@ EventManager::firePlayerLeaveEvent(Player player) {
 }
 
 void
-EventManager::fireHandStartEvent(long hand_num, const GameView &view) {
+EventManager::fireHandStartEvent(long hand_num, std::shared_ptr<const GameView> view) {
   for (auto it = eventListeners_.begin(); it != eventListeners_.end(); ++it) {
-    (*it)->onHandStart(hand_num, &view);
+    (*it)->onHandStart(hand_num, view);
   }
 }
 

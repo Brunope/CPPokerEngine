@@ -18,6 +18,8 @@ class GameView;
  */
 class Agent {
 public:
+  virtual ~Agent() { }
+  
   // Called once at the beginning of each Hand in which this Agent is
   // participating.
   virtual void receiveHoleCards(const std::pair<Card, Card> hc) = 0;

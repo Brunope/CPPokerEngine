@@ -4,6 +4,7 @@
 #include <vector>
 #include <cinttypes>
 #include <cstddef>
+#include <memory>
 #include <map>
 
 #include "Card.h"
@@ -22,16 +23,20 @@ public:
   Game(uint32_t small_blind, uint32_t big_blind);
   ~Game();
 
-  const GameView &getView() const;
+  std::shared_ptr<const GameView> getView() const;
 
-  // Caller retains ownership of 'agent'
-  void addPlayer(Agent *agent, std::string name, size_t chips = STARTING_STACK);
+
+  // Add a player + agent at the lowest available seat number.
+  // Fails if no seats are available.
+  void addPlayer(std::shared_ptr<Agent> agent,
+                 std::string name = "default",
+                 size_t chips = STARTING_STACK);
+  
   void removePlayer(size_t seat);
 
-  // Caller retains ownership of 'listener'
-  void addEventListener(IEventListener *listener);
+  void addEventListener(std::shared_ptr<IEventListener> listener);
 
-  void removeEventListener(IEventListener *listener);
+  void removeEventListener(std::shared_ptr<IEventListener> listener);
 
   // Play for 'num_hands' hands or until no other players remain. If
   // 'num_hands' is negative, the Game will run until no other players
@@ -40,7 +45,7 @@ public:
 
 private:
   void updateView();
-  void removePlayer(const Player player);
+  void removePlayer(Player player);
   void playHand();
   void setupHand();
   void endHand();
@@ -67,8 +72,9 @@ private:
 
   static size_t getBestHand(std::map<size_t, Hand> player_hands);
 
-  GameView view_;
-  std::map<size_t, Agent *> agents_;
+  std::shared_ptr<GameView> view_;
+  std::shared_ptr<const GameView> const_view_;
+  std::map<size_t, std::shared_ptr<Agent>> agents_;
   std::map<size_t, Player> players_;
   std::map<size_t, Player *> live_players_;
   std::map<size_t, Player *> allin_players_;

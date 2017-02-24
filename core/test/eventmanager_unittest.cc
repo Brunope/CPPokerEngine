@@ -1,6 +1,7 @@
 #include <string>
 #include <iostream>
 #include <sstream>
+#include <memory>
 
 #include "LoggerEventListener.h"
 #include "GameView.h"
@@ -10,18 +11,19 @@
 
 #include "gtest/gtest.h"
 
-// Might be a bad test for relying on stdout without flushing first
+// Rather use a generic listener specifically for testing
 TEST(EventManagerTest, LoggerEventListenerIntegration) {
   EventManager e;
-  LoggerEventListener l;
-  GameView g;
+  std::shared_ptr<LoggerEventListener> logger(new LoggerEventListener());
+  std::shared_ptr<const GameView> g(new const GameView());
   Player p1("p1");
   Player p2("p2");
   Hand h("AhAcAsAdKc");
 
-  e.addEventListener(&l);
+  e.addEventListener(logger);
 
   // Redirect stdout to buffer
+  std::cout.flush();
   std::stringstream buffer;
   std::streambuf *old = std::cout.rdbuf(buffer.rdbuf());
   
@@ -38,7 +40,7 @@ TEST(EventManagerTest, LoggerEventListenerIntegration) {
   buffer.str("");
 
   // add the same listener again and expect double the output
-  e.addEventListener(&l);
+  e.addEventListener(logger);
   
   e.fireHandStartEvent(0, g);
   EXPECT_EQ(buffer.str(), "\nStarting hand #0\n\nStarting hand #0\n");
@@ -49,7 +51,7 @@ TEST(EventManagerTest, LoggerEventListenerIntegration) {
   buffer.str("");
 
   // remove one of them and go back to normal
-  e.removeEventListener(&l);
+  e.removeEventListener(logger);
   
   e.firePlayerActionEvent(Action(RAISE, 10, &p1));
   EXPECT_EQ(buffer.str().substr(0, 17), "p1 raises 10\npot:");
@@ -64,7 +66,7 @@ TEST(EventManagerTest, LoggerEventListenerIntegration) {
   buffer.str("");
 
   // remove the last one and expect no output
-  e.removeEventListener(&l);
+  e.removeEventListener(logger);
   
   e.fireGameStartEvent(g);
   EXPECT_EQ(buffer.str(), "");

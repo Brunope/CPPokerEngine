@@ -39,7 +39,8 @@ CXXFLAGS += -g -std=c++11 -I $(INC_DIR)
 # Game library source files
 ############################################################
 UNITS = Card Deck Action Hand HandEvaluator HandRanks HandHistory GameView \
- EventManager LoggerEventListener SimpleAgent RandomAgent TestAgent HumanAgent \
+ EventManager LoggerEventListener SimpleAgent RandomAgent TestAgent SlowAgent \
+ HumanAgent \
  Game
 
 SRCS = $(wildcard, $(SRC_DIR)/*)
@@ -55,8 +56,7 @@ TESTS = card_unittest deck_unittest hand_unittest action_unittest \
 TESTS_OBJS = $(addprefix $(OBJ_DIR)/, $(addsuffix .o, $(TESTS)))
 TESTS_BINS = $(addprefix $(BIN_DIR)/, $(TESTS))
 
-# All Google Test headers.  Usually you shouldn't change this
-# definition.
+# All Google Test headers.
 GTEST_HEADERS = $(GTEST_DIR)/include/gtest/*.h \
  $(GTEST_DIR)/include/gtest/internal/*.h
 
