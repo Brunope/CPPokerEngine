@@ -1,10 +1,15 @@
 #include <QObject>
 #include <QDebug>
+#include <iostream>
 
 #include "QEventListener.h"
 
 QEventListener::QEventListener() {
   QObject(0);
+}
+
+QEventListener::~QEventListener() {
+  std::cout << "destructed qeventlistener" << std::endl;
 }
 
 void
@@ -14,7 +19,13 @@ QEventListener::updateView() {
 }
 
 void
-QEventListener::onGameStart(const GameView *view) {
+QEventListener::onViewChanged(std::shared_ptr<const GameView> view) {
+  view_ = view;
+  updateView();
+}
+
+void
+QEventListener::onGameStart(std::shared_ptr<const GameView> view) {
   view_ = view;
   QString s = "game start";
   updateView();
@@ -42,7 +53,7 @@ QEventListener::onPlayerLeave(Player player) {
 }
 
 void
-QEventListener::onHandStart(long handNum, const GameView *view) {
+QEventListener::onHandStart(long handNum, std::shared_ptr<const GameView> view) {
   if (view_ != view) {
     std::cout << "handStart event passed view pointing to different memory" \
               << std::endl;

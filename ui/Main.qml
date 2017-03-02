@@ -10,49 +10,16 @@ Window {
   height: 480
   Image {
     id: bgImage
+    anchors.fill: parent
     source: "background.png"
+    fillMode: Image.Tile
   }
 
   signal startGame(string msg)
-
-  Rectangle {
-    id: recvSigContainer
-    width: 200
-    height: 100
-    anchors.bottom: parent.bottom
-    anchors.left: parent.left
-
-    border.color: "white"
-    border.width: 1
-    color: "transparent"
-    
-    Flickable {
-      id: recvSigScroll
-      width: parent.width
-      height: parent.width
-      contentWidth: recvSigText.width
-      contentHeight: recvSigText.height
-      contentY: contentHeight - height
-      clip: true
-      leftMargin: 10
-      ScrollBar.vertical: ScrollBar {
-        id: recvSigScrollBar
-        parent: recvSigScroll.parent
-        anchors.top: recvSigScroll.top
-        anchors.left: recvSigScroll.right
-        anchors.bottom: recvSigScroll.bottom
-      }
-      Text {
-        id: recvSigText
-        text: ""
-        color: "white"
-        font.pointSize: 12
-      }
-    }
-  }
+  signal sendAction(int type, int amount)
 
   Button {
-    id: startGameButton    
+    id: startGameButton
     visible: true
     text: "start game"
     anchors.verticalCenter: parent.verticalCenter
@@ -64,32 +31,46 @@ Window {
     }
   }
 
-  Player {
-    id: player0
-    seat: 0
-    x: root.width / 5
-    y: root.height / 6
+  Board {
+    id: board
+    anchors.verticalCenter: playerRing.verticalCenter
+    anchors.horizontalCenter: playerRing.horizontalCenter
+    anchors.verticalCenterOffset: 15
   }
 
-  Player {
-    id: player1
-    seat: 1
-    anchors.left: player0.right
-    anchors.margins: 50
-    x: 2 * root.width / 5
-    y: root.height / 6
+  Text {
+    id: pot
+    anchors.horizontalCenter: board.horizontalCenter
+    anchors.bottom: board.top
+    anchors.margins: 5
+    visible: view.pot > 0
+    font.pointSize: 16
+    text: view.pot
+    color: "white"
+
+  }
+  
+  PlayerRing {
+    id: playerRing
+    anchors.top: parent.top
+    anchors.left: parent.left
+    anchors.right: parent.right
+    anchors.margins: 10
+    //border.color: "red"
   }
 
-  Player {
-    id: player5
-    anchors.left: player1.right
-    seat: 5
+  ChatBox {
+    id: chat
+    anchors.bottom: parent.bottom
+    anchors.left: parent.left
+    anchors.top: playerRing.bottom
+    anchors.topMargin: 2
   }
-
+  
   Rectangle {
     id: numHandsContainer
     anchors.left: parent.left
-    anchors.bottom: recvSigContainer.top
+    anchors.bottom: chat.top
     height: 20
     Text {
       text: "hand # " + view.numHands
@@ -98,37 +79,69 @@ Window {
     }
   }
 
+  ActionInterface {
+    id: actionInterface
+    anchors.bottom: parent.bottom
+    anchors.top: playerRing.bottom
+    anchors.left: chat.right
+    anchors.right: parent.right
+  }
+
+  Connections {
+    id: humanConnection
+    target: human
+    ignoreUnknownSignals: true
+    onHoleCardsChanged: {
+      // gross
+      eval("playerRing.player" + human.seat).card0str = human.card0.str
+      eval("playerRing.player" + human.seat).card1str = human.card1.str
+    }
+  }
+
   Connections {
     id: cppConnection
     target: listener
     ignoreUnknownSignals: true
     onGameStart: {
-      recvSigText.text = recvSigText.text + "\n" + sig_text
+      appendChatText(sig_text);
     }
     onPlayerJoin: {
-      recvSigText.text = recvSigText.text + "\n" + sig_text.getName()
+      appendChatText(sig_text + " joined")
     }
     onPlayerLeave: {
-      recvSigText.text = recvSigText.text + "\n" + sig_text
+      appendChatText(sig_text)
     }
     onHandStart: {
-      recvSigText.text = recvSigText.text + "\n" + sig_text
+      appendChatText(sig_text)
     }
     onDeal: {
-      recvSigText.text = recvSigText.text + "\n" + sig_text
+      appendChatText(sig_text)
     }
     onPlayerAction: {
-      recvSigText.text = recvSigText.text + "\n" + sig_text
+      appendChatText(sig_text);
     }
     onShowCards: {
-      recvSigText.text = recvSigText.text + "\n" + sig_text
+      appendChatText(sig_text)
     }
     onShowdown: {
-      recvSigText.text = recvSigText.text + "\n" + sig_text
+      appendChatText(sig_text)
     }
     onPotWin: {
-      recvSigText.text = recvSigText.text + "\n" + sig_text
+      appendChatText(sig_text)
+      pot.anchors.left = root.left
+      pot.anchors.bottom = root.bottom
+      console.log("new pot win coords " + pot.x + ", " + pot.y);
     }
   }
+
+  function appendChatText(text) {
+    if (chat.textItem.lineCount > chat.maxLines) {
+      chat.text = chat.text.substring(chat.text.indexOf("\n") + 1) + text + "\n"
+    }
+    else {
+      chat.text = chat.text + text + "\n"
+    }
+  }
+
 }
 

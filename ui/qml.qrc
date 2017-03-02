@@ -2,6 +2,11 @@
     <qresource prefix="/">
         <file>Main.qml</file>
         <file>Player.qml</file>
+        <file>Card.qml</file>
+        <file>Board.qml</file>
+        <file>PlayerRing.qml</file>
+        <file>ChatBox.qml</file>
+        <file>ActionInterface.qml</file>
         <file>background.png</file>
     </qresource>
 </RCC>

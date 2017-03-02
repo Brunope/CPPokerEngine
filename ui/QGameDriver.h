@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include <thread>
+#include <memory>
 #include "QEventListener.h"
 #include "QGameView.h"
 #include "Game.h"
@@ -20,13 +21,13 @@ class QGameDriver : public QObject {
 
 public:
   // Caller retains ownership of game
-  QGameDriver(Game *game);
+  QGameDriver(std::shared_ptr<Game> game);
 
   // deletes listener_ and terminates game_thread_
   ~QGameDriver();
   
   QGameView *getView() { return &view_; }
-  QEventListener *getListener();
+  std::shared_ptr<QEventListener> getListener();
 
 public slots:
   // if the game is not already running, begins playing the game
@@ -35,9 +36,9 @@ public slots:
   void updateView(const QGameView &sig_view);
 
 private:
-  Game *game_;
+  std::shared_ptr<Game> game_;
   QGameView view_;
-  QEventListener *listener_;
+  std::shared_ptr<QEventListener> listener_;
   std::thread game_thread_;
   bool game_thread_running_;
 };

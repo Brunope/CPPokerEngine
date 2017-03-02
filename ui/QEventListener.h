@@ -4,6 +4,7 @@
 #include <QObject>
 #include <QString>
 #include <QMap>
+#include <memory>
 #include "QPlayer.h"
 #include "QGameView.h"
 #include "IEventListener.h"
@@ -17,11 +18,13 @@ class QEventListener : public QObject, public IEventListener {
 
 public:
   QEventListener();
-  void onGameStart(const GameView *view);
+  ~QEventListener();
+  void onViewChanged(std::shared_ptr<const GameView> view);
+  void onGameStart(std::shared_ptr<const GameView> view);
   void onGameEnd();
   void onPlayerJoin(Player player);
   void onPlayerLeave(Player player);
-  void onHandStart(long handNum, const GameView *view);
+  void onHandStart(long handNum, std::shared_ptr<const GameView> view);
   void onDeal(STREET street);
   void onPlayerAction(Action action);
   void onShowCards(std::pair<Card, Card> cards, Player player);
@@ -44,7 +47,7 @@ signals:
 
 private:
   void updateView();
-  const GameView *view_;
+  std::shared_ptr<const GameView> view_;
   QGameView updateableView_;
 };
 

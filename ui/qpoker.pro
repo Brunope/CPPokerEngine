@@ -1,8 +1,8 @@
 TARGET = qpoker
 TEMPLATE = app
 CONFIG -= app_bundle
-QMAKE_CXX = clang++
-QMAKE_CXXFLAGS += -std=c++11 -g
+QMAKE_CXX = g++
+QMAKE_CXXFLAGS += -std=c++11 -g -O0
 QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.12
 
 QT += core gui qml quick widgets
@@ -27,16 +27,19 @@ qpoker.depends = poker_core
 
 # do the thing
 SOURCES += "Main.cc" "QEventListener.cc" "QGameDriver.cc" "QPlayer.cc" \
- "QGameView.cc"
+ "QGameView.cc" "QHumanAgent.cc"
 
-HEADERS += "QEventListener.h" "QGameDriver.h" "QPlayer.h" "QGameView.h"
+HEADERS += "QEventListener.h" "QGameDriver.h" "QPlayer.h" "QGameView.h" \
+ "QCard.h" "QHumanAgent.h"
 
 RESOURCES += qml.qrc
-QML += Main.qml Player.qml
+QML += Main.qml Player.qml Card.qml Board.qml PlayerRing.qml ChatBox.qml \
+ActionInterface.qml
 
 QMAKE_EXTRA_TARGETS += poker_core
 
 # do i need this?
 DISTFILES += \
-    Main.qml Player.qml background.png
+Main.qml Player.qml Card.qml Board.qml PlayerRing.qml ChatBox.qml \
+ActionInterface.qml background.png
 

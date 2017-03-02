@@ -5,6 +5,7 @@
 QPlayer::QPlayer() {
   QObject(0);
   name_ = "default";
+  live_ = false;
   exists_ = false;
 }
 
@@ -14,17 +15,9 @@ QPlayer::QPlayer(const Player &other) {
   chips_ = other.getChips();
   chips_in_play_ = other.getChipsInPlay();
   seat_ = other.getSeat();
+  live_ = other.isLive();
   exists_ = true;
 }
-
-// QPlayer::QPlayer(const QPlayer &other) {
-//   QObject(0);
-//   name_ = other.name_;
-//   chips_ = other.chips_;
-//   chips_in_play_ = other.chips_in_play_;
-//   seat_ = other.seat_;
-//   exists_ = other.exists_;
-// }
 
 QPlayer::~QPlayer() {
 
@@ -36,5 +29,12 @@ QPlayer::copyFrom(const QPlayer &other) {
   chips_ = other.chips_;
   chips_in_play_ = other.chips_in_play_;
   seat_ = other.seat_;
+  live_ = other.live_;
   exists_ = other.exists_;
+
+  emit nameChanged();
+  emit chipsChanged();
+  emit chipsInPlayChanged();
+  emit liveChanged();
+  emit existsChanged();
 }
