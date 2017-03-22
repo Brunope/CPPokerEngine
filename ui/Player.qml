@@ -9,6 +9,8 @@ Rectangle {
   property int chipsInPlay: view.players[seat].chipsInPlay
   property bool live: view.players[seat].live
   property bool exists: view.players[seat].exists
+  property bool showing: false
+  property bool winning: false
   property bool acting: view.actingPlayerSeat == seat
   property string textColor: getColor()
   property string facing: "top"
@@ -18,12 +20,10 @@ Rectangle {
   id: playerContainer
   
   width: 75
-  height: 75
+  height: 100
 
-  visible: exists
+  visible: exists || showing
   color: "transparent"
-
-  //border.color: "red"
 
   Text {
     id: playerName
@@ -47,14 +47,14 @@ Rectangle {
       anchors.left: parent.left
       str: card0str
       scale: 0.5
-      visible: live
+      visible: live || showing
     }
     Card {
       id: c1
       anchors.left: c0.right
       str: card1str
       scale: 0.5
-      visible: live
+      visible: live || showing
     }
   }
 
@@ -77,9 +77,13 @@ Rectangle {
     anchors.horizontalCenter: parent.horizontalCenter
     text: chipsInPlay
     color: textColor
+    visible: chipsInPlay != 0
   }
 
   function getColor() {
+    if (winning) {
+      return "lime"
+    }
     if (live) {
       if (acting) {
         return "red"

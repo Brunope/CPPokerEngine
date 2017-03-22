@@ -39,13 +39,15 @@ signals:
   void handStart(const QString &sig_text);
   void deal(const QString &sig_text);
   void playerAction(const QString &sig_text);
-  void showCards(const QString &sig_text);
+  void showCards(const QString &sig_text, QPlayer *player,
+                 QCard *card0, QCard *card1);
   void showdown(const QString &sig_text);
-  void potWin(const QString &sig_text);
+  void potWin(const QString &sig_text, QPlayer *player, int amount);
 
   void viewChanged(const QGameView &sig_view);
 
 private:
+  QCard shown_cards_[MAX_NUM_PLAYERS * 2];
   void updateView();
   std::shared_ptr<const GameView> view_;
   QGameView updateableView_;

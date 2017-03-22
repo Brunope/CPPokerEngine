@@ -85,7 +85,11 @@ QEventListener::onShowCards(std::pair<Card, Card> cards,
   QString s = QString::fromStdString(player.getName() + " shows " +
                                      cards.first.str() + cards.second.str());
   updateView();
-  emit showCards(s);
+  int seat = player.getSeat();
+  shown_cards_[seat * 2].copyFrom(cards.first);
+  shown_cards_[seat * 2 + 1].copyFrom(cards.second);
+  emit showCards(s, updateableView_.player(seat),
+                 shown_cards_ + seat * 2, shown_cards_ + seat * 2 + 1);
 }
 
 void
@@ -101,6 +105,6 @@ QEventListener::onPotWin(uint32_t pot, Player player) {
   QString s = QString::fromStdString(player.getName() + " wins " +
                                      std::to_string(pot));
   updateView();
-  emit potWin(s);
+  emit potWin(s, updateableView_.player(player.getSeat()), pot);
 }
 

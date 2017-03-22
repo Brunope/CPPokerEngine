@@ -26,7 +26,6 @@ public:
   QGameView();
   ~QGameView();
 
-  // copy data from view to this, caller retains ownership of view
   void copyFrom(std::shared_ptr<const GameView> view);
   void copyFromQ(const QGameView *view);
   

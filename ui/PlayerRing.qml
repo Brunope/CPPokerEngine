@@ -3,15 +3,24 @@ import QtQuick.Controls 2.0
 
 Rectangle {
   property real hSpacing: 50
-  property real vSpacing: 50
+  property real vSpacing: 30
 
   property alias player0: player0
+  property alias player1: player1
+  property alias player2: player2
+  property alias player3: player3
+  property alias player4: player4
+  property alias player5: player5
+  property alias player6: player6
+  property alias player7: player7
+  property alias player8: player8
   
   id: playerRingContainer
   color: "transparent"
 
   width: 440
   height: 350
+
 
   Player {
     id: player0

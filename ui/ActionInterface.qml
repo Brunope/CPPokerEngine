@@ -7,6 +7,7 @@ Rectangle {
 
   property bool acting: view.actingPlayerSeat == human.seat
   property bool canCheck: view.currentBet == view.players[human.seat].chipsInPlay
+  property bool canRaise: getMinRaise() < getMaxRaise()
   property real raiseAmount
   property real fontSize: 15
   
@@ -15,6 +16,7 @@ Rectangle {
 
   Rectangle {
     id: raiseInputContainer
+    visible: canRaise
     anchors.bottom: raiseButton.top
     anchors.right: raiseButton.right
     anchors.bottomMargin: 5
@@ -42,6 +44,7 @@ Rectangle {
     
   Slider {
     id: raiseSlider
+    visible: canRaise
     anchors.bottom: raiseButton.top
     anchors.right: raiseInputContainer.left
     anchors.left: foldButton.left
@@ -110,6 +113,7 @@ Rectangle {
 
   Button {
     id: raiseButton
+    visible: canRaise
     anchors.left: callButton.right
     anchors.bottom: parent.bottom
     anchors.margins: 10

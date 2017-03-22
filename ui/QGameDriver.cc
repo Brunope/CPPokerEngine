@@ -13,6 +13,10 @@ static void startGameInThread(std::shared_ptr<Game> game) {
   game->play();
 }
 
+static void startHandInThread(std::shared_ptr<Game> game) {
+  game->play(1);
+}
+
 
 QGameDriver::QGameDriver(std::shared_ptr<Game> game) {
   QObject(0);
@@ -24,6 +28,9 @@ QGameDriver::QGameDriver(std::shared_ptr<Game> game) {
   QObject::connect(listener_.get(), SIGNAL(viewChanged(const QGameView&)),
                    this, SLOT(updateView(const QGameView&)),
                    Qt::BlockingQueuedConnection);
+  // QObject::connect(listener_.get(), SIGNAL(viewChanged(const QGameView&)),
+  //                  this, SLOT(updateView(const QGameView&)));
+  
 }
 
 QGameDriver::~QGameDriver() {
@@ -41,10 +48,23 @@ QGameDriver::~QGameDriver() {
 
 void
 QGameDriver::startGame(const QString &text) {
+  std::cout << "uh oh start game" << std::endl;
   if (!game_thread_running_) {
     game_thread_ = std::thread(startGameInThread, game_);
     game_thread_running_ = true;
   }
+}
+
+void
+QGameDriver::playOneHand() {
+  std::cout << "play 1 hand" << std::endl;
+  if (game_thread_running_) {
+    std::cout << "joining game thread...";
+    game_thread_.join();
+    std::cout << "done" << std::endl;
+  }
+  game_thread_ = std::thread(startHandInThread, game_);
+  game_thread_running_ = true;
 }
 
 std::shared_ptr<QEventListener>

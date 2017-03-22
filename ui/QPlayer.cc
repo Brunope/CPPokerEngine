@@ -33,6 +33,7 @@ QPlayer::copyFrom(const QPlayer &other) {
   exists_ = other.exists_;
 
   emit nameChanged();
+  emit seatChanged();
   emit chipsChanged();
   emit chipsInPlayChanged();
   emit liveChanged();

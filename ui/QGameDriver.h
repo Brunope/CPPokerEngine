@@ -33,6 +33,10 @@ public slots:
   // if the game is not already running, begins playing the game
   // in a new thread
   void startGame(const QString &text);
+
+  // plays one hand in the current thread
+  void playOneHand();
+  
   void updateView(const QGameView &sig_view);
 
 private:

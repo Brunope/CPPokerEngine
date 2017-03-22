@@ -14,7 +14,6 @@ QGameView::QGameView() {
 QGameView::~QGameView() {
   for (int i = 0; i < MAX_NUM_PLAYERS; i++) {
     delete players_[i];
-    std::cout << "deleted player " << i << std::endl;
   }
   std::cout << "destructed qgameview"  << std::endl;
 }
@@ -25,7 +24,7 @@ QGameView::copyFrom(std::shared_ptr<const GameView> other) {
   // copy players, reset them all first, eugh
   // TODO: combine these into 1 loop with map::find
   for (size_t i = 0; i < MAX_NUM_PLAYERS; i++) {
-    players_.at(i)->copyFrom(QPlayer());
+    players_.at(i)->unexist();
   }
   std::map<size_t, Player> other_players = other->getPlayers();
   for (auto it = other_players.begin(); it != other_players.end(); ++it) {
@@ -40,14 +39,10 @@ QGameView::copyFrom(std::shared_ptr<const GameView> other) {
     board_.append(&card_mem_[i]);
   }
   emit boardChanged();
-
-
   num_hands_ = other->getHandNum();
   emit numHandsChanged();
-
   acting_player_seat_ = other->getActingPlayerSeat();
   emit actingPlayerSeatChanged();
-
   pot_ = other->getPot();
   emit potChanged();
   current_bet_ = other->getCurrentBet();

@@ -10,6 +10,7 @@
 class QPlayer : public QObject {
   Q_OBJECT
   Q_PROPERTY(QString name READ name NOTIFY nameChanged)
+  Q_PROPERTY(unsigned int seat READ seat NOTIFY seatChanged)
   Q_PROPERTY(unsigned int chips READ chips NOTIFY chipsChanged)
   Q_PROPERTY(unsigned int chipsInPlay READ chipsInPlay NOTIFY chipsInPlayChanged)
   Q_PROPERTY(bool live READ live NOTIFY liveChanged)
@@ -27,13 +28,18 @@ public:
   void copyFrom(const QPlayer &other);
   
   inline QString name() const { return name_; }
+  inline unsigned int seat() const { return seat_; }
   inline unsigned int chips() const { return chips_; }
   inline unsigned int chipsInPlay() const { return chips_in_play_; }
   inline bool live() const { return live_; }
   inline bool exists() const { return exists_; }
 
+  // sorry
+  void unexist() { exists_ = false; }
+
 signals:
   void nameChanged();
+  void seatChanged();
   void chipsChanged();
   void chipsInPlayChanged();
   void liveChanged();

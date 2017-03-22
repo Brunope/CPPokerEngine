@@ -30,6 +30,15 @@ int main(int argc, char *argv[])
   std::shared_ptr<SlowAgent> bot7 = std::make_shared<SlowAgent>();
   std::shared_ptr<SlowAgent> bot8 = std::make_shared<SlowAgent>();
 
+  bot1->setWaitTime(100);
+  bot2->setWaitTime(100);
+  bot3->setWaitTime(100);
+  bot4->setWaitTime(100);
+  bot5->setWaitTime(100);
+  bot6->setWaitTime(100);
+  bot7->setWaitTime(100);
+  bot8->setWaitTime(100);
+
   // Game *game = new Game(5, 10);
   game->addPlayer(human, "human", 1000);
   game->addPlayer(bot1, "bot1", 1000);
@@ -50,8 +59,8 @@ int main(int argc, char *argv[])
 
   // emits signals from the game on state changes
   // and manipulates the QGameView.
-  std::shared_ptr<QEventListener> listener = driver.getListener()
-  
+  std::shared_ptr<QEventListener> listener = driver.getListener();
+
   QQmlApplicationEngine engine;
 
   qmlRegisterUncreatableType<QPlayer>("poker", 1, 0, "QPlayer", "");
@@ -67,13 +76,19 @@ int main(int argc, char *argv[])
   // run from any directory.
   engine.load(QUrl(QStringLiteral("qrc:/Main.qml")));
 
-  // connect the startGame signal from qml to the QGameDriver
+  // connect the playHand signal from qml to the QGameDriver
   QObject *root = engine.rootObjects()[0];
-  QObject::connect(root, SIGNAL(startGame(QString)),
-                   &driver, SLOT(startGame(QString)));
+  QObject::connect(root, SIGNAL(playHand()),
+                   &driver, SLOT(playOneHand()));
+
   // connect action signal to the QHumanAgent
   QObject::connect(root, SIGNAL(sendAction(int, int)),
                    human.get(), SLOT(doAction(int, int)));
+
+
+  // tell qml all the signal are connected, loading done
+  //QMetaObject::invokeMethod(root, "loadingDone");
+  
   
   return app.exec();
 }
