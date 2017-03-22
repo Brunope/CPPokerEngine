@@ -39,8 +39,7 @@ public:
   void removeEventListener(std::shared_ptr<IEventListener> listener);
 
   // Play for 'num_hands' hands or until no other players remain. If
-  // 'num_hands' is negative, the Game will run until no other players
-  // remain.
+  // 'num_hands' is negative, the Game will run until only 1 player remains.
   void play(int num_hands = -1);
 
 private:

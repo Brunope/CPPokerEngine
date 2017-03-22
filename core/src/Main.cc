@@ -22,9 +22,9 @@ int main(void) {
   std::shared_ptr<RandomAgent> bot2(new RandomAgent());
   
   game.addPlayer(human, "human", 1000);
-  game.addPlayer(bot0, "bot0", 1000);
-  game.addPlayer(bot1, "bot1", 1000);
-  // game.addPlayer(bot2, "bot2", 1000);
+  game.addPlayer(bot0, "bot0", 10000);
+  game.addPlayer(bot1, "bot1", 10000);
+  game.addPlayer(bot2, "bot2", 10000);
 
   // play until one player wins all the chips
   game.play();

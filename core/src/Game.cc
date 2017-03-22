@@ -51,6 +51,7 @@ Game::Game(uint32_t small_blind, uint32_t big_blind) {
   small_blind_ = small_blind;
   big_blind_ = big_blind;
   button_seat_ = 0;
+  hand_num_ = 0;
   updateView();
 
   FILE_LOG(logDEBUG) << "Initialized game, blinds " << small_blind_ \
@@ -165,7 +166,7 @@ Game::play(int num_hands) {
   event_manager_.fireGameStartEvent(const_view_);
   FILE_LOG(logDEBUG) << "playing " << num_hands << " hands";
 
-  hand_num_ = 0;
+  num_hands += hand_num_;
   while (!isGameOver() && hand_num_ != num_hands) {
     playHand();
   }
@@ -422,7 +423,8 @@ void
 Game::setupRound() {
   // preflop, the blinds have already been posted before the round starts,
   // so the current agent is already initialized to the player after the
-  // big blind.
+  // big blind. Don't just set it to 3 left of the button because
+  // that misses the special case of 2 players where the button acts first.
   if (street_ > PREFLOP) {
     acting_player_seat_ = getNextLivePlayerSeat(button_seat_);
   }
@@ -439,11 +441,12 @@ Game::setupRound() {
   }
 }
 
-// Reset current_bet_ and current_raise_by_
+// Reset current_bet_ and current_raise_by_, set acting_player_seat to invalid
 void
 Game::endRound() {
   current_bet_ = 0;
   current_raise_by_ = big_blind_;
+  acting_player_seat_ = MAX_NUM_PLAYERS;
   FILE_LOG(logDEBUG2) << "End round " << street_;
 }  
 
