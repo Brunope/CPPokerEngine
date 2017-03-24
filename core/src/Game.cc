@@ -170,8 +170,10 @@ Game::play(int num_hands) {
   while (!isGameOver() && hand_num_ != num_hands) {
     playHand();
   }
-  
-  event_manager_.fireGameEndEvent();
+
+  if (isGameOver()) {
+    event_manager_.fireGameEndEvent();
+  }
 }
 
 void
