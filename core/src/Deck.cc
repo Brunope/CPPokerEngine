@@ -3,14 +3,15 @@
 #include <cassert>
 #include <vector>
 #include <iostream>
+#include <random>
 
 #include "Card.h"
 #include "Deck.h"
 
+static std::random_device rd;
+static std::mt19937 rng(rd());
 
 Deck::Deck() {
-  srand(time(0));
-  constructDeck();
   shuffle();
 }
 
@@ -18,7 +19,7 @@ Deck::Deck() {
 void
 Deck::fyShuffle() {
   for (size_t i = deck_.size() - 1; i > 0; i--) {
-    size_t j = std::rand() % (i + 1);
+    size_t j = rng() % (i + 1);
     Card temp = deck_[i];
     deck_[i] = deck_[j];
     deck_[j] = temp;

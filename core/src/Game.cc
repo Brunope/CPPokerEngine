@@ -434,12 +434,12 @@ Game::setupRound() {
   // Clear chips in play
   // Important! Don't clobber chips in play for the small blind and
   // big blind players preflop, for the same reason as before
-  for (auto it = live_players_.begin(); it != live_players_.end(); ++it) {
+  for (auto it = players_.begin(); it != players_.end(); ++it) {
     if (street_ == PREFLOP &&
         (it->first == sb_seat_ || it->first == bb_seat_)) {
       continue;
     }
-    it->second->chips_in_play_ = 0;
+    it->second.chips_in_play_ = 0;
   }
 }
 

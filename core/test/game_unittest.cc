@@ -626,4 +626,8 @@ TEST(GameTest, AllInNoAction) {
 
 }
 
+// TODO:
 // update view in right places (missing after new round)
+
+// TODO:
+// board contains best hand, chop pot
