@@ -5,7 +5,7 @@ Rectangle {
   id: boardContainer
 
   width: 400
-  height: 100
+  height: 75
   color: "transparent"
 
   Card {
@@ -13,6 +13,7 @@ Rectangle {
     anchors.right: c1.left
     anchors.rightMargin: 10
     visible: view.board.length > 0
+    scale: 0.8
     str: cardStr(0)
    }
 
@@ -21,6 +22,7 @@ Rectangle {
     anchors.right: c2.left
     anchors.rightMargin: 10
     visible: view.board.length > 1
+    scale: 0.8
     str: cardStr(1)
   }
 
@@ -29,6 +31,7 @@ Rectangle {
     anchors.horizontalCenter: parent.horizontalCenter
     str: cardStr(2)
     visible: view.board.length > 2
+    scale: 0.8
   }
 
   Card {
@@ -36,6 +39,7 @@ Rectangle {
     anchors.left: c2.right
     anchors.leftMargin: 10
     visible: view.board.length > 3
+    scale: 0.8
     str: cardStr(3)
   }
 
@@ -44,6 +48,7 @@ Rectangle {
     anchors.left: c3.right
     anchors.leftMargin: 10
     visible: view.board.length > 4
+    scale: 0.8
     str: cardStr(4)
   }
 

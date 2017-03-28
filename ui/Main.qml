@@ -4,11 +4,15 @@ import QtQuick.Window 2.0
 import poker 1.0
 
 Window {
-  property bool animationsRunning: false
+  property bool animationsRunning: animationShowRunning || animationWinRunning
+  property bool animationShowRunning: false
+  property bool animationWinRunning: false
+  property int animationWinDuration: 1000
+  property int animationShowDuration: 3000
+  
   property bool handRunning: false
   property bool gameRunning: view.players.length > 1
   property int winningPlayerSeat
-  property int animationDuration: 3000
   
   id: root
   visible: true
@@ -17,7 +21,7 @@ Window {
   Image {
     id: bgImage
     anchors.fill: parent
-    source: "background.png"
+    source: "img/background.png"
     fillMode: Image.Tile
   }
 
@@ -42,44 +46,14 @@ Window {
     id: board
     anchors.verticalCenter: playerRing.verticalCenter
     anchors.horizontalCenter: playerRing.horizontalCenter
-    anchors.verticalCenterOffset: 15
+    anchors.verticalCenterOffset: 30
   }
 
-  Text {
+  Pot {
     id: pot
     anchors.horizontalCenter: board.horizontalCenter
     anchors.bottom: board.top
     anchors.margins: 5
-    visible: view.pot > 0
-    font.pointSize: 16
-    text: view.pot
-    color: "white"
-    state: "default"
-
-    states: State {
-      name: "won"
-      PropertyChanges {
-        target: pot
-        x: 0
-        y: 0
-      }
-    }
-    transitions: Transition {
-      from: "default"
-      to: "won"
-      NumberAnimation {
-        properties: "x,y"
-        easing.type: Easing.InOutQuad
-        duration: animationDuration
-      }
-      onRunningChanged: {
-        console.log('pot running: ' + running)
-        root.animationsRunning = running
-      }
-    }
-
-    onStateChanged: console.log(state + '\n' + x + ', ' + y)
-
   }
   
   PlayerRing {
@@ -87,7 +61,7 @@ Window {
     anchors.top: parent.top
     anchors.left: parent.left
     anchors.right: parent.right
-    anchors.margins: 10
+    anchors.margins: 1
     //border.color: "white"
   }
 
@@ -139,6 +113,8 @@ Window {
       appendChatText(sig_text);
     }
     onGameEnd: {
+      gameRunning = false
+      console.log("game over");
     }
     onPlayerJoin: {
       console.log(sig_text);
@@ -166,6 +142,7 @@ Window {
       eval("playerRing.player" + player.seat).card0str = card0.str;
       eval("playerRing.player" + player.seat).card1str = card1.str;
       eval("playerRing.player" + player.seat).showing = true
+      rootState.state = 'showing'
     }
     onShowdown: {
       appendChatText(sig_text)
@@ -174,9 +151,29 @@ Window {
       console.log(sig_text)
       appendChatText(sig_text)
       pot.state = "won"
-      //rootState.state = "p0win"
+      eval("pot.p" + player.seat + "winnings = amount");
       eval("playerRing.player" + player.seat).winning = true
+      eval("playerRing.player" + player.seat).state = "winning"
       handRunning = false
+    }
+  }
+
+  Item {
+    id: rootState
+    states: State {
+      name: 'showing'
+    }
+    transitions: Transition {
+      from: 'default'
+      to: 'showing'
+      NumberAnimation {
+        duration: animationShowDuration
+      }
+      // why can't I just property bind this
+      onRunningChanged: {
+        console.log('show running: ' + running);
+        animationShowRunning = running
+      }
     }
   }
 
@@ -196,49 +193,28 @@ Window {
       eval("playerRing.player" + i).card1str = "back";
       eval("playerRing.player" + i).showing = false;
       eval("playerRing.player" + i).winning = false;
+      eval("playerRing.player" + i).state = "default";
     }
-    pot.state = "default";
     rootState.state = "default";
-    root.playHand()
+    pot.state = "default";
+    pot.resetWinnings();
+
+
+    if (!handRunning && gameRunning) {
+      root.playHand();
+    }
   }
 
   onAnimationsRunningChanged: {
-    console.log("ar: " + animationsRunning);
+    console.log("ar: " + animationsRunning + ' ' + animationShowRunning + ' ' + animationWinRunning);
     console.log("hr: " + handRunning);
-    if (!animationsRunning && !handRunning && gameRunning) {
+    if (!animationsRunning && !handRunning) {
       resetPlayHand()
     }
   }
 
-  Item {
-    id: rootState
-    state: "default"
-    states: [
-      State {
-        name: "default"
-        AnchorChanges {
-          target: pot
-          anchors.horizontalCenter: board.horizontalCenter
-          anchors.bottom: board.top
-        }
-      },
-      State {
-        name: "p0win"
-        PropertyChanges {
-          target: playerRing.player0
-          winning: true
-        }
-      },
-      State {
-        name: "p1win"
-        AnchorChanges {
-          target: pot
-          anchors.top: playerRing.player1.bottom
-          anchors.horizontalCenter: playerRing.player1.horizontalCenter
-        }
-      }
-    ]
+  onGameRunningChanged: {
+    console.log("game running: " + gameRunning);
   }
-
 }
 

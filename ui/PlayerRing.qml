@@ -21,10 +21,10 @@ Rectangle {
   width: 440
   height: 350
 
-
   Player {
     id: player0
     seat: 0
+    facing: 'bottom'
     anchors.top: parent.top
     anchors.horizontalCenter: parent.horizontalCenter
   }
@@ -32,6 +32,7 @@ Rectangle {
   Player {
     id: player1
     seat: 1
+    facing: 'bottom'
     anchors.top: player0.top
     anchors.left: player0.right
     anchors.leftMargin: hSpacing
@@ -40,6 +41,7 @@ Rectangle {
   Player {
     id: player2
     seat: 2
+    facing: 'left'
     anchors.top: player1.bottom
     anchors.left: player1.right
     anchors.topMargin: vSpacing
@@ -49,6 +51,7 @@ Rectangle {
   Player {
     id: player3
     seat: 3
+    facing: 'top'
     anchors.top: player2.bottom
     anchors.right: player2.left
     anchors.topMargin: vSpacing
@@ -58,6 +61,7 @@ Rectangle {
   Player {
     id: player4
     seat: 4
+    facing: 'top'
     anchors.top: player3.top
     anchors.right: player3.left
     anchors.rightMargin: (2 * hSpacing - width) / 3
@@ -66,6 +70,7 @@ Rectangle {
   Player {
     id: player5
     seat: 5
+    facing: 'top'
     anchors.top: player4.top
     anchors.right: player4.left
     anchors.rightMargin: (2 * hSpacing - width) / 3//hSpacing * 2 / 3.0
@@ -74,6 +79,7 @@ Rectangle {
   Player {
     id: player6
     seat: 6
+    facing: 'top'
     anchors.top: player5.top
     anchors.right: player5.left
     anchors.rightMargin: (2 * hSpacing - width) / 3//hSpacing * 2 / 3.0
@@ -82,6 +88,7 @@ Rectangle {
   Player {
     id: player7
     seat: 7
+    facing: 'right'
     anchors.bottom: player6.top
     anchors.right: player6.left
     anchors.bottomMargin: vSpacing
@@ -91,6 +98,7 @@ Rectangle {
   Player {
     id: player8
     seat: 8
+    facing: 'bottom'
     anchors.bottom: player7.top
     //anchors.left: player7.right
     anchors.bottomMargin: vSpacing

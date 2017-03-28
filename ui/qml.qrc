@@ -7,7 +7,9 @@
         <file>PlayerRing.qml</file>
         <file>ChatBox.qml</file>
         <file>ActionInterface.qml</file>
-        <file>background.png</file>
+        <file>Pot.qml</file>
+        <file>img/back.png</file>
+        <file>img/background.png</file>
     </qresource>
 </RCC>
 

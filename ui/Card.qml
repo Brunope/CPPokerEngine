@@ -7,7 +7,7 @@ Rectangle {
   property string str: "null"
   property string imgSrc: str + ".png"
   property real scale: 1.0
-  property real textSize: scale * 32
+  property real textSize: scale * 20 + 5
   color: "white"
 
   width: 55 * scale
@@ -21,7 +21,7 @@ Rectangle {
     anchors.fill: parent
     // TODO: conditionally load this when str != null
     // instead of looking for a 'null.png' that's not needed
-    source: "file:/Users/brunope/prg/cpp/poker/ui/img/back.png"
+    source: "img/back.png"
     fillMode: Image.Stretch
     visible: str == "back"
   }
@@ -33,17 +33,7 @@ Rectangle {
     font.pointSize: textSize
     anchors.centerIn: parent
   }
-  /* Rectangle { */
-  /*   id: cardGraphic */
-  /*   anchors.fill: parent */
-  /*   anchors.margins: 1 */
-  /*   //border.color: "black" */
-  /*   border.color: "black" */
-  /*   radius: 3 */
 
-  /*   visible: !cardImg.visible */
-
-  /* } */
   function getCardText(cardStr) {
     var rank = cardStr.charAt(0);
     var suit = cardStr.charAt(1);

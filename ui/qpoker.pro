@@ -32,12 +32,12 @@ HEADERS += "QEventListener.h" "QGameDriver.h" "QPlayer.h" "QGameView.h" \
 
 RESOURCES += qml.qrc
 QML += Main.qml Player.qml Card.qml Board.qml PlayerRing.qml ChatBox.qml \
-ActionInterface.qml
+ActionInterface.qml Pot.qml
 
 QMAKE_EXTRA_TARGETS += poker_core
 
 # do i need this?
 DISTFILES += \
 Main.qml Player.qml Card.qml Board.qml PlayerRing.qml ChatBox.qml \
-ActionInterface.qml background.png
+ActionInterface.qml Pot.qml background.png back.png
 

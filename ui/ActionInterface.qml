@@ -5,9 +5,11 @@ import poker 1.0
 Rectangle {
   id: actionInterfaceContainer
 
+  property int chips: view.players[human.seat].chips
+  property int chipsInPlay: view.players[human.seat].chipsInPlay
   property bool acting: view.actingPlayerSeat == human.seat
-  property bool canCheck: view.currentBet == view.players[human.seat].chipsInPlay
-  property bool canRaise: getMinRaise() < getMaxRaise()
+  property bool canCheck: view.currentBet == chipsInPlay
+  property bool canRaise: chips > view.currentBet - chipsInPlay
   property real raiseAmount
   property real fontSize: 15
   
@@ -140,6 +142,6 @@ Rectangle {
   }
 
   function getMaxRaise() {
-    return view.players[human.seat].chips
+    return chips + chipsInPlay
   }
 }
