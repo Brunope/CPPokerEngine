@@ -4,20 +4,31 @@ import QtQuick.Window 2.0
 import poker 1.0
 
 Window {
-  property bool animationsRunning: animationShowRunning || animationWinRunning
-  property bool animationShowRunning: false
-  property bool animationWinRunning: false
+  // config params
   property int animationWinDuration: 1000
   property int animationShowDuration: 3000
+  property string fontFamily: font.name
+  property int fontPixSize: 12
+  property bool debugBorders: false
   
+  // state vars
   property bool handRunning: false
   property bool gameRunning: view.players.length > 1
   property int winningPlayerSeat
+  property bool animationsRunning: animationShowRunning || animationWinRunning
+  property bool animationShowRunning: false
+  property bool animationWinRunning: false
   
   id: root
   visible: true
-  width: 640
-  height: 480
+  minimumWidth: 640
+  minimumHeight: 480
+
+  FontLoader {
+    id: font
+    source: "monaco.ttf"
+  }
+  
   Image {
     id: bgImage
     anchors.fill: parent
@@ -61,8 +72,9 @@ Window {
     anchors.top: parent.top
     anchors.left: parent.left
     anchors.right: parent.right
-    anchors.margins: 1
-    //border.color: "white"
+    height: root.height * .75
+    border.color: "white"
+    border.width: debugBorders ? 1 : 0
   }
 
   ChatBox {
@@ -70,7 +82,7 @@ Window {
     anchors.bottom: parent.bottom
     anchors.left: parent.left
     anchors.top: playerRing.bottom
-    anchors.topMargin: 2
+    anchors.topMargin: 20
   }
   
   Rectangle {
@@ -80,6 +92,8 @@ Window {
     height: 20
     Text {
       text: "hand # " + view.numHands
+      font.family: fontFamily
+      font.pixelSize: fontPixSize
       color: "white"
       leftPadding: 10
     }
@@ -91,6 +105,7 @@ Window {
     anchors.top: playerRing.bottom
     anchors.left: chat.right
     anchors.right: parent.right
+    anchors.topMargin: 20
   }
   
   Connections {
@@ -110,7 +125,6 @@ Window {
     ignoreUnknownSignals: true
     onGameStart: {
       console.log(sig_text);
-      appendChatText(sig_text);
     }
     onGameEnd: {
       gameRunning = false

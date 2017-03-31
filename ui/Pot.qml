@@ -2,6 +2,9 @@ import QtQuick.Controls 2.0
 import QtQuick 2.7
 
 Text {
+  property int fontSize: 18
+  property int fontPixSize: root.fontPixSize * 1.5
+  
   property int p0winnings: 0
   property int p1winnings: 0
   property int p2winnings: 0
@@ -16,7 +19,9 @@ Text {
   
   id: mainPot
   visible: view.pot > 0
-  font.pointSize: 25
+  // font.pointSize: fontSize
+  font.pixelSize: fontPixSize
+  font.family: root.fontFamily
   text: view.pot
   color: textColor
   state: "default"

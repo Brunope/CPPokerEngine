@@ -3,7 +3,9 @@ import QtQuick.Controls 2.0
 
 Rectangle {
   property string text: ""
-  property real maxLines: 20
+  property int maxLines: 20
+  property int fontPixSize: root.fontPixSize
+  
   property alias textItem: recvSigText
   
   id: recvSigContainer
@@ -34,7 +36,9 @@ Rectangle {
       id: recvSigText
       text: recvSigContainer.text
       color: "white"
-      font.pointSize: 12
+      // font.pointSize: 12
+      font.pixelSize: fontPixSize
+      font.family: root.fontFamily
     }
   }
 }

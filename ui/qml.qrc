@@ -10,6 +10,7 @@
         <file>Pot.qml</file>
         <file>img/back.png</file>
         <file>img/background.png</file>
+        <file>monaco.ttf</file>
     </qresource>
 </RCC>
 

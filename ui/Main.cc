@@ -40,15 +40,15 @@ int main(int argc, char *argv[])
   bot8->setWaitTime(100);
 
   // Game *game = new Game(5, 10);
-  game->addPlayer(human, "human", 1000);
-  game->addPlayer(bot1, "bot1", 1000);
-  game->addPlayer(bot2, "bot2", 1000);
-  game->addPlayer(bot3, "bot3", 1000);
-  game->addPlayer(bot4, "bot4", 1000);
-  game->addPlayer(bot5, "bot5", 1000);
-  game->addPlayer(bot6, "bot6", 1000);
-  game->addPlayer(bot7, "bot7", 1000);
-  game->addPlayer(bot8, "bot8", 1000);
+  game->addPlayer(human, "You", 1000);
+  game->addPlayer(bot1, "Phil Hellmuth", 1000);
+  game->addPlayer(bot2, "Phil Ivey", 1000);
+  game->addPlayer(bot3, "Phil Galfond", 1000);
+  game->addPlayer(bot4, "Doyle Brunson", 1000);
+  game->addPlayer(bot5, "JCarver", 1000);
+  game->addPlayer(bot6, "Durrrrrrr", 1000);
+  game->addPlayer(bot7, "Kanye West", 1000);
+  game->addPlayer(bot8, "John Nash", 1000);
 
   // manipulates the game from qml signals
   QGameDriver driver(game);

@@ -2,8 +2,8 @@ import QtQuick 2.7
 import QtQuick.Controls 2.0
 
 Rectangle {
-  property real hSpacing: 50
-  property real vSpacing: 30
+  property real hSpacing: width / 9
+  property real vSpacing: height / 11
 
   property alias player0: player0
   property alias player1: player1
@@ -42,20 +42,20 @@ Rectangle {
     id: player2
     seat: 2
     facing: 'left'
-    anchors.top: player1.bottom
+    anchors.verticalCenter: parent.verticalCenter
     anchors.left: player1.right
     anchors.topMargin: vSpacing
-    anchors.leftMargin: hSpacing
+    anchors.leftMargin: hSpacing / 2
   }
 
   Player {
     id: player3
     seat: 3
     facing: 'top'
-    anchors.top: player2.bottom
+    anchors.bottom: parent.bottom
     anchors.right: player2.left
     anchors.topMargin: vSpacing
-    anchors.rightMargin: hSpacing
+    anchors.rightMargin: hSpacing / 2
   }
 
   Player {
@@ -89,20 +89,18 @@ Rectangle {
     id: player7
     seat: 7
     facing: 'right'
-    anchors.bottom: player6.top
+    anchors.verticalCenter: parent.verticalCenter
     anchors.right: player6.left
     anchors.bottomMargin: vSpacing
-    anchors.rightMargin: hSpacing
+    anchors.rightMargin: hSpacing / 2
   }
 
   Player {
     id: player8
     seat: 8
     facing: 'bottom'
-    anchors.bottom: player7.top
-    //anchors.left: player7.right
+    anchors.top: parent.top
     anchors.bottomMargin: vSpacing
-    //anchors.leftMargin: hSpacing
     anchors.right: player0.left
     anchors.rightMargin: hSpacing
   }

@@ -4,14 +4,18 @@ import poker 1.0
 
 Rectangle {
   id: actionInterfaceContainer
+  property int fontSize: 15
+  property int fontPixSize: 16
+  property int buttonWidth: 100
+  property int buttonHeight: 50
 
   property int chips: view.players[human.seat].chips
   property int chipsInPlay: view.players[human.seat].chipsInPlay
   property bool acting: view.actingPlayerSeat == human.seat
   property bool canCheck: view.currentBet == chipsInPlay
   property bool canRaise: chips > view.currentBet - chipsInPlay
-  property real raiseAmount
-  property real fontSize: 15
+  property int raiseAmount: raiseSlider.value
+  property bool raiseInputUpdating: false
   
   color: "transparent"
   visible: acting
@@ -22,24 +26,25 @@ Rectangle {
     anchors.bottom: raiseButton.top
     anchors.right: raiseButton.right
     anchors.bottomMargin: 5
-    width: 100
-    height: 40
+    width: buttonWidth
+    height: 25
     border.color: "white"
     color: "transparent"
     
     TextInput {
       id: raiseInput
       anchors.fill: parent
-      text: raiseSlider.value
+      text: raiseAmount
       color: "white"
       readOnly: false
       cursorVisible: true
       selectByMouse: true
       maximumLength: 10
       verticalAlignment: TextInput.AlignVCenter
-      font.pointSize: fontSize
+      font.pixelSize: fontPixSize
+      font.family: root.fontFamily
       leftPadding: 5
-      selectedTextColor: "white"
+      selectedTextColor: "black"
       selectionColor: "red"
     }
   }
@@ -53,7 +58,7 @@ Rectangle {
     from: getMinRaise()
     to: getMaxRaise()
     stepSize: 1
-    value: raiseInput.text
+    value: Math.round(raiseInput.text)
     snapMode: Slider.SnapAlways
   }
   
@@ -62,12 +67,15 @@ Rectangle {
     anchors.left: parent.left
     anchors.bottom: parent.bottom
     anchors.margins: 10
-    width: 100
-    height: 60
+    width: buttonWidth
+    height: buttonHeight
     Text {
       text: "Fold"
       anchors.centerIn: parent
-      font.pointSize: fontSize
+      font.pixelSize: fontPixSize
+      font.family: root.fontFamily
+      horizontalAlignment: Text.AlignHCenter
+      wrapMode: Text.Wrap
     }
     onClicked: {
       console.log("fold clicked");
@@ -81,12 +89,15 @@ Rectangle {
     anchors.bottom: parent.bottom
     anchors.margins: 10
     visible: !canCheck
-    width: 100
-    height: 60
+    width: buttonWidth
+    height: buttonHeight
     Text {
-      text: "Call\n" + (view.currentBet - view.players[human.seat].chipsInPlay)
+      text: "Call " + (view.currentBet - view.players[human.seat].chipsInPlay)
       anchors.centerIn: parent
-      font.pointSize: fontSize
+      font.family: root.fontFamily
+      font.pixelSize: fontPixSize
+      horizontalAlignment: Text.AlignHCenter
+      wrapMode: Text.Wrap
     }
     onClicked: {
       console.log("call clicked");
@@ -100,12 +111,15 @@ Rectangle {
     anchors.bottom: parent.bottom
     anchors.margins: 10
     visible: canCheck
-    width: 100
-    height: 60
+    width: buttonWidth
+    height: buttonHeight
     Text {
       text: "Check"
       anchors.centerIn: parent
-      font.pointSize: fontSize
+      font.family: root.fontFamily
+      font.pixelSize: fontPixSize
+      horizontalAlignment: Text.AlignHCenter
+      wrapMode: Text.Wrap
     }
     onClicked: {
       console.log("check clicked");
@@ -119,12 +133,15 @@ Rectangle {
     anchors.left: callButton.right
     anchors.bottom: parent.bottom
     anchors.margins: 10
-    width: 100
-    height: 60
+    width: buttonWidth
+    height: buttonHeight
     Text {
-      text: "Raise\n" + raiseSlider.value
+      text: "Raise " + raiseAmount
       anchors.centerIn: parent
-      font.pointSize: fontSize
+      font.family: root.fontFamily
+      font.pixelSize: fontPixSize
+      horizontalAlignment: Text.AlignHCenter
+      wrapMode: Text.Wrap
     }
     onClicked: {
       console.log("raise clicked");

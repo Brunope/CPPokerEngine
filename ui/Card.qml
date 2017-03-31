@@ -5,11 +5,11 @@ Rectangle {
   id: cardContainer
 
   property string str: "null"
-  property string imgSrc: str + ".png"
   property real scale: 1.0
-  property real textSize: scale * 20 + 5
-  color: "white"
+  property real textSize: scale * 25 + 2
+  property int fontPixSize: width / 1.5
 
+  color: "white"
   width: 55 * scale
   height: 75 * scale
   radius: 3
@@ -22,6 +22,7 @@ Rectangle {
     // TODO: conditionally load this when str != null
     // instead of looking for a 'null.png' that's not needed
     source: "img/back.png"
+    mipmap: true
     fillMode: Image.Stretch
     visible: str == "back"
   }
@@ -30,8 +31,11 @@ Rectangle {
     id: cardText
     text: getCardText(str)
     color: getCardColor(str)
-    font.pointSize: textSize
+    // font.pointSize: textSize
+    font.pixelSize: fontPixSize
+    font.family: root.fontFamily
     anchors.centerIn: parent
+    visible: str != "back"
   }
 
   function getCardText(cardStr) {

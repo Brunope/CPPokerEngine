@@ -3,6 +3,9 @@ import QtQuick.Controls 2.0
 
 
 Rectangle {
+  property int fontSize: 12
+  property int fontPixSize: root.fontPixSize
+  
   property int seat
   property string name: view.players[seat].name
   property int chips: view.players[seat].chips
@@ -27,14 +30,20 @@ Rectangle {
   visible: exists || showing
   color: "transparent"
 
-  border.width: 0
+  border.width: debugBorders ? 1 : 0
   border.color: "yellow"
 
   Text {
     id: playerName
     anchors.top: cardContainer.bottom
     anchors.horizontalCenter: parent.horizontalCenter
+    width: parent.width
     text: name
+    wrapMode: Text.Wrap
+    horizontalAlignment: Text.AlignHCenter
+    font.family: root.fontFamily
+    // font.pointSize: fontSize
+    font.pixelSize: fontPixSize
     color: textColor
   }
 
@@ -67,6 +76,9 @@ Rectangle {
   Text {
     id: playerChips
     text: chips
+    font.family: root.fontFamily
+    // font.pointSize: fontSize
+    font.pixelSize: fontPixSize
     color: textColor
     anchors.top: playerName.bottom
     anchors.horizontalCenter: parent.horizontalCenter
@@ -77,7 +89,9 @@ Rectangle {
     text: chipsInPlay
     color: textColor
     visible: chipsInPlay != 0
-    font.pointSize: 14
+    // font.pointSize: 14
+    font.pixelSize: fontPixSize + 3
+    font.family: root.fontFamily
     
     // has to be a better way to do this
     anchors.right: facing == 'left' ? cardContainer.left : undefined
@@ -94,7 +108,9 @@ Rectangle {
     text: '+' + winnings
     color: textColor
     visible: winning
-    font.pointSize: 25
+    // font.pointSize: 25
+    font.pixelSize: fontPixSize * 2
+    font.family: root.fontFamily
     anchors.top: cardContainer.bottom
     anchors.horizontalCenter: parent.horizontalCenter
   }
