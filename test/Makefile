@@ -18,11 +18,9 @@ CPPFLAGS += -isystem $(GTEST_DIR)/include
 
 # Flags passed to the C++ compiler.
 CXXFLAGS += -g -std=c++11 -I $(INC_DIR)
-
 ############################################################
 # Tests
 ############################################################
-
 TESTS = card_unittest deck_unittest hand_unittest action_unittest \
  handevaluator_unittest handhistory_unittest gameview_unittest \
  loggereventlistener_unittest eventmanager_unittest game_unittest
@@ -30,18 +28,27 @@ TESTS = card_unittest deck_unittest hand_unittest action_unittest \
 TESTS_OBJS = $(addprefix $(OBJ_DIR)/, $(addsuffix .o, $(TESTS)))
 TESTS_BINS = $(addprefix $(BIN_DIR)/, $(TESTS))
 
+# Needed to link the test binaries
+CORE_UNITS = Card Deck Action Hand HandEvaluator HandRanks HandHistory \
+ GameView EventManager LoggerEventListener Game
+CORE_OBJS = $(addprefix $(OBJ_DIR)/, $(addsuffix .o, $(CORE_UNITS)))
+AGENT_UNITS = SlowAgent RandomAgent HumanAgent TestAgent SimpleAgent
+AGENT_OBJS = $(addprefix $(OBJ_DIR)/, $(addsuffix .o, $(AGENT_UNITS)))
+
+
 GTEST_HEADERS = $(GTEST_DIR)/include/gtest/*.h \
  $(GTEST_DIR)/include/gtest/internal/*.h
 
 all : $(BIN_DIR)/test_suite
 
 clean :
-	rm -f $(TEST_BINS) $(TESTS_OBJS)
+	rm -f $(TEST_BINS) $(TESTS_OBJS) $(OBJ_DIR)/gtest-all.o \
+ $(OBJ_DIR)/gtest_main.o gtest.a gtest_main.a
 	rm -rf $(DEP_DIR) $(addprefix $(BIN_DIR)/, $(addsuffix .dSYM, $(TESTS)))
 	rm -rf $(BIN_DIR)/test_suite.dSYM
 
 # gtest suite - build gtest.a, gtest_main.a, and bin/test_suite
-$(BIN_DIR)/test_suite : gtest_main.a $(TESTS_OBJS) $(OBJS)
+$(BIN_DIR)/test_suite : gtest_main.a $(TESTS_OBJS) $(CORE_OBJS) $(AGENT_OBJS)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -pthread $^ -o $@
 
 
