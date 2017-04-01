@@ -3,8 +3,6 @@
 #include <QQmlApplicationEngine>
 #include <QObject>
 #include <memory>
-#include "HumanAgent.h"
-#include "RandomAgent.h"
 #include "QGameDriver.h"
 #include "QEventListener.h"
 #include "QGameView.h"

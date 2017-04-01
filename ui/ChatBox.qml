@@ -3,7 +3,7 @@ import QtQuick.Controls 2.0
 
 Rectangle {
   property string text: ""
-  property int maxLines: 20
+  property int maxLines: 50
   property int fontPixSize: root.fontPixSize
   
   property alias textItem: recvSigText

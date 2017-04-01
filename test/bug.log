@@ -1,0 +1,26 @@
+- 02:08:55.657 DEBUG1: 	flop: 9sTdJs
+- 02:08:55.657 DEBUG3: 			current_bet_: 0
+- 02:08:55.657 DEBUG3: 			current_raise_by_: 10
+- 02:08:55.657 DEBUG3: 			Updated view
+- 02:08:55.659 DEBUG3: 			getNextLivePlayerSeat 2
+- 02:08:55.659 DEBUG3: 			getNextLivePLayerSeat return 7
+- 02:08:55.659 DEBUG2: 		End round 1
+- 02:08:55.659 DEBUG1: 	turn: Qh
+- 02:08:55.659 DEBUG3: 			current_bet_: 0
+- 02:08:55.659 DEBUG3: 			current_raise_by_: 10
+- 02:08:55.659 DEBUG3: 			Updated view
+- 02:08:55.660 DEBUG3: 			getNextLivePlayerSeat 2
+- 02:08:55.660 DEBUG3: 			getNextLivePLayerSeat return 7
+- 02:08:55.660 DEBUG2: 		End round 2
+- 02:08:55.660 DEBUG1: 	river: 8s
+- 02:08:55.660 DEBUG3: 			current_bet_: 0
+- 02:08:55.660 DEBUG3: 			current_raise_by_: 10
+- 02:08:55.660 DEBUG3: 			Updated view
+- 02:08:55.660 DEBUG3: 			getNextLivePlayerSeat 2
+- 02:08:55.660 DEBUG3: 			getNextLivePLayerSeat return 7
+- 02:08:55.660 DEBUG2: 		End round 3
+- 02:08:55.666 DEBUG2: 		All in showdown
+- 02:08:55.684 DEBUG3: 			2695 chips remaining for payout
+- 02:08:55.684 DEBUG3: 			human has winning hand 9sTdJsQh8s
+- 02:08:55.684 DEBUG3: 			win 2695 chips
+- 02:08:55.686 DEBUG1: 	human wins with 9sTdJsQh8s

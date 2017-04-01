@@ -12,4 +12,4 @@ addons:
       
 compiler: g++-6
 install: mkdir -p core/resources && wget https://www.dropbox.com/s/iw6yuk8naanppn0/HandRanks.dat?dl=0 -O core/resources/HandRanks.dat
-script: cd core && make && make test
+script: cd core && make CXX=g++-6 && make CXX=g++-6 test
