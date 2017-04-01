@@ -7,7 +7,6 @@
 #include "Agent.h"
 #include "Card.h"
 #include "Hand.h"
-#include "Observer.h"
 #include "Action.h"
 #include "HandHistory.h"
 #include "Game.h"
