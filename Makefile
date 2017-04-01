@@ -6,7 +6,7 @@ OBJ_DIR = ./obj
 
 .PHONY : subsystem test clean core agents ui
 
-subsystem : core agents ui
+subsystem : | core agents ui
 
 
 test :
