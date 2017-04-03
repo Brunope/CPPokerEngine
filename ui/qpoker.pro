@@ -5,7 +5,7 @@ CONFIG -= app_bundle
 QMAKE_CXX = clang++
 QMAKE_CXXFLAGS += -std=c++11 -g
 
-OBJECTS_DIR=../obj
+OBJECTS_DIR=./obj
 MOC_DIR=./moc
 
 QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.10
@@ -18,8 +18,9 @@ DEFINES += QT_DEPRECATED_WARNINGS
 # link the core game static library
 PRE_TARGETDEPS += "poker.a"
 
-LIBS += poker.a $$files(../obj/*Agent.o)
-INCLUDEPATH += "../core/inc"
+LIBS += poker.a
+OBJECTS += $$files(../obj/*Agent.o) ../obj/Sleeper.o
+INCLUDEPATH += "../core/inc" "../agents/inc"
 
 poker_core.target = "poker.a"
 poker_core.commands = "cp ../core/poker.a ."

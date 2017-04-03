@@ -9,6 +9,7 @@
 #include "Hand.h"
 #include "Action.h"
 #include "HandHistory.h"
+#include "Random.h"
 #include "Game.h"
 
 
@@ -37,6 +38,8 @@
  * TODO: config file specify log file name
  */
 Game::Game(uint32_t small_blind, uint32_t big_blind) {
+  Random::seed();
+  
   FILELog::ReportingLevel() = logDEBUG3;
   log_fd_ = fopen("game.log", "w");
   if (log_fd_ == nullptr) {

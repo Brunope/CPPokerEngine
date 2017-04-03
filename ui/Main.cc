@@ -7,7 +7,8 @@
 #include "QEventListener.h"
 #include "QGameView.h"
 #include "QHumanAgent.h"
-#include "SlowAgent.h"
+#include "SlowTightAgent.h"
+#include "SlowRandomAgent.h"
 #include "LoggerEventListener.h"
 #include "Game.h"
 
@@ -18,33 +19,23 @@ int main(int argc, char *argv[])
   // set up the game
   std::shared_ptr<Game> game = std::make_shared<Game>(5, 10);
   
-  std::shared_ptr<QHumanAgent> human = std::make_shared<QHumanAgent>();
-  std::shared_ptr<SlowAgent> bot1 = std::make_shared<SlowAgent>();
-  std::shared_ptr<SlowAgent> bot2 = std::make_shared<SlowAgent>();
-  std::shared_ptr<SlowAgent> bot3 = std::make_shared<SlowAgent>();
-  std::shared_ptr<SlowAgent> bot4 = std::make_shared<SlowAgent>();
-  std::shared_ptr<SlowAgent> bot5 = std::make_shared<SlowAgent>();
-  std::shared_ptr<SlowAgent> bot6 = std::make_shared<SlowAgent>();
-  std::shared_ptr<SlowAgent> bot7 = std::make_shared<SlowAgent>();
-  std::shared_ptr<SlowAgent> bot8 = std::make_shared<SlowAgent>();
+  auto human = std::make_shared<QHumanAgent>();
+  auto bot1 = std::make_shared<SlowRandomAgent>();
+  auto bot2 = std::make_shared<SlowTightAgent>();
+  auto bot3 = std::make_shared<SlowTightAgent>();
+  auto bot4 = std::make_shared<SlowTightAgent>();
+  auto bot5 = std::make_shared<SlowRandomAgent>();
+  auto bot6 = std::make_shared<SlowTightAgent>();
+  auto bot7 = std::make_shared<SlowRandomAgent>();
+  auto bot8 = std::make_shared<SlowTightAgent>();
 
-  bot1->setWaitTime(100);
-  bot2->setWaitTime(100);
-  bot3->setWaitTime(100);
-  bot4->setWaitTime(100);
-  bot5->setWaitTime(100);
-  bot6->setWaitTime(100);
-  bot7->setWaitTime(100);
-  bot8->setWaitTime(100);
-
-  // Game *game = new Game(5, 10);
   game->addPlayer(human, "You", 1000);
   game->addPlayer(bot1, "Phil Hellmuth", 1000);
   game->addPlayer(bot2, "Phil Ivey", 1000);
   game->addPlayer(bot3, "Phil Galfond", 1000);
   game->addPlayer(bot4, "Doyle Brunson", 1000);
   game->addPlayer(bot5, "JCarver", 1000);
-  game->addPlayer(bot6, "Durrrrrrr", 1000);
+  game->addPlayer(bot6, "Ali", 1000);
   game->addPlayer(bot7, "Kanye West", 1000);
   game->addPlayer(bot8, "John Nash", 1000);
 

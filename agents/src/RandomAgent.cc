@@ -1,16 +1,8 @@
 #include <iostream>
-#include <random>
 #include <algorithm>
-
+#include "Random.h"
 #include "Action.h"
 #include "RandomAgent.h"
-
-RandomAgent::RandomAgent()
-{
-  mt_ = std::mt19937(std::random_device{}());
-  dist_ = std::uniform_int_distribution<int>
-    (0, static_cast<int>(NUM_ACTIONS) - 1);
-}
 
 void
 RandomAgent::receiveHoleCards(const std::pair<Card, Card> hc)
@@ -25,7 +17,7 @@ RandomAgent::act(const GameView &view)
   const bool *legal_actions = view.getLegalActions();
   uint8_t action_type;
   do {
-    action_type = dist_(mt_);
+    action_type = Random::getInRange(0, NUM_ACTIONS - 1);
   } while (!legal_actions[action_type]);
 
   // If raising, just raise double what the last player raised, or what

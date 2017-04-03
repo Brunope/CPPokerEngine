@@ -15,7 +15,8 @@ CXXFLAGS += -g -std=c++11 -I $(INC_DIR) -I $(CORE_INC_DIR)
 # Agents
 ############################################################
 
-UNITS = SlowAgent HumanAgent RandomAgent SimpleAgent TestAgent
+UNITS = SlowAgent HumanAgent RandomAgent SimpleAgent TestAgent TightAgent \
+ SlowTightAgent SlowRandomAgent Sleeper
 
 SRCS = $(wildcard, $(SRC_DIR)/*)
 OBJS = $(addprefix $(OBJ_DIR)/, $(addsuffix .o, $(UNITS)))

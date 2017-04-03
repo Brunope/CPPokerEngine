@@ -24,6 +24,9 @@ enum SUITS : uint8_t { CLUBS, DIAMONDS, HEARTS, SPADES };
 // ACE == 12. 
 enum RANKS : uint8_t { TWO, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, NINE,
                        TEN, JACK, QUEEN, KING, ACE };
+
+#define RANK(x) static_cast<uint8_t>(x)
+
 /**
  * A Card is represented by two unsigned integers, rank and suit. The rank
  * is a value between TWO and ACE, and the suit is a value between CLUBS

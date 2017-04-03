@@ -3,6 +3,7 @@ AR = ar
 
 BIN_DIR = ./bin
 OBJ_DIR = ./obj
+CXXFLAGS = -I core/inc -I agents/inc -g -std=c++11
 
 .PHONY : subsystem test clean core agents ui
 
@@ -33,7 +34,9 @@ ui :
 CONS_DEPS =  $(addprefix $(OBJ_DIR)/, Card.o Deck.o Action.o \
  HandEvaluator.o HandRanks.o HandHistory.o Hand.o GameView.o \
  LoggerEventListener.o EventManager.o TestAgent.o SimpleAgent.o RandomAgent.o \
- HumanAgent.o Game.o ConsoleMain.o)
+ HumanAgent.o Game.o Random.o ConsoleMain.o)
 
+$(OBJ_DIR)/ConsoleMain.o : core core/src/ConsoleMain.cc
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c core/src/ConsoleMain.cc -o $@
 $(BIN_DIR)/console_main : core agents $(CONS_DEPS)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(CONS_DEPS) -o $@

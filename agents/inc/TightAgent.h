@@ -1,18 +1,15 @@
-#ifndef HUMANAGENT_H_
-#define HUMANAGENT_H_
+#ifndef TIGHTAGENT_H_
+#define TIGHTAGENT_H_
 
-#include "Action.h"
-#include "Player.h"
-#include "HandHistory.h"
-#include "Card.h"
 #include "GameView.h"
+#include "HandHistory.h"
 #include "Agent.h"
 
-class HumanAgent : public Agent {
+class TightAgent : public Agent {
 public:
   void receiveHoleCards(const std::pair<Card, Card> hc);
   Action act(const GameView &view);
   void receiveHandHistory(const HandHistory &history);
 };
 
-#endif  // HUMANAGENT_H_
+#endif  // TIGHTAGENT_H_

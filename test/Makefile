@@ -8,6 +8,7 @@ GTEST_DIR = ./gtest
 
 TEST_DIR = .
 INC_DIR = ../core/inc
+AGENT_INC_DIR = ../agents/inc
 OBJ_DIR = ../obj
 BIN_DIR = ../bin
 DEP_DIR = ./dep
@@ -17,7 +18,7 @@ DEP_DIR = ./dep
 CPPFLAGS += -isystem $(GTEST_DIR)/include
 
 # Flags passed to the C++ compiler.
-CXXFLAGS += -g -std=c++11 -I $(INC_DIR)
+CXXFLAGS += -g -std=c++11 -I $(INC_DIR) -I $(AGENT_INC_DIR)
 ############################################################
 # Tests
 ############################################################
@@ -30,9 +31,9 @@ TESTS_BINS = $(addprefix $(BIN_DIR)/, $(TESTS))
 
 # Needed to link the test binaries
 CORE_UNITS = Card Deck Action Hand HandEvaluator HandRanks HandHistory \
- GameView EventManager LoggerEventListener Game
+ GameView EventManager LoggerEventListener Random Game
 CORE_OBJS = $(addprefix $(OBJ_DIR)/, $(addsuffix .o, $(CORE_UNITS)))
-AGENT_UNITS = SlowAgent RandomAgent HumanAgent TestAgent SimpleAgent
+AGENT_UNITS = RandomAgent TestAgent SimpleAgent Sleeper
 AGENT_OBJS = $(addprefix $(OBJ_DIR)/, $(addsuffix .o, $(AGENT_UNITS)))
 
 

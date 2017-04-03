@@ -15,12 +15,12 @@ int main(void) {
   game.addEventListener(listener);
 
   // Add some players to the game, human vs computer.
-  // Each starts with 1000 chips.
   std::shared_ptr<HumanAgent> human(new HumanAgent());
   std::shared_ptr<RandomAgent> bot0(new RandomAgent());
   std::shared_ptr<RandomAgent> bot1(new RandomAgent());
   std::shared_ptr<RandomAgent> bot2(new RandomAgent());
   
+  // Each starts with 1000 chips.
   game.addPlayer(human, "human", 1000);
   game.addPlayer(bot0, "bot0", 10000);
   game.addPlayer(bot1, "bot1", 10000);
