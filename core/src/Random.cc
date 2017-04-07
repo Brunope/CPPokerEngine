@@ -23,5 +23,6 @@ Random::getSeed() {
 
 int
 Random::getInRange(int lo, int hi) {
-  return std::uniform_int_distribution<int>(lo, hi)(rng_);
+  double dScale = (hi - lo) / (rng_.max() - rng_.min() + 1); 
+  return (rng_() - rng_.min()) * dScale  + lo;
 }

@@ -758,21 +758,12 @@ Game::showdownNoAllIn() {
 // pot is used up. For now, this doesn't properly update the hand history, TODO
 void
 Game::showdownAllIn() {
-  // map seat numbers to winnings for this hand
-  std::map<size_t, uint32_t> player_winnings;
-  for (auto it = live_players_.begin(); it != live_players_.end(); ++it) {
-    player_winnings[it->first] = 0;
-  }
-
   FILE_LOG(logDEBUG2) << "All in showdown";
 
   std::map<size_t, Hand> live_player_hands = getPlayerHands();
   std::map<size_t, Hand> remaining_player_hands = live_player_hands;
   std::map<size_t, uint32_t> player_contrib = player_chips_in_pot_per_hand_;
-  uint32_t remaining_pot = pot_;
-  uint32_t chips_won, chips_can_win;
-  size_t winning_player_seat;
-  winning_player_seat = getBestHand(remaining_player_hands);
+  std::map<size_t, uint32_t> player_winnings;
 
   // Treat each player all in for a different amount as a side pot.
   // Each side pot is equal to the all in amount minus contributions
@@ -780,19 +771,21 @@ Game::showdownAllIn() {
   // that pot. Start with the smallest pot, subtract from
   // each player's contributions, and continue until all pots have
   // been considered.
-  uint32_t total_contrib[MAX_NUM_PLAYERS];
+  uint32_t contrib[MAX_NUM_PLAYERS];
   size_t i = 0;
   size_t num_players = player_contrib.size();  // allow duplicate pots for now
   assert(num_players <= MAX_NUM_PLAYERS);
   for (auto const &kv : player_contrib) {
-    uint32_t contrib = kv.second;
-    total_contrib[i++] = contrib;
+    size_t seat = kv.first;
+    uint32_t total_contrib_for_hand = kv.second;
+    contrib[i++] = total_contrib_for_hand;
+    player_winnings[seat] = 0;
   }
-  std::sort(total_contrib, total_contrib + num_players);
+  std::sort(contrib, contrib + num_players);
 
   for (i = 0; i < num_players; i++) {
-    if (total_contrib[i] == 0) {
-      // duplicate entry in total_contrib
+    if (contrib[i] == 0) {
+      // duplicate entry in contrib
       continue;
     }
 
@@ -800,27 +793,28 @@ Game::showdownAllIn() {
     uint32_t total_pot = 0;
     for (auto &kv : player_contrib) {
       size_t seat = kv.first;
-      if (player_contrib[seat] >= total_contrib[i]) {
-        player_contrib[seat] -= total_contrib[i];
-        total_pot += total_contrib[i];
+      uint32_t contrib_left = kv.second;
+      if (contrib_left >= contrib[i]) {
+        player_contrib[seat] -= contrib[i];
+        total_pot += contrib[i];
       } else {
-        assert(player_contrib[seat] == 0);
-        live_player_hands.erase(seat);
+        assert(contrib_left == 0);
+        remaining_player_hands.erase(seat);
       }
     }
 
-    FILE_LOG(logDEBUG2) << "pot bet " << total_contrib[i] \
-                        << " with " << live_player_hands.size() << " players";
+    FILE_LOG(logDEBUG2) << "pot bet " << contrib[i] << " with " \
+                        << remaining_player_hands.size() << " players";
     FILE_LOG(logDEBUG2) << "total pot: " << total_pot;
 
     // deduct from later contribs
     for (size_t j = i + 1; j < num_players; j++) {
-      assert(total_contrib[j] >= total_contrib[i]);
-      total_contrib[j] -= total_contrib[i];
+      assert(contrib[j] >= contrib[i]);
+      contrib[j] -= contrib[i];
     }
 
-    assert(live_player_hands.size() > 0);
-    std::map<size_t, Hand> winning_hands = getBestHands(live_player_hands);
+    assert(remaining_player_hands.size() > 0);
+    std::map<size_t, Hand> winning_hands = getBestHands(remaining_player_hands);
     size_t num_winners = winning_hands.size();
     assert(num_winners > 0);
     // round down on purpose, just throw away an extra chip if necessary
@@ -835,9 +829,15 @@ Game::showdownAllIn() {
       FILE_LOG(logDEBUG2) << players_[seat].name_ \
                           << " has winning hand " \
                           << remaining_player_hands[seat].str();
-
-      showdownWin(hand, chop_pot, &players_[seat]);
+      player_winnings[seat] += chop_pot;
     }
+  }
+
+  // finally give out the chips
+  for (auto const &kv : player_winnings) {
+    size_t seat = kv.first;
+    uint32_t pot = kv.second;
+    showdownWin(live_player_hands[seat], pot, &players_[seat]);
   }
 }
 
