@@ -1,6 +1,7 @@
 #include <cassert>
 #include <cstddef>
 #include <cstdio>
+#include <algorithm>
 
 #include "log.h"
 #include "Player.h"
