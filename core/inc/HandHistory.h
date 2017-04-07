@@ -25,7 +25,8 @@ public:
   const std::map<size_t, Hand> getKnownHands() const;
 
   // Return true iff more than one player wins a portion of the pot.
-  // This is the case when one or more players go all in, betting
+  // This might happen if two players have equal hands, or
+  // when one or more players go all in, betting
   // continues after, creating a side pot, and the short stacked
   // all in player ends up winning the main pot. Since a player
   // can only win up to what they bet from each other player,

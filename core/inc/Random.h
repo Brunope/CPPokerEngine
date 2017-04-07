@@ -6,13 +6,15 @@
 class Random {
 public:
   static void seed();
-  static void setSeed(int seed);
+  static void setSeed(uint seed);
+  static uint getSeed();
 
-  // return random number between lo and hi, inclusive
+  // return uniform random number between lo and hi, inclusive
   static int getInRange(int lo, int hi);
 
 private:
   static std::mt19937 rng_;
+  static uint seed_;
 };
 
 #endif  // RANDOM_H_

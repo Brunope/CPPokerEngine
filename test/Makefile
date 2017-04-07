@@ -33,7 +33,7 @@ TESTS_BINS = $(addprefix $(BIN_DIR)/, $(TESTS))
 CORE_UNITS = Card Deck Action Hand HandEvaluator HandRanks HandHistory \
  GameView EventManager LoggerEventListener Random Game
 CORE_OBJS = $(addprefix $(OBJ_DIR)/, $(addsuffix .o, $(CORE_UNITS)))
-AGENT_UNITS = RandomAgent TestAgent SimpleAgent Sleeper
+AGENT_UNITS = RandomAgent TestAgent SimpleAgent TightAgent Sleeper
 AGENT_OBJS = $(addprefix $(OBJ_DIR)/, $(addsuffix .o, $(AGENT_UNITS)))
 
 
@@ -115,7 +115,7 @@ $(BIN_DIR)/card_unittest : $(addprefix $(OBJ_DIR)/, Card.o card_unittest.o)  \
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -pthread $^ -o $@
 
 $(BIN_DIR)/deck_unittest : $(addprefix $(OBJ_DIR)/, Card.o  Deck.o \
- deck_unittest.o) \
+ Random.o deck_unittest.o) \
  gtest_main.a
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -pthread $^ -o $@
 
@@ -135,32 +135,32 @@ $(BIN_DIR)/action_unittest : $(addprefix $(OBJ_DIR)/, Card.o Action.o \
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -pthread $^ -o $@
 
 $(BIN_DIR)/handhistory_unittest : $(addprefix $(OBJ_DIR)/, Card.o Action.o \
- HandEvaluator.o HandRanks.o Hand.o HandHistory.o handhistory_unittest.o) \
- gtest_main.a
+ HandEvaluator.o HandRanks.o Hand.o HandHistory.o Random.o \
+ handhistory_unittest.o) gtest_main.a
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -pthread $^ -o $@
 
 $(BIN_DIR)/gameview_unittest : $(addprefix $(OBJ_DIR)/, Card.o Action.o \
  HandEvaluator.o HandRanks.o HandHistory.o Hand.o GameView.o \
- gameview_unittest.o) \
+ Random.o gameview_unittest.o) \
  gtest_main.a
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -pthread $^ -o $@
 
 $(BIN_DIR)/loggereventlistener_unittest : $(addprefix $(OBJ_DIR)/, Card.o \
  Action.o HandEvaluator.o HandRanks.o HandHistory.o Hand.o GameView.o \
- LoggerEventListener.o) \
+ Random.o LoggerEventListener.o) \
  gtest_main.a
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -pthread $^ -o $@
 
 $(BIN_DIR)/eventmanager_unittest : $(addprefix $(OBJ_DIR)/, Card.o Action.o \
  HandEvaluator.o HandRanks.o HandHistory.o Hand.o GameView.o \
- LoggerEventListener.o EventManager.o eventmanager_unittest.o) \
+ LoggerEventListener.o Random.o EventManager.o eventmanager_unittest.o) \
  gtest_main.a
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -pthread $^ -o $@
 
 $(BIN_DIR)/game_unittest : $(addprefix $(OBJ_DIR)/, Card.o Deck.o Action.o \
  HandEvaluator.o HandRanks.o HandHistory.o Hand.o GameView.o \
  LoggerEventListener.o EventManager.o TestAgent.o SimpleAgent.o RandomAgent.o \
- Game.o game_unittest.o) \
+ TightAgent.o Random.o Game.o game_unittest.o) \
  gtest_main.a
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -pthread $^ -o $@
 

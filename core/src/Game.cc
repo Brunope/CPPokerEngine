@@ -40,7 +40,7 @@
 Game::Game(uint32_t small_blind, uint32_t big_blind) {
   Random::seed();
   
-  FILELog::ReportingLevel() = logDEBUG3;
+  FILELog::ReportingLevel() = logDEBUG2;
   log_fd_ = fopen("game.log", "w");
   if (log_fd_ == nullptr) {
     std::cerr << "Couldn't open Game log file" << std::endl;
@@ -57,7 +57,7 @@ Game::Game(uint32_t small_blind, uint32_t big_blind) {
   updateView();
 
   FILE_LOG(logDEBUG) << "Initialized game, blinds " << small_blind_ \
-                     << "/" << big_blind_;
+                     << "/" << big_blind_ << ", seed " << Random::getSeed();
 }
 
 Game::~Game() {
@@ -157,6 +157,7 @@ Game::updateView() {
     it->second->setPlayer(&(view_->players_.at(it->first)));
   }
 
+  FILE_LOG(logDEBUG3) << "pot_: " << view_->pot_;
   FILE_LOG(logDEBUG3) << "current_bet_: " << view_->current_bet_;
   FILE_LOG(logDEBUG3) << "current_raise_by_: " << view_->current_raise_by_;
   FILE_LOG(logDEBUG3) << "Updated view";
@@ -247,6 +248,7 @@ Game::setupHand() {
   history_.hand_action_[TURN].clear();
   history_.hand_action_[RIVER].clear();
   history_.known_hands_.clear();
+  history_.player_winnings_.clear();
 
   deck_.shuffle7();  // extra extra random namsayin
   street_ = PREFLOP;
@@ -561,7 +563,7 @@ Game::playerBet(Player *player, uint32_t chips) {
   assert(player->chips_ >= chips);  // reaaaally don't wanna underflow
   assert(live_players_[acting_player_seat_] == player);
 
-  FILE_LOG(logDEBUG2) << player->name_ << " bet " << chips;
+  FILE_LOG(logDEBUG3) << player->name_ << " bet " << chips;
   
   // player all in
   if (player->chips_ == chips) {
@@ -734,11 +736,20 @@ Game::showdownNoAllIn() {
 
   history_.winner_ = players_[winning_player_seat];
   history_.known_hands_ = live_player_hands;
-  history_.player_winnings_.clear();
 
-  // also updates history_.player_winnings_
-  showdownWin(live_player_hands[winning_player_seat],
-              pot_, &players_[winning_player_seat]);
+  std::map<size_t, Hand> winning_hands = getBestHands(live_player_hands);
+  size_t num_winners = winning_hands.size();
+  // round down on purpose, just throw away an extra chip if necessary
+  uint32_t pot = pot_ / num_winners;
+
+  if (num_winners > 1) {
+    FILE_LOG(logDEBUG2) << "chop pot " << pot_ << ", " << pot \
+                        << " between " << num_winners << " players";
+  }
+  for (auto it = winning_hands.begin(); it != winning_hands.end(); ++it) {
+    // also updates history_.player_winnings_
+    showdownWin(it->second, pot, &players_[it->first]);
+  }
 }
 
 // Enforce that a player can only win up to what they have contributed to the
@@ -760,41 +771,71 @@ Game::showdownAllIn() {
   uint32_t remaining_pot = pot_;
   uint32_t chips_won, chips_can_win;
   size_t winning_player_seat;
-  while (remaining_pot) {
-    winning_player_seat = getBestHand(remaining_player_hands);
+  winning_player_seat = getBestHand(remaining_player_hands);
 
-    FILE_LOG(logDEBUG3) << remaining_pot << " chips remaining for payout";
-    FILE_LOG(logDEBUG3) << players_[winning_player_seat].name_ \
-                        << " has winning hand " \
-                        << remaining_player_hands[winning_player_seat].str();
-    
-    // subtract the amount of chips the player can win from each other
-    // player's contribution to the pot
-    chips_can_win = player_contrib[winning_player_seat];
-    chips_won = 0;
-    for (auto it = player_contrib.begin(); it != player_contrib.end(); ++it) {
-      if (it->second >= chips_can_win) {
-        chips_won += chips_can_win;
-        it->second -= chips_can_win;
+  // Treat each player all in for a different amount as a side pot.
+  // Each side pot is equal to the all in amount minus contributions
+  // to any other smaller side pots, times the number of players in
+  // that pot. Start with the smallest pot, subtract from
+  // each player's contributions, and continue until all pots have
+  // been considered.
+  uint32_t total_contrib[MAX_NUM_PLAYERS];
+  size_t i = 0;
+  size_t num_players = player_contrib.size();  // allow duplicate pots for now
+  assert(num_players <= MAX_NUM_PLAYERS);
+  for (auto const &kv : player_contrib) {
+    uint32_t contrib = kv.second;
+    total_contrib[i++] = contrib;
+  }
+  std::sort(total_contrib, total_contrib + num_players);
+
+  for (i = 0; i < num_players; i++) {
+    if (total_contrib[i] == 0) {
+      // duplicate entry in total_contrib
+      continue;
+    }
+
+    // sum the total for this side pot and deduct from player_contrib
+    uint32_t total_pot = 0;
+    for (auto &kv : player_contrib) {
+      size_t seat = kv.first;
+      if (player_contrib[seat] >= total_contrib[i]) {
+        player_contrib[seat] -= total_contrib[i];
+        total_pot += total_contrib[i];
       } else {
-        chips_won += it->second;
-        it->second = 0;
+        assert(player_contrib[seat] == 0);
+        live_player_hands.erase(seat);
       }
     }
 
-    FILE_LOG(logDEBUG3) << "win " << chips_won << " chips";
-    
-    assert(chips_won <= remaining_pot);
-    player_winnings[winning_player_seat] += chips_won;
-    remaining_pot -= chips_won;
-    remaining_player_hands.erase(winning_player_seat);
-  }
+    FILE_LOG(logDEBUG2) << "pot bet " << total_contrib[i] \
+                        << " with " << live_player_hands.size() << " players";
+    FILE_LOG(logDEBUG2) << "total pot: " << total_pot;
 
-  history_.player_winnings_.clear();
-  for (auto it = player_winnings.begin(); it != player_winnings.end(); ++it) {
-    if (it->second > 0) {  // player actually won some chips
-      showdownWin(live_player_hands[it->first], it->second,
-                  &players_[it->first]);
+    // deduct from later contribs
+    for (size_t j = i + 1; j < num_players; j++) {
+      assert(total_contrib[j] >= total_contrib[i]);
+      total_contrib[j] -= total_contrib[i];
+    }
+
+    assert(live_player_hands.size() > 0);
+    std::map<size_t, Hand> winning_hands = getBestHands(live_player_hands);
+    size_t num_winners = winning_hands.size();
+    assert(num_winners > 0);
+    // round down on purpose, just throw away an extra chip if necessary
+    uint32_t chop_pot = total_pot / num_winners;
+    if (num_winners > 1) {
+      FILE_LOG(logDEBUG3) << "chop pot, random seed: " << Random::getSeed();
+    }
+    for (auto const &kv : winning_hands) {
+      size_t seat = kv.first;
+      const Hand &hand = kv.second;
+
+      FILE_LOG(logDEBUG2) << players_[seat].name_ \
+                          << " has winning hand " \
+                          << remaining_player_hands[seat].str();
+
+      showdownWin(hand, chop_pot, &players_[seat]);
     }
   }
 }
@@ -810,7 +851,11 @@ void
 Game::potWin(uint32_t pot, Player *player) {
   player->chips_ += pot;
   history_.winner_ = *player;
-  history_.player_winnings_[player->seat_] = pot;
+  if (history_.player_winnings_.count(player->seat_)) {
+    history_.player_winnings_[player->seat_] += pot;
+  } else {
+    history_.player_winnings_[player->seat_] = pot;
+  }
   updateView();
   event_manager_.firePotWinEvent(pot, *player);
   FILE_LOG(logDEBUG1) << player->name_ << " wins " << pot;
@@ -844,6 +889,26 @@ Game::getBestHand(std::map<size_t, Hand> player_hands) {
 
   assert(best_hand_seat < MAX_NUM_PLAYERS);
   return best_hand_seat;
+}
+
+std::map<size_t, Hand>
+Game::getBestHands(std::map<size_t, Hand> live_hands) {
+  std::map<size_t, Hand> best_hands;
+  int best_score = -1;
+  for (auto it = live_hands.begin(); it != live_hands.end(); ++it) {
+    if (it->second.eval() == best_score) {
+    } else if (it->second.eval() > best_score) {
+      best_score = it->second.eval();
+    }
+  }
+
+  for (auto it = live_hands.begin(); it != live_hands.end(); ++it) {
+    if (it->second.eval() == best_score) {
+      best_hands[it->first] = it->second;
+    }
+  }
+
+  return best_hands;
 }
 
 // The game is over if only one player remains with nonzero chip count

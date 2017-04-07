@@ -10,6 +10,7 @@
 #include "HandHistory.h"
 #include "TestAgent.h"
 #include "RandomAgent.h"
+#include "TightAgent.h"
 #include "gtest/gtest.h"
 
 TEST(GameTest, Constructor) {
@@ -163,26 +164,24 @@ TEST(GameTest, FourPlayerFlopFold) {
   // do it!!
   game.play(1);
 
-  Player p0, p1, p2, p3;
-  EXPECT_EQ(view->getPlayerBySeat(0, &p0), 0);
-  EXPECT_EQ(view->getPlayerBySeat(1, &p1), 0);
-  EXPECT_EQ(view->getPlayerBySeat(2, &p2), 0);
-  EXPECT_EQ(view->getPlayerBySeat(3, &p3), 0);
+  HandHistory hh  = view->getHandHistory();
+  if (!hh.multipleWinners()) {
+    Player p0, p1, p2, p3;
+    EXPECT_EQ(view->getPlayerBySeat(0, &p0), 0);
+    EXPECT_EQ(view->getPlayerBySeat(1, &p1), 0);
+    EXPECT_EQ(view->getPlayerBySeat(2, &p2), 0);
+    EXPECT_EQ(view->getPlayerBySeat(3, &p3), 0);
 
-  EXPECT_EQ(p0.getChips(), 100);
-  EXPECT_EQ(p1.getChips(), 80);
-  EXPECT_EQ(p2.getChips(), 140);
-  EXPECT_EQ(p3.getChips(), 80);
-
+    EXPECT_EQ(p0.getChips(), 100);
+    EXPECT_EQ(p1.getChips(), 80);
+    EXPECT_EQ(p2.getChips(), 140);
+    EXPECT_EQ(p3.getChips(), 80);
+  }
   // can't do this, WHY?
   // const std::vector<Action> *hand_action =
-  //   view->getHandHistory().getHandAction();
-  
-  HandHistory hh  = view->getHandHistory();
-  EXPECT_EQ(hh.multipleWinners(), false);
+  //   view->getHandHistory().getHandAction();  
+
   const std::vector<Action> *hand_action = hh.getHandAction();
-  
-  
   EXPECT_EQ(hand_action[PREFLOP].size(), 6);
   EXPECT_EQ(hand_action[PREFLOP][0].getType(), POST);
   EXPECT_EQ(hand_action[PREFLOP][1].getType(), POST);
@@ -249,22 +248,28 @@ TEST(GameTest, BigBlindRaiseOptionCheckToShowdown) {
   game.play(1);
 
   const HandHistory& history = view->getHandHistory();
-  EXPECT_EQ(history.multipleWinners(), false);
-  Player winner = history.getWinner();
-  ASSERT_TRUE(winner.getSeat() <= 3);
 
-  std::map<size_t, Player> players = view->getPlayers();
-  for (auto it = players.begin(); it != players.end(); ++it) {
-    if (it->second.getSeat() == winner.getSeat()) {
-      EXPECT_EQ(it->second.getName(), winner.getName());
-      // should have won pot of 80, net +60
-      EXPECT_EQ(it->second.getChips(), 160);
-      EXPECT_EQ(winner.getChips(), 160);
-    } else {
-      EXPECT_EQ(it->second.getChips(), 80);
+  // forget about cases with chopped pot
+  if (!history.multipleWinners()) {
+    EXPECT_EQ(history.multipleWinners(), false);
+    Player winner = history.getWinner();
+    ASSERT_TRUE(winner.getSeat() <= 3);
+
+    std::map<size_t, Player> players = view->getPlayers();
+    for (auto it = players.begin(); it != players.end(); ++it) {
+      if (it->second.getSeat() == winner.getSeat()) {
+        EXPECT_EQ(it->second.getName(), winner.getName());
+        // should have won pot of 80, net +60
+        EXPECT_EQ(it->second.getChips(), 160);
+        EXPECT_EQ(winner.getChips(), 160);
+      } else {
+        EXPECT_EQ(it->second.getChips(), 80);
+      }
     }
+  } else {
+    std::cout << "skipping checks because pot chopped" << std::endl;
   }
-
+  
   const std::vector<Action> *actions = history.getHandAction();
   EXPECT_EQ(actions[PREFLOP].size(), 9);
 }
@@ -327,20 +332,43 @@ TEST(GameTest, FivePlayerBetRaiseCallToShowdown) {
   a1->queueAction(Action(CALL, 300));
 
   game.play(1);
-  
+
+
   const HandHistory& history = view->getHandHistory();
   Player winner = history.getWinner();
-  ASSERT_TRUE(winner.getSeat() <= 4);
-
+  const std::map<size_t, uint32_t> winnings = history.getPlayerWinnings();
   std::map<size_t, Player> players = view->getPlayers();
-  for (auto it = players.begin(); it != players.end(); ++it) {
-    if (it->second.getSeat() == winner.getSeat()) {
-      EXPECT_EQ(it->second.getName(), winner.getName());
-      // should have won pot of 4675, net +3740
-      EXPECT_EQ(it->second.getChips(), 4740);
-      EXPECT_EQ(winner.getChips(), 4740);
-    } else {
-      EXPECT_EQ(it->second.getChips(), 65);
+
+  if (!history.multipleWinners()) {
+    ASSERT_FALSE(history.multipleWinners());
+    ASSERT_TRUE(winner.getSeat() <= 4);
+
+    for (auto it = players.begin(); it != players.end(); ++it) {
+      if (it->second.getSeat() == winner.getSeat()) {
+        EXPECT_EQ(it->second.getName(), winner.getName());
+        // each player contributed total of 935
+        // should have won pot of 4675, net +3740
+        EXPECT_EQ(it->second.getChips(), 4740);
+        EXPECT_EQ(winner.getChips(), 4740);
+      } else {
+        EXPECT_EQ(it->second.getChips(), 65);
+      }
+    }
+  } else {
+    // some sort of chop
+    uint32_t exp_winnings = 4675 / winnings.size();
+    uint32_t exp_chips = exp_winnings + 1000 - 935;
+    for (auto const &kv : players) {
+      size_t seat = kv.first;
+      const Player &p = kv.second;
+      if (winnings.count(seat)) {
+        // player won part of the chop
+        EXPECT_EQ(winnings.at(seat), exp_winnings);
+        EXPECT_EQ(p.getChips(), exp_chips);
+      } else {
+        EXPECT_EQ(winnings.count(seat), 0);
+        EXPECT_EQ(p.getChips(), 1000 - 935);
+      }
     }
   }
 
@@ -363,8 +391,8 @@ TEST(GameTest, TwoPlayerSingleAllIn) {
   a1->queueAction(Action(RAISE, 100));
   a0->queueAction(Action(CALL, 90));
 
-  // should play only one hand, remove the losing player at end of hand
-  game.play();
+  // play one hand, remove the losing player at end of hand unless chop
+  game.play(1);
 
   Player p0, p1;
   
@@ -372,132 +400,73 @@ TEST(GameTest, TwoPlayerSingleAllIn) {
   EXPECT_EQ(hh.getRoundAction(FLOP).size(), 0);
   EXPECT_EQ(hh.getRoundAction(TURN).size(), 0);
   EXPECT_EQ(hh.getRoundAction(RIVER).size(), 0);
-  EXPECT_EQ(hh.multipleWinners(), false);
-  Player winner = hh.getWinner();
-  EXPECT_EQ(winner.getChips(), 200);
-  if (winner.getSeat() == 0) {
-    EXPECT_EQ(view->getPlayerBySeat(0, &p0), 0);
-    // p1 shouldn't exist in game anymore
-    EXPECT_EQ(view->getPlayerBySeat(1, &p1), 1);
-    EXPECT_EQ(p0.getName(), winner.getName());
-    EXPECT_EQ(p0.getChips(), 200);
+
+  if (!hh.multipleWinners()) {
+    Player winner = hh.getWinner();
+    EXPECT_EQ(winner.getChips(), 200);
+    if (winner.getSeat() == 0) {
+      EXPECT_EQ(view->getPlayerBySeat(0, &p0), 0);
+      // p1 shouldn't exist in game anymore
+      EXPECT_EQ(view->getPlayerBySeat(1, &p1), 1);
+      EXPECT_EQ(p0.getName(), winner.getName());
+      EXPECT_EQ(p0.getChips(), 200);
+    } else {
+      EXPECT_EQ(winner.getSeat(), 1);
+      // p0 shouldn't exist in game anymore
+      EXPECT_EQ(view->getPlayerBySeat(0, &p0), 1);
+      EXPECT_EQ(view->getPlayerBySeat(1, &p1), 0);
+      EXPECT_EQ(p1.getName(), winner.getName());
+      EXPECT_EQ(p1.getChips(), 200);
+    }
   } else {
-    EXPECT_EQ(winner.getSeat(), 1);
-    // p0 shouldn't exist in game anymore
-    EXPECT_EQ(view->getPlayerBySeat(0, &p0), 1);
-    EXPECT_EQ(view->getPlayerBySeat(1, &p1), 0);
-    EXPECT_EQ(p1.getName(), winner.getName());
-    EXPECT_EQ(p1.getChips(), 200);
+    std::cout << "skipping checks because pot chopped" << std::endl;
   }
 }
 
-
-// short stack all in preflop, other two players bet on side pot
-// on later streets
+// Three players, short stack all in and wins, big stack
+// wins side pot, hand 0, seed 2393147711
 TEST(GameTest, ThreePlayerSingleAllInSidePot) {
   Game game(5, 10);
-  std::shared_ptr<const GameView> view = game.getView();
+  Random::setSeed(2393147711);
 
+  std::shared_ptr<const GameView> view = game.getView();
   std::shared_ptr<TestAgent> a0(new TestAgent);
   std::shared_ptr<TestAgent> a1(new TestAgent);
   std::shared_ptr<TestAgent> a2(new TestAgent);
+  game.addPlayer(a0, "p0", 100);
+  game.addPlayer(a1, "p1", 200);
+  game.addPlayer(a2, "p2", 300);
+  // queue up the actions and play the hand
+  // preflop
+  a0->queueAction(Action(RAISE, 100));
+  a1->queueAction(Action(CALL, 95));
+  a2->queueAction(Action(CALL, 90));
+  // flop
+  a1->queueAction(Action(RAISE, 30));
+  a2->queueAction(Action(CALL, 30));
+  // turn
+  a1->queueAction(Action(RAISE, 50));
+  a2->queueAction(Action(CALL, 50));
+  // river
+  a1->queueAction(Action(CHECK));
+  a2->queueAction(Action(CHECK));
+  game.play(1);
+
+  const HandHistory& hh = view->getHandHistory();
+  ASSERT_TRUE(hh.multipleWinners());
   
-  // play 10 hands, try to hit the case where short stack wins, then a
-  // big stack wins the remaining side pot - 1/3 prob so 10 tries gives
-  // 98% chance to hit
-  for (int i = 0; i < 10; i++) {
-    // first remove any players from the game, and re-add them with
-    // the right number of chips
-    std::map<size_t, Player> players = view->getPlayers();
-    for (auto it = players.begin(); it != players.end(); ++it) {
-      game.removePlayer(it->first);
-    }
-
-    // add players such that p0 is always in the button, p1 always
-    // in the sb, p2 always in the big blind
-    size_t button_seat = view->getButtonPosition();
-    size_t p0_seat, p1_seat, p2_seat;
-    if (button_seat == 0) {
-      p0_seat = 0;
-      p1_seat = 1;
-      p2_seat = 2;
-      game.addPlayer(a0, "p0", 100);
-      game.addPlayer(a1, "p1", 200);
-      game.addPlayer(a2, "p2", 300);
-    } else if (button_seat == 1) {
-      p0_seat = 1;
-      p1_seat = 2;
-      p2_seat = 0;
-      game.addPlayer(a2, "p2", 300);
-      game.addPlayer(a0, "p0", 100);
-      game.addPlayer(a1, "p1", 200);
-    } else {
-      EXPECT_EQ(button_seat, 2);
-      p0_seat = 2;
-      p1_seat = 0;
-      p2_seat = 1;
-      game.addPlayer(a1, "p1", 200);
-      game.addPlayer(a2, "p2", 300);
-      game.addPlayer(a0, "p0", 100);
-    }      
-
-    // queue up the actions and play the hand
-    // preflop
-    a0->queueAction(Action(RAISE, 100));
-    a1->queueAction(Action(CALL, 95));
-    a2->queueAction(Action(CALL, 90));
-    // flop
-    a1->queueAction(Action(RAISE, 30));
-    a2->queueAction(Action(CALL, 30));
-    // turn
-    a1->queueAction(Action(RAISE, 50));
-    a2->queueAction(Action(CALL, 50));
-    // river
-    a1->queueAction(Action(CHECK));
-    a2->queueAction(Action(CHECK));
-    game.play(1);
-
-    const HandHistory& hh = view->getHandHistory();
-    Player winner, p0, p1, p2;
-    EXPECT_EQ(view->getPlayerBySeat(p1_seat, &p1), 0);
-    EXPECT_EQ(view->getPlayerBySeat(p2_seat, &p2), 0);
-    if (hh.multipleWinners()) {
-      // short stack must have won
-      std::map<size_t, uint32_t> player_winnings = hh.getPlayerWinnings();
-      EXPECT_EQ(view->getPlayerBySeat(p0_seat, &p0), 0);
-
-      EXPECT_EQ(p0.getChips(), 300);
-      EXPECT_EQ(player_winnings.at(p0_seat), 300);
-
-      if (player_winnings.count(p1_seat)) {
-        // p1 won side pot of 160
-        EXPECT_EQ(p1.getChips(), 180);
-        EXPECT_EQ(player_winnings.at(p1_seat), 160);
-        EXPECT_EQ(p2.getChips(), 120);
-      } else {
-        EXPECT_EQ(player_winnings.count(p2_seat), 1);
-        EXPECT_EQ(p2.getChips(), 280);
-        EXPECT_EQ(player_winnings.at(p2_seat), 160);
-        EXPECT_EQ(p1.getChips(), 20);
-      }
-    } else {
-      // p1 or p2 won, p0 lost all chips and removed
-      EXPECT_EQ(view->getPlayerBySeat(p0_seat, &p0), 1);
-      winner = hh.getWinner();
-      if (winner.getSeat() == p1_seat) {
-        EXPECT_EQ(winner.getName(), p1.getName());
-        EXPECT_EQ(winner.getChips(), 480);
-        EXPECT_EQ(p1.getChips(), 480);
-        EXPECT_EQ(p2.getChips(), 120);
-      } else {
-        EXPECT_EQ(winner.getName(), p2.getName());
-        EXPECT_EQ(winner.getChips(), 580);
-        EXPECT_EQ(p2.getChips(), 580);
-        EXPECT_EQ(p1.getChips(), 20);
-      }
-    }
-  }
-}
+  Player winner, p0, p1, p2;
+  std::map<size_t, uint32_t> player_winnings = hh.getPlayerWinnings();
+  EXPECT_EQ(view->getPlayerBySeat(0, &p0), 0);
+  EXPECT_EQ(view->getPlayerBySeat(1, &p1), 0);
+  EXPECT_EQ(view->getPlayerBySeat(2, &p2), 0);
+  EXPECT_EQ(p0.getChips(), 300);
+  EXPECT_EQ(player_winnings.at(0), 300);
+  EXPECT_EQ(p1.getChips(), 20);
+  EXPECT_EQ(player_winnings.count(1), 0);
+  EXPECT_EQ(p2.getChips(), 280);
+  EXPECT_EQ(player_winnings.at(2), 160);
+}  
 
 // Everyone all in for different amounts
 TEST(GameTest, EveryoneAllIn) {
@@ -611,6 +580,58 @@ TEST(GameTest, TwoPlayersRemain) {
   a3->queueAction(Action(FOLD));
 }
 
+// chop pot
+TEST(GameTest, TwoPlayerAllInChopPot) {
+  // set the random seed to 1023914130 to force a chop pot
+  // with 7 TightAgents, each starting with 10,000 chips, 10/20 blinds, on
+  // hand 1070 bot3 and bot5 (the last two players) should both go all in
+  // with 33, and chop the resulting pot. bot3 and bot5 should end up
+  // with the same chips they start the hand with, 76700 and 3300 respectively.
+  Game game(10, 20);
+  auto bot0 = std::make_shared<TightAgent>();
+  auto bot1 = std::make_shared<TightAgent>();
+  auto bot2 = std::make_shared<TightAgent>();
+  auto bot3 = std::make_shared<TightAgent>();
+  auto bot4 = std::make_shared<TightAgent>();
+  auto bot5 = std::make_shared<TightAgent>();
+  auto bot6 = std::make_shared<TightAgent>();
+  auto bot7 = std::make_shared<TightAgent>();
+  game.addPlayer(bot0, "bot0", 10000);
+  game.addPlayer(bot1, "bot1", 10000);
+  game.addPlayer(bot2, "bot2", 10000);
+  game.addPlayer(bot3, "bot3", 10000);
+  game.addPlayer(bot4, "bot4", 10000);
+  game.addPlayer(bot5, "bot5", 10000);
+  game.addPlayer(bot6, "bot6", 10000);
+  game.addPlayer(bot7, "bot7", 10000);
+
+  Random::setSeed(1023914130);
+  game.play(1070);
+
+  std::shared_ptr<const GameView> view = game.getView();
+  std::map<size_t, Player> players = view->getPlayers();
+  EXPECT_EQ(players[3].getChips(), 76700);
+  EXPECT_EQ(players[5].getChips(), 3300);
+
+  game.play(1);
+
+  players = view->getPlayers();
+  EXPECT_EQ(players[3].getChips(), 76700);
+  EXPECT_EQ(players[5].getChips(), 3300);
+}
+
+
+
+
+// TODO:
+// Three player all in test hand 9, p1 p2 chop with straights, p0 dies?
+// seed: 3664792715
+
+// TODO:
+// Three player all in test hand 3, p0 p1 (short stacks) chop
+// seed: 2702894553
+
+
 // TODO:
 TEST(GameTest, LegalActions) {
   // raise amounts
@@ -627,7 +648,4 @@ TEST(GameTest, AllInNoAction) {
 }
 
 // TODO:
-// update view in right places (missing after new round)
-
-// TODO:
-// board contains best hand, chop pot
+// ensure update view in right places (was missing after new round)

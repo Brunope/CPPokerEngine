@@ -10,7 +10,7 @@ CXXFLAGS = -I core/inc -I agents/inc -g -std=c++11
 subsystem : | core agents ui
 
 
-test :
+test : | core agents
 	cd test && $(MAKE)
 	bin/test_suite
 
@@ -34,7 +34,7 @@ ui :
 CONS_DEPS =  $(addprefix $(OBJ_DIR)/, Card.o Deck.o Action.o \
  HandEvaluator.o HandRanks.o HandHistory.o Hand.o GameView.o \
  LoggerEventListener.o EventManager.o TestAgent.o SimpleAgent.o RandomAgent.o \
- HumanAgent.o Game.o Random.o ConsoleMain.o)
+ HumanAgent.o TightAgent.o Game.o Random.o ConsoleMain.o)
 
 $(OBJ_DIR)/ConsoleMain.o : core core/src/ConsoleMain.cc
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c core/src/ConsoleMain.cc -o $@

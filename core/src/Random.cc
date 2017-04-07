@@ -1,16 +1,24 @@
 #include "Random.h"
 
 std::mt19937 Random::rng_;
+uint Random::seed_;
 
 void
 Random::seed() {
   std::random_device rd;
-  rng_.seed(rd());
+  seed_ = rd();
+  rng_.seed(seed_);
 }
 
 void
-Random::setSeed(int seed) {
+Random::setSeed(uint seed) {
+  seed_ = seed;
   rng_.seed(seed);
+}
+
+uint
+Random::getSeed() {
+  return seed_;
 }
 
 int

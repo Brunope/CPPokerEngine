@@ -71,6 +71,9 @@ private:
 
   static size_t getBestHand(std::map<size_t, Hand> player_hands);
 
+  static std::map<size_t, Hand>
+  getBestHands(std::map<size_t, Hand> player_hands);
+
   std::shared_ptr<GameView> view_;
   std::shared_ptr<const GameView> const_view_;
   std::map<size_t, std::shared_ptr<Agent>> agents_;
