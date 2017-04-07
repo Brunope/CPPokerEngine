@@ -837,7 +837,9 @@ Game::showdownAllIn() {
   for (auto const &kv : player_winnings) {
     size_t seat = kv.first;
     uint32_t pot = kv.second;
-    showdownWin(live_player_hands[seat], pot, &players_[seat]);
+    if (pot > 0) {
+      showdownWin(live_player_hands[seat], pot, &players_[seat]);
+    }
   }
 }
 

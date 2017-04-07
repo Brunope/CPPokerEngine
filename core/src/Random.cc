@@ -23,6 +23,7 @@ Random::getSeed() {
 
 int
 Random::getInRange(int lo, int hi) {
-  double dScale = (hi - lo) / (rng_.max() - rng_.min() + 1); 
-  return (rng_() - rng_.min()) * dScale  + lo;
+  return rng_() % (hi + 1 - lo) + lo;
+  // double dScale = (hi - lo) / ((double) rng_.max() - rng_.min() + 1);
+  // return (rng_() - rng_.min()) * dScale  + lo;
 }
