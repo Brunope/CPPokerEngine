@@ -48,6 +48,7 @@ QGameDriver::~QGameDriver() {
 
 void
 QGameDriver::startGame(const QString &text) {
+  UNUSED(text);
   std::cout << "uh oh start game" << std::endl;
   if (!game_thread_running_) {
     game_thread_ = std::thread(startGameInThread, game_);

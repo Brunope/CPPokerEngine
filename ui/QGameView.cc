@@ -59,7 +59,8 @@ QGameView::copyFromQ(const QGameView *other) {
   emit playersChanged();
 
   board_.clear();
-  for (size_t i = 0; i < other->board_.size(); i++) {
+  assert(other->board_.size() >= 0);
+  for (size_t i = 0; i < static_cast<size_t>(other->board_.size()); i++) {
     card_mem_[i].copyFromQ(*(other->board_[i]));
     board_.append(&card_mem_[i]);
   }

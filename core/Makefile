@@ -27,6 +27,8 @@ RESOURCE_DIR = ./resources
 # Flags passed to the C++ compiler.
 CXXFLAGS += -g -std=c++11 -I $(INC_DIR)
 
+ARFLAGS += -c
+
 ############################################################
 # Game library source files
 ############################################################

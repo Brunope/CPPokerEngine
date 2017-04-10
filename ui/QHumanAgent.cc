@@ -19,14 +19,16 @@ QHumanAgent::receiveHoleCards(const std::pair<Card, Card> hc) {
   emit holeCardsChanged();
   
   // weird place to do this i know
-  if (seat_ != self_->getSeat()) {
-    seat_ = self_->getSeat();
+  int new_seat = static_cast<int>(self_->getSeat());
+  if (seat_ != new_seat) {
+    seat_ = new_seat;
     emit seatChanged();
   }
 }
 
 Action
 QHumanAgent::act(const GameView &view) {
+  UNUSED(view);
   emit needAction();
 
   // wait til ui sends the action to doAction, which will set got_action_,
@@ -46,7 +48,7 @@ QHumanAgent::act(const GameView &view) {
 
 void
 QHumanAgent::receiveHandHistory(const HandHistory &history) {
-  
+  UNUSED(history);
 }
 
 void

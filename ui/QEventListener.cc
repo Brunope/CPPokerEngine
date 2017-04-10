@@ -67,6 +67,7 @@ QEventListener::onHandStart(long handNum, std::shared_ptr<const GameView> view) 
 
 void
 QEventListener::onDeal(STREET street) {
+  UNUSED(street);
   QString s = "deal";
   updateView();
   emit deal(s);
