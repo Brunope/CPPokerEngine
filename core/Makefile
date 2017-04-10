@@ -40,7 +40,7 @@ OBJS = $(addprefix $(OBJ_DIR)/, $(addsuffix .o, $(UNITS)))
 # House-keeping build targets
 ############################################################
 
-all : setup $(OBJS) poker.a
+all : | setup $(OBJS) poker.a
 
 clean :
 	rm -rf $(OBJS) $(DEP_DIR) *.log .DS_STORE poker.a

@@ -1,6 +1,6 @@
 TARGET = qpoker
 TEMPLATE = app
-CONFIG -= app_bundle
+#CONFIG -= app_bundle
 
 QMAKE_CXX = clang++
 QMAKE_CXXFLAGS += -std=c++11 -g
@@ -8,9 +8,10 @@ QMAKE_CXXFLAGS += -std=c++11 -g
 OBJECTS_DIR=./obj
 MOC_DIR=./moc
 
-QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.10
-
 QT += core gui qml quick widgets
+
+QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.10
+ICON = img/chip.icns
 
 # bye compiler warnings
 DEFINES += QT_DEPRECATED_WARNINGS
@@ -18,8 +19,7 @@ DEFINES += QT_DEPRECATED_WARNINGS
 # link the core game static library
 PRE_TARGETDEPS += "poker.a"
 
-LIBS += poker.a
-OBJECTS += $$files(../obj/*Agent.o) ../obj/Sleeper.o
+LIBS += poker.a ../obj/Sleeper.o $$files(../obj/*Agent.o)
 INCLUDEPATH += "../core/inc" "../agents/inc"
 
 poker_core.target = "poker.a"
